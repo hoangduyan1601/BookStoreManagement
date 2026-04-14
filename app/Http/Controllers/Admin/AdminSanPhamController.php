@@ -58,9 +58,13 @@ class AdminSanPhamController extends Controller
 
             if ($request->hasFile('images')) {
                 $anhChinhIndex = $request->get('anh_chinh', 0);
+                $destinationPath = public_path('assets/images/products');
+                if (!File::exists($destinationPath)) {
+                    File::makeDirectory($destinationPath, 0755, true);
+                }
                 foreach ($request->file('images') as $index => $file) {
                     $filename = $product->MaSP . "_" . time() . "_" . $index . "." . $file->getClientOriginalExtension();
-                    $file->move(public_path('assets/images/products'), $filename);
+                    $file->move($destinationPath, $filename);
 
                     $isMain = ($index == $anhChinhIndex) ? 1 : 0;
                     HinhAnhSanPham::create([
@@ -118,9 +122,13 @@ class AdminSanPhamController extends Controller
 
             // Thêm ảnh mới
             if ($request->hasFile('images')) {
+                $destinationPath = public_path('assets/images/products');
+                if (!File::exists($destinationPath)) {
+                    File::makeDirectory($destinationPath, 0755, true);
+                }
                 foreach ($request->file('images') as $index => $file) {
                     $filename = $product->MaSP . "_" . time() . "_" . $index . "_new." . $file->getClientOriginalExtension();
-                    $file->move(public_path('assets/images/products'), $filename);
+                    $file->move($destinationPath, $filename);
                     HinhAnhSanPham::create([
                         'MaSP' => $product->MaSP,
                         'DuongDan' => $filename,

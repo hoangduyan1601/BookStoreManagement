@@ -115,7 +115,7 @@
                 </a>
 
                 @auth
-                    <a href="{{ url('/profile') }}" class="icon-link" title="Tài khoản của tôi">
+                    <a href="{{ route('customer.profile') }}" class="icon-link" title="Tài khoản của tôi">
                         <i class="fa-regular fa-user"></i>
                     </a>
                     <a href="{{ route('logout') }}" 

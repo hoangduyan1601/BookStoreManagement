@@ -30,6 +30,18 @@
 
 <section class="hero-section">
     <div class="container">
+        @if(session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+        @if(session('error'))
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                {{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
         <h1 class="fw-bold">BookStore Premium</h1>
         <p>Hành trình tri thức bắt đầu từ những trang sách</p>
     </div>
@@ -47,7 +59,7 @@
             <div class="col">
                 <div class="product-card">
                     <div class="img-box">
-                        <img src="{{ $sp->HinhAnh ? asset('assets/books/' . $sp->HinhAnh) : 'https://via.placeholder.com/400x600' }}">
+                        <img src="{{ $sp->HinhAnh ? asset('assets/images/products/' . $sp->HinhAnh) : 'https://via.placeholder.com/400x600' }}">
                         <span class="badge-hot">HOT</span>
                         @if($sp->SoLuong <= 0) <span class="badge-out">HẾT HÀNG</span> @endif
                     </div>
@@ -78,7 +90,7 @@
             <div class="col">
                 <div class="product-card">
                     <div class="img-box">
-                        <img src="{{ $sp->HinhAnh ? asset('assets/books/' . $sp->HinhAnh) : 'https://via.placeholder.com/400x600' }}">
+                        <img src="{{ $sp->HinhAnh ? asset('assets/images/products/' . $sp->HinhAnh) : 'https://via.placeholder.com/400x600' }}">
                         @if($sp->SoLuong <= 0) <span class="badge-out">HẾT HÀNG</span> @endif
                     </div>
                     <div class="card-details">

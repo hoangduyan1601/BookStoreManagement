@@ -16,4 +16,23 @@ class HomeController extends Controller
 
         return view('home.index', compact('sanphams', 'danhmucs', 'bestSellers'));
     }
+
+    public function profile()
+    {
+        $user = auth()->user();
+        // Sử dụng relationship khachHang() đã định nghĩa trong model TaiKhoan
+        $customer = $user->khachHang; 
+        
+        if (!$customer) {
+            // Nếu không tìm thấy trong bảng khachhang, thử tìm theo MaTK
+            $customer = \App\Models\KhachHang::where('MaTK', $user->MaTK)->first();
+        }
+
+        if (!$customer) {
+            return redirect()->route('home')->with('error', 'Không tìm thấy thông tin khách hàng cho tài khoản này (MaTK: ' . $user->MaTK . ')');
+        }
+
+        $orders = \App\Models\DonHang::where('MaKH', $customer->MaKH)->orderBy('NgayDat', 'desc')->get();
+        return view('home.profile', compact('customer', 'orders'));
+    }
 }

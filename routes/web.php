@@ -33,6 +33,9 @@ Route::get('/san-pham/detail/{id}', [SanPhamController::class, 'detail'])->name(
 Route::get('/san-pham/search', [SanPhamController::class, 'search'])->name('sanpham.search');
 Route::get('/danhmuc/{id}', [SanPhamController::class, 'index'])->name('danhmuc.show');
 
+// Trang cá nhân khách hàng - đặt trước nhóm Admin
+Route::get('/profile', [HomeController::class, 'profile'])->name('customer.profile')->middleware('auth');
+
 Route::middleware('auth')->group(function () {
     Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
     Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');

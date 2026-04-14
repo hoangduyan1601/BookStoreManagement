@@ -36,10 +36,9 @@
                                     @foreach($cart as $id => $item)
                                     <tr>
                                         <td class="p-3 text-center">
-                                            <img src="{{ $item['image'] ? asset('assets/books/' . $item['image']) : 'https://via.placeholder.com/100' }}" 
+                                            <img src="{{ $item['image'] ? asset('assets/images/products/' . $item['image']) : 'https://via.placeholder.com/100' }}"
                                                  class="img-fluid border rounded" style="width: 60px; height: 85px; object-fit: cover;">
-                                        </td>
-                                        <td>
+                                        </td>                                        <td>
                                             <a href="{{ route('sanpham.detail', $item['id']) }}" class="text-decoration-none text-dark fw-bold">
                                                 {{ $item['name'] }}
                                             </a>
