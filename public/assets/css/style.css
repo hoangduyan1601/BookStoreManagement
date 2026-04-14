@@ -1,0 +1,123 @@
+/* --- 1. CẤU HÌNH CHUNG --- */
+:root {
+    --alpha-red: #ed1c24;       /* Màu đỏ chủ đạo */
+    --alpha-dark: #2c3e50;      /* Màu xanh đen (Header/Footer) */
+    --alpha-gray: #f8fafc;      /* Màu nền web */
+    --text-main: #334155;       /* Màu chữ chính */
+    --border-color: #e2e8f0;    /* Màu viền */
+    --success-green: #22c55e;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--alpha-gray);
+    color: var(--text-main);
+    line-height: 1.6;
+}
+
+a { text-decoration: none; color: inherit; transition: 0.3s; }
+a:hover { color: var(--alpha-red); }
+
+/* --- 2. HEADER STYLE --- */
+.main-header {
+    background: #fff;
+    border-bottom: 1px solid #eee;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+.header-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 70px;
+}
+.logo a {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--alpha-dark);
+    letter-spacing: -1px;
+}
+.logo span { color: var(--alpha-red); }
+
+.search-box {
+    flex: 0 1 400px;
+    display: flex;
+    background: var(--alpha-gray);
+    border-radius: 20px;
+    padding: 5px 15px;
+    border: 1px solid transparent;
+}
+.search-box input { border: none; background: transparent; outline: none; width: 100%; }
+.search-box button { border: none; background: transparent; color: #888; }
+
+.nav-menu { display: flex; gap: 20px; align-items: center; font-weight: 500; font-size: 14px; }
+.user-utilities { display: flex; gap: 15px; align-items: center; font-size: 18px; }
+.badge-cart {
+    position: absolute; top: -8px; right: -10px;
+    background: var(--alpha-red); color: white;
+    font-size: 10px; padding: 2px 5px; border-radius: 50%;
+}
+
+/* --- 3. BUTTONS --- */
+.btn-alpha {
+    background-color: var(--alpha-red);
+    color: white;
+    border: 1px solid var(--alpha-red);
+    font-weight: 600;
+    border-radius: 6px;
+    padding: 8px 16px;
+    display: inline-block;
+    cursor: pointer;
+}
+.btn-alpha:hover { background-color: #c91018; color: white; }
+
+.btn-disabled {
+    background-color: #e2e8f0 !important;
+    border-color: #cbd5e1 !important;
+    color: #94a3b8 !important;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* --- 4. PRODUCT CARD (GIỐNG ALPHABOOKS) --- */
+.product-card {
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+    border-color: var(--alpha-red);
+}
+.img-box {
+    position: relative;
+    padding: 15px;
+    background: white;
+    height: 220px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.img-box img { max-height: 100%; max-width: 100%; object-fit: contain; }
+.card-details { padding: 15px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; }
+.product-name {
+    font-size: 14px; font-weight: 600; color: var(--text-main);
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    overflow: hidden; height: 40px; margin-bottom: 8px;
+}
+.price-text { color: var(--alpha-red); font-weight: 700; font-size: 16px; }
+
+/* --- 5. BADGES --- */
+.badge-sold { background: #fee2e2; color: #991b1b; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+.badge-stock { background: #dcfce7; color: #166534; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
