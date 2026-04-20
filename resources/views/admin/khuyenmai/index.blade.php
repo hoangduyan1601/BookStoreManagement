@@ -89,11 +89,12 @@
                     <thead>
                         <tr>
                             <th width="5%">#</th>
-                            <th>Tên KM</th>
+                            <th>Tên KM / Mã</th>
+                            <th>Loại / Danh mục</th>
                             <th>Giảm (%)</th>
-                            <th>Bắt đầu</th>
-                            <th>Kết thúc</th>
-                            <th width="15%" class="text-center">Hành động</th>
+                            <th>ĐK tối thiểu</th>
+                            <th>Hiệu lực</th>
+                            <th width="12%" class="text-center">Hành động</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -101,17 +102,29 @@
                             <tr>
                                 <td class="text-muted fw-semibold">{{ $index + 1 }}</td>
                                 <td>
-                                    <strong style="color: var(--text-primary);">{{ $item->TenKM }}</strong>
+                                    <div class="fw-bold" style="color: var(--text-primary);">{{ $item->TenKM }}</div>
+                                    @if($item->MaGiamGia)
+                                        <span class="badge bg-light text-dark border">Mã: {{ $item->MaGiamGia }}</span>
+                                    @endif
                                 </td>
-                                <td>{{ $item->PhanTramGiam }}%</td>
-                                <td>{{ $item->NgayBatDau }}</td>
-                                <td>{{ $item->NgayKetThuc }}</td>
+                                <td>
+                                    <span class="small">{{ $item->LoaiKM == 'DanhMuc' ? 'Theo danh mục' : 'Toàn đơn hàng' }}</span>
+                                    @if($item->LoaiKM == 'DanhMuc' && $item->danhMuc)
+                                        <div class="small text-muted">({{ $item->danhMuc->TenDM }})</div>
+                                    @endif
+                                </td>
+                                <td><span class="badge bg-success">{{ $item->PhanTramGiam }}%</span></td>
+                                <td>{{ number_format($item->DieuKienToiThieu) }}₫</td>
+                                <td class="small">
+                                    <div>Từ: {{ $item->NgayBatDau ? date('d/m/Y', strtotime($item->NgayBatDau)) : '...' }}</div>
+                                    <div>Đến: {{ $item->NgayKetThuc ? date('d/m/Y', strtotime($item->NgayKetThuc)) : '...' }}</div>
+                                </td>
                                 <td class="text-center">
                                     <div class="d-flex justify-content-center gap-2">
                                         <button type="button" 
                                                 class="btn btn-warning btn-action" 
                                                 title="Sửa"
-                                                onclick="openModalSua('{{ $item->MaKM }}', '{{ addslashes($item->TenKM) }}', '{{ $item->PhanTramGiam }}', '{{ $item->NgayBatDau }}', '{{ $item->NgayKetThuc }}')">
+                                                onclick="openModalSua('{{ $item->MaKM }}', '{{ addslashes($item->TenKM) }}', '{{ $item->PhanTramGiam }}', '{{ $item->NgayBatDau ? date('Y-m-d', strtotime($item->NgayBatDau)) : '' }}', '{{ $item->NgayKetThuc ? date('Y-m-d', strtotime($item->NgayKetThuc)) : '' }}', '{{ $item->LoaiKM }}', '{{ $item->MaDM }}', '{{ $item->DieuKienToiThieu }}', '{{ $item->MaGiamGia }}')">
                                             <i class="fas fa-edit"></i>
                                         </button>
                                         <form action="{{ route('admin.khuyenmai.destroy', $item->MaKM) }}" method="POST" onsubmit="return confirm('Xóa khuyến mãi &quot;{{ $item->TenKM }}&quot;?')">
@@ -154,25 +167,61 @@
                 <form method="post" id="formKM" action="{{ route('admin.khuyenmai.store') }}">
                     @csrf
                     <div id="methodField"></div>
-                    <div class="mb-3">
-                        <label for="inputTen" class="form-label fw-semibold text-dark">Tên khuyến mãi <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="inputTen" name="TenKM" required>
+                    <div class="row">
+                        <div class="col-md-7 mb-3">
+                            <label class="form-label fw-semibold">Tên khuyến mãi <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="inputTen" name="TenKM" required placeholder="VD: Giảm giá mùa hè">
+                        </div>
+                        <div class="col-md-5 mb-3">
+                            <label class="form-label fw-semibold">Mã giảm giá</label>
+                            <input type="text" class="form-control" id="inputMaGiamGia" name="MaGiamGia" placeholder="VD: SUMMER2026">
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="inputGiam" class="form-label fw-semibold text-dark">Phần trăm giảm (%) <span class="text-danger">*</span></label>
-                        <input type="number" class="form-control" id="inputGiam" name="PhanTramGiam" required min="0" max="100">
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Phần trăm giảm (%) <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="inputGiam" name="PhanTramGiam" required min="1" max="100">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Đơn tối thiểu (₫)</label>
+                            <input type="number" class="form-control" id="inputMin" name="DieuKienToiThieu" value="0">
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="inputBD" class="form-label fw-semibold text-dark">Ngày bắt đầu</label>
-                        <input type="date" class="form-control" id="inputBD" name="NgayBatDau">
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Loại KM</label>
+                            <select name="LoaiKM" id="inputLoai" class="form-select" onchange="toggleDM()">
+                                <option value="ToanDon">Toàn đơn hàng</option>
+                                <option value="DanhMuc">Theo danh mục</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3" id="divDM" style="display:none">
+                            <label class="form-label fw-semibold">Danh mục áp dụng</label>
+                            <select name="MaDM" id="inputMaDM" class="form-select">
+                                <option value="">-- Tất cả sản phẩm --</option>
+                                @foreach($categories as $cat)
+                                    <option value="{{ $cat->MaDM }}">{{ $cat->TenDM }}</option>
+                                @endforeach
+                            </select>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="inputKT" class="form-label fw-semibold text-dark">Ngày kết thúc</label>
-                        <input type="date" class="form-control" id="inputKT" name="NgayKetThuc">
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Ngày bắt đầu</label>
+                            <input type="date" class="form-control" id="inputBD" name="NgayBatDau">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Ngày kết thúc</label>
+                            <input type="date" class="form-control" id="inputKT" name="NgayKetThuc">
+                        </div>
                     </div>
+
                     <div class="d-flex justify-content-end gap-2 mt-4">
                         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Hủy</button>
-                        <button type="submit" class="btn btn-primary shadow-sm"><span id="btnSubmitText">Thêm mới</span></button>
+                        <button type="submit" class="btn btn-primary shadow-sm px-4"><span id="btnSubmitText">Thêm mới</span></button>
                     </div>
                 </form>
             </div>
@@ -181,6 +230,11 @@
 </div>
 
 <script>
+    function toggleDM() {
+        const loai = document.getElementById('inputLoai').value;
+        document.getElementById('divDM').style.display = (loai === 'DanhMuc') ? 'block' : 'none';
+    }
+
     function openModalThem() {
         document.getElementById('modalTitle').textContent = 'Thêm Khuyến Mãi Mới';
         document.getElementById('btnSubmitText').textContent = 'Thêm mới';
@@ -190,9 +244,14 @@
         document.getElementById('inputGiam').value = '';
         document.getElementById('inputBD').value = '';
         document.getElementById('inputKT').value = '';
+        document.getElementById('inputMaGiamGia').value = '';
+        document.getElementById('inputMin').value = '0';
+        document.getElementById('inputLoai').value = 'ToanDon';
+        document.getElementById('inputMaDM').value = '';
+        toggleDM();
     }
     
-    function openModalSua(id, ten, giam, bd, kt) {
+    function openModalSua(id, ten, giam, bd, kt, loai, madm, min, maGG) {
         document.getElementById('modalTitle').textContent = 'Sửa Khuyến Mãi';
         document.getElementById('btnSubmitText').textContent = 'Cập nhật';
         document.getElementById('formKM').action = "/admin/khuyenmai/" + id;
@@ -201,6 +260,11 @@
         document.getElementById('inputGiam').value = giam;
         document.getElementById('inputBD').value = bd;
         document.getElementById('inputKT').value = kt;
+        document.getElementById('inputMaGiamGia').value = maGG;
+        document.getElementById('inputMin').value = min;
+        document.getElementById('inputLoai').value = loai;
+        document.getElementById('inputMaDM').value = madm;
+        toggleDM();
         const modal = new bootstrap.Modal(document.getElementById('modalKM'));
         modal.show();
     }

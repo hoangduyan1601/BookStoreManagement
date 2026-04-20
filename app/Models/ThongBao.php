@@ -20,4 +20,9 @@ class ThongBao extends Model
         'LienKet',
         'DaDoc',
     ];
+
+    public function khachHang()
+    {
+        return $this->belongsTo(KhachHang::class, 'MaKH', 'MaKH');
+    }
 }

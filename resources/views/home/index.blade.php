@@ -58,13 +58,13 @@
             @foreach($bestSellers as $sp)
             <div class="col">
                 <div class="product-card">
-                    <div class="img-box">
+                    <a href="{{ route('sanpham.detail', $sp->MaSP) }}" class="img-box">
                         <img src="{{ $sp->HinhAnh ? asset('assets/images/products/' . $sp->HinhAnh) : 'https://via.placeholder.com/400x600' }}">
                         <span class="badge-hot">HOT</span>
                         @if($sp->SoLuong <= 0) <span class="badge-out">HẾT HÀNG</span> @endif
-                    </div>
+                    </a>
                     <div class="card-details">
-                        <a href="{{ url('/san-pham/' . $sp->MaSP) }}" class="product-name">{{ $sp->TenSP }}</a>
+                        <a href="{{ route('sanpham.detail', $sp->MaSP) }}" class="product-name">{{ $sp->TenSP }}</a>
                         <div class="price-row">
                             <span class="price">{{ number_format($sp->DonGia, 0, ',', '.') }} đ</span>
                             <small class="text-muted" style="font-size: 10px;">Đã bán: {{ $sp->SoLuongDaBan }}</small>
@@ -89,14 +89,21 @@
             @foreach($sanphams as $sp)
             <div class="col">
                 <div class="product-card">
-                    <div class="img-box">
+                    <a href="{{ route('sanpham.detail', $sp->MaSP) }}" class="img-box">
                         <img src="{{ $sp->HinhAnh ? asset('assets/images/products/' . $sp->HinhAnh) : 'https://via.placeholder.com/400x600' }}">
                         @if($sp->SoLuong <= 0) <span class="badge-out">HẾT HÀNG</span> @endif
-                    </div>
+                    </a>
                     <div class="card-details">
-                        <a href="{{ url('/san-pham/' . $sp->MaSP) }}" class="product-name">{{ $sp->TenSP }}</a>
+                        <a href="{{ route('sanpham.detail', $sp->MaSP) }}" class="product-name">{{ $sp->TenSP }}</a>
                         <div class="price-row">
-                            <span class="price">{{ number_format($sp->DonGia, 0, ',', '.') }} đ</span>
+                            <div>
+                                @if($sp->khuyen_mai_active)
+                                    <span class="price text-danger">{{ number_format($sp->gia_hien_tai, 0, ',', '.') }} đ</span>
+                                    <small class="text-muted text-decoration-line-through" style="font-size: 11px;">{{ number_format($sp->DonGia, 0, ',', '.') }} đ</small>
+                                @else
+                                    <span class="price">{{ number_format($sp->DonGia, 0, ',', '.') }} đ</span>
+                                @endif
+                            </div>
                             <small class="text-muted" style="font-size: 10px;">Đã bán: {{ $sp->SoLuongDaBan ?? 0 }}</small>
                         </div>
                         @if($sp->SoLuong > 0)
@@ -134,12 +141,28 @@
 
 <script>
 function addToCartIndex(id) {
-    fetch(`{{ url('/cart/add') }}/${id}?qty=1`)
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    
+    fetch(`{{ url('/cart/add') }}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': csrfToken,
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+            id: id,
+            qty: 1
+        })
+    })
     .then(res => res.json())
     .then(data => {
         if(data.status === 'success') {
             alert('Đã thêm sản phẩm vào giỏ hàng!');
             location.reload(); 
+        } else if(data.status === 'login_required') {
+            alert(data.message);
+            window.location.href = "{{ route('login') }}";
         } else {
             alert(data.message);
         }

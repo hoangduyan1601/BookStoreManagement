@@ -30,9 +30,27 @@ class AdminThongBaoController extends Controller
             'NoiDung' => 'required',
         ]);
 
-        ThongBao::create($request->all());
+        $guiCho = $request->input('gui_cho');
+        $data = $request->only(['TieuDe', 'NoiDung', 'LoaiTB', 'LienKet']);
+        $data['NgayGui'] = now();
+        $data['TrangThaiDoc'] = false;
 
-        return redirect()->route('admin.thongbao.index')->with('success', 'Thêm thông báo thành công!');
+        if ($guiCho === 'all') {
+            $customers = \App\Models\KhachHang::all();
+            foreach ($customers as $kh) {
+                $item = $data;
+                $item['MaKH'] = $kh->MaKH;
+                ThongBao::create($item);
+            }
+            return redirect()->route('admin.thongbao.index')->with('success', 'Đã gửi thông báo cho tất cả khách hàng!');
+        } else {
+            $data['MaKH'] = $request->input('MaKH');
+            if (empty($data['MaKH'])) {
+                return back()->with('error', 'Vui lòng chọn khách hàng!');
+            }
+            ThongBao::create($data);
+            return redirect()->route('admin.thongbao.index')->with('success', 'Gửi thông báo thành công!');
+        }
     }
 
     public function edit($id)

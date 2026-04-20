@@ -188,12 +188,12 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach ($order->chiTietDonHang as $r)
+                                @foreach ($order->chiTietDonHangs as $r)
                                     <tr>
                                         <td class="fw-semibold">#{{ $r->MaSP }}</td>
                                         <td>
                                             <div class="fw-semibold" style="color: var(--text-primary);">
-                                                {{ $r->sanpham->TenSP ?? 'Sản phẩm đã xóa' }}
+                                                {{ $r->sanPham->TenSP ?? 'Sản phẩm đã xóa' }}
                                             </div>
                                         </td>
                                         <td class="text-center">

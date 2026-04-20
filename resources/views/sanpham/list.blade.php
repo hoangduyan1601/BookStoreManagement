@@ -89,7 +89,36 @@
 
 <script>
 function addToCart(id) {
-    // Implement add to cart logic or redirect to cart controller
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    
+    fetch(`{{ url('/cart/add') }}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': csrfToken,
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+            id: id,
+            qty: 1
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if(data.status === 'success') {
+            alert('Đã thêm sản phẩm vào giỏ hàng!');
+            location.reload(); 
+        } else if(data.status === 'login_required') {
+            alert(data.message);
+            window.location.href = "{{ route('login') }}";
+        } else {
+            alert(data.message);
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert('Có lỗi xảy ra, vui lòng thử lại.');
+    });
 }
 </script>
 @endsection

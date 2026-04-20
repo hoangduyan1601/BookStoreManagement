@@ -42,7 +42,7 @@ class AdminDonHangController extends Controller
 
     public function show($id)
     {
-        $order = DonHang::with(['khachHang', 'chiTietDonHang.sanpham', 'khuyenMai'])->findOrFail($id);
+        $order = DonHang::with(['khachHang', 'chiTietDonHangs.sanPham', 'khuyenMai'])->findOrFail($id);
         return view('admin.donhang.show', compact('order'));
     }
 

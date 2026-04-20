@@ -160,9 +160,39 @@
 
     function addToCartDetail(id) {
         let qty = document.getElementById('qty').value;
-        // Implement AJAX call to CartController
-        console.log("Add to cart:", id, "Qty:", qty);
-        // window.location.href = `{{ route('sanpham.index') }}?add-to-cart=${id}&qty=${qty}`;
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+        fetch(`{{ url('/cart/add') }}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                id: id,
+                qty: qty
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if(data.status === 'success') {
+                if(confirm('Đã thêm sản phẩm vào giỏ hàng! Bạn có muốn đến trang giỏ hàng ngay không?')) {
+                    window.location.href = "{{ url('/cart') }}";
+                } else {
+                    location.reload();
+                }
+            } else if(data.status === 'login_required') {
+                alert(data.message);
+                window.location.href = "{{ route('login') }}";
+            } else {
+                alert(data.message);
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Có lỗi xảy ra, vui lòng thử lại.');
+        });
     }
 </script>
 @endsection

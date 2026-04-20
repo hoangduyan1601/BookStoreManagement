@@ -107,14 +107,22 @@
             <a href="{{ route('sanpham.index') }}">Cửa hàng</a>
             
             <div class="user-utilities">
-                <a href="{{ url('/cart') }}" class="icon-link">
+                <a href="{{ url('/cart') }}" class="icon-link" title="Giỏ hàng">
                     <i class="fa-solid fa-cart-shopping"></i>
                     @auth
-                        <span class="badge-cart">{{ $cartCount ?? 0 }}</span>
+                        @if(isset($cartCount) && $cartCount > 0)
+                            <span class="badge-cart">{{ $cartCount }}</span>
+                        @endif
                     @endauth
                 </a>
 
                 @auth
+                    <a href="{{ route('customer.profile') }}#notifications" class="icon-link" title="Thông báo">
+                        <i class="fa-solid fa-bell"></i>
+                        @if(isset($unreadCount) && $unreadCount > 0)
+                            <span class="badge-cart bg-danger" style="background: #e74c3c !important;">{{ $unreadCount }}</span>
+                        @endif
+                    </a>
                     <a href="{{ route('customer.profile') }}" class="icon-link" title="Tài khoản của tôi">
                         <i class="fa-regular fa-user"></i>
                     </a>

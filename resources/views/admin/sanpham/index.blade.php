@@ -16,6 +16,12 @@
     .quantity-medium { background: #fef3c7; color: #92400e; }
     .quantity-low { background: #fee2e2; color: #991b1b; }
     .filter-bar { background: var(--bg-white); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; margin-bottom: 24px; }
+    
+    /* Pagination Styling */
+    .pagination { margin-bottom: 0; gap: 5px; justify-content: center; }
+    .pagination .page-item .page-link { border-radius: 8px; padding: 8px 16px; color: var(--text-primary); border: 1px solid var(--border-color); transition: all 0.2s; }
+    .pagination .page-item.active .page-link { background-color: #0d6efd; border-color: #0d6efd; color: white; }
+    .pagination .page-item .page-link:hover { background-color: var(--bg-light); }
 </style>
 
 <div class="container-fluid">
@@ -100,8 +106,14 @@
                                 <td class="text-muted">{{ $sp->danhmuc->TenDM ?? 'Chưa có' }}</td>
                                 <td class="text-muted">{{ $sp->nhaxuatban->TenNXB ?? 'Chưa có' }}</td>
                                 <td>
-                                    @if (!empty($sp->HinhAnh))
-                                        <img src="{{ asset('assets/images/products/' . $sp->HinhAnh) }}" width="60" height="60" class="rounded" style="object-fit: cover; border: 1px solid var(--border-color);">
+                                    @php
+                                        $displayImage = $sp->HinhAnh;
+                                        if (empty($displayImage) && $sp->hinhanhsanpham->count() > 0) {
+                                            $displayImage = $sp->hinhanhsanpham->first()->DuongDan;
+                                        }
+                                    @endphp
+                                    @if (!empty($displayImage))
+                                        <img src="{{ asset('assets/images/products/' . $displayImage) }}" width="60" height="60" class="rounded" style="object-fit: cover; border: 1px solid var(--border-color);">
                                     @else
                                         <div class="d-flex align-items-center justify-content-center rounded" style="width:60px;height:60px;background: var(--bg-light);border: 1px solid var(--border-color);"><i class="fas fa-image text-muted"></i></div>
                                     @endif

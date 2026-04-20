@@ -8,6 +8,20 @@
                 Xác nhận thanh toán
             </h4>
 
+            @if(session('success'))
+                <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+                    <i class="fa-solid fa-circle-check me-2"></i> {{ session('success') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+
+            @if(session('error'))
+                <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+                    <i class="fa-solid fa-circle-exclamation me-2"></i> {{ session('error') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+
             <div class="row">
                 <div class="col-md-7">
                     <h5 class="mb-3 fw-bold text-secondary">1. Thông tin giao hàng</h5>
@@ -54,7 +68,7 @@
                             <a href="{{ route('cart.index') }}" class="text-decoration-none text-secondary">
                                 <i class="fa-solid fa-arrow-left"></i> Quay lại giỏ hàng
                             </a>
-                            <button type="submit" class="btn btn-alpha px-4 py-2 fw-bold text-uppercase">
+                            <button type="submit" class="btn btn-danger px-4 py-2 fw-bold text-uppercase shadow-sm">
                                 Đặt hàng ngay
                             </button>
                         </div>
