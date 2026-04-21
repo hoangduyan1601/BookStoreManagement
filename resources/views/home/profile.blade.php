@@ -1,273 +1,138 @@
 @extends('layouts.app')
 
 @section('content')
-<style>
-    :root {
-        --primary-color: #4f46e5;
-        --secondary-color: #64748b;
-        --success-color: #10b981;
-        --warning-color: #f59e0b;
-        --danger-color: #ef4444;
-        --info-color: #0ea5e9;
-        --bg-light: #f8fafc;
-        --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    }
-
-    body {
-        background-color: var(--bg-light);
-    }
-
-    .profile-card {
-        border: none;
-        border-radius: 20px;
-        box-shadow: var(--card-shadow);
-        overflow: hidden;
-        transition: transform 0.3s ease;
-    }
-
-    .profile-card:hover {
-        transform: translateY(-5px);
-    }
-
-    .avatar-wrapper {
-        width: 100px;
-        height: 100px;
-        margin: 0 auto;
-        background: linear-gradient(135deg, var(--primary-color), #818cf8);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 50%;
-        color: white;
-        font-size: 2.5rem;
-        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
-    }
-
-    .nav-pills .nav-link {
-        color: var(--secondary-color);
-        font-weight: 500;
-        padding: 12px 24px;
-        transition: all 0.3s ease;
-        border-radius: 12px;
-    }
-
-    .nav-pills .nav-link.active {
-        background-color: var(--primary-color);
-        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
-    }
-
-    .table {
-        border-collapse: separate;
-        border-spacing: 0 8px;
-    }
-
-    .table tr {
-        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-        border-radius: 10px;
-    }
-
-    .table td, .table th {
-        border: none;
-        padding: 16px;
-    }
-
-    .table tbody tr {
-        background: white;
-        transition: all 0.2s ease;
-    }
-
-    .table tbody tr:hover {
-        background: #f1f5f9;
-        transform: scale(1.01);
-    }
-
-    .status-badge {
-        padding: 6px 12px;
-        border-radius: 8px;
-        font-size: 0.75rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    /* Modal Styling */
-    .modal-content {
-        border-radius: 24px;
-        overflow: hidden;
-    }
-
-    .receipt-header {
-        background: linear-gradient(135deg, #1e293b, #334155);
-        color: white;
-        padding: 30px;
-    }
-
-    .order-item-img {
-        width: 60px;
-        height: 60px;
-        object-fit: cover;
-        border-radius: 12px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-
-    .notification-item {
-        border-left: 4px solid transparent;
-        transition: all 0.2s;
-    }
-
-    .notification-item.unread {
-        border-left-color: var(--primary-color);
-        background-color: #f0f7ff;
-    }
-
-    .notification-item:hover {
-        background-color: #f8fafc;
-    }
-</style>
-
 <div class="container py-5">
-    <div class="row">
+    <div class="row g-4">
         <!-- Sidebar -->
-        <div class="col-lg-4 mb-4">
-            <div class="card profile-card bg-white">
-                <div class="card-body p-4 text-center">
-                    <div class="avatar-wrapper mb-3">
-                        <i class="fa-solid fa-user"></i>
+        <div class="col-lg-4">
+            <div class="card border-0 rounded-4 shadow-sm overflow-hidden" style="background: #fff;">
+                <div class="p-5 text-center" style="background: var(--bg-soft);">
+                    <div class="avatar-wrapper mb-3" style="width: 120px; height: 120px; margin: 0 auto; background: white; border: 5px solid white; box-shadow: 0 10px 20px rgba(0,0,0,0.05);">
+                        <i class="fa-solid fa-user-tie text-dark fs-1"></i>
                     </div>
                     <h4 class="fw-bold text-dark mb-1">{{ $customer->HoTen }}</h4>
-                    <span class="badge bg-primary-subtle text-primary mb-3">Khách hàng thân thiết</span>
-                    
-                    <div class="text-start mt-4">
-                        <div class="d-flex align-items-center mb-3">
-                            <div class="bg-light p-2 rounded-3 me-3"><i class="fa-solid fa-envelope text-primary"></i></div>
-                            <div><small class="text-muted d-block">Email</small><span class="fw-semibold">{{ $customer->Email }}</span></div>
+                    <span class="badge rounded-pill px-3 py-2" style="background: rgba(175, 146, 69, 0.1); color: var(--gold-primary); font-size: 0.7rem;">MEMBER SINCE {{ date('Y', strtotime($customer->NgayDangKy)) }}</span>
+                </div>
+                
+                <div class="card-body p-4">
+                    <div class="info-list">
+                        <div class="d-flex align-items-center mb-4">
+                            <div class="icon-box bg-light rounded-3 p-3 me-3 text-dark"><i class="fa-solid fa-envelope"></i></div>
+                            <div>
+                                <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.65rem; letter-spacing: 1px;">Email Address</small>
+                                <span class="fw-bold">{{ $customer->Email }}</span>
+                            </div>
                         </div>
-                        <div class="d-flex align-items-center mb-3">
-                            <div class="bg-light p-2 rounded-3 me-3"><i class="fa-solid fa-phone text-success"></i></div>
-                            <div><small class="text-muted d-block">Điện thoại</small><span class="fw-semibold">{{ $customer->SDT }}</span></div>
+                        <div class="d-flex align-items-center mb-4">
+                            <div class="icon-box bg-light rounded-3 p-3 me-3 text-dark"><i class="fa-solid fa-phone"></i></div>
+                            <div>
+                                <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.65rem; letter-spacing: 1px;">Phone Number</small>
+                                <span class="fw-bold">{{ $customer->SDT }}</span>
+                            </div>
                         </div>
                         <div class="d-flex align-items-center mb-0">
-                            <div class="bg-light p-2 rounded-3 me-3"><i class="fa-solid fa-location-dot text-danger"></i></div>
-                            <div><small class="text-muted d-block">Địa chỉ</small><span class="fw-semibold">{{ $customer->DiaChi }}</span></div>
+                            <div class="icon-box bg-light rounded-3 p-3 me-3 text-dark"><i class="fa-solid fa-location-dot"></i></div>
+                            <div>
+                                <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.65rem; letter-spacing: 1px;">Delivery Address</small>
+                                <span class="fw-bold">{{ $customer->DiaChi }}</span>
+                            </div>
                         </div>
                     </div>
-                    
-                    <hr class="my-4 opacity-50">
-                    <button class="btn btn-primary w-100 rounded-pill py-2 fw-bold shadow-sm">
-                        <i class="fa-solid fa-gear me-2"></i>Cài đặt tài khoản
+                    <button class="btn btn-dark w-100 rounded-pill py-3 mt-5 fw-bold shadow-sm">
+                        <i class="fa-solid fa-user-gear me-2"></i> CHỈNH SỬA HỒ SƠ
                     </button>
                 </div>
             </div>
         </div>
 
-        <!-- Content -->
+        <!-- Main Content -->
         <div class="col-lg-8">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h3 class="fw-bold mb-0 text-dark">Trung tâm cá nhân</h3>
-                <div class="text-muted small">Chào mừng trở lại, {{ $customer->HoTen }}!</div>
+            <div class="glass-panel p-2 rounded-4 mb-4 d-inline-flex bg-white shadow-sm border-0">
+                <ul class="nav nav-pills" id="pills-tab" role="tablist">
+                    <li class="nav-item">
+                        <button class="nav-link active rounded-pill px-4 py-2 fw-bold" id="orders-tab" data-bs-toggle="pill" data-bs-target="#pills-orders" type="button">
+                            <i class="fa-solid fa-shopping-bag me-2"></i> ĐƠN HÀNG
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link rounded-pill px-4 py-2 fw-bold" id="notis-tab" data-bs-toggle="pill" data-bs-target="#pills-notis" type="button">
+                            <i class="fa-solid fa-bell me-2"></i> THÔNG BÁO
+                            @if($unreadCount > 0) <span class="badge bg-danger ms-2" id="unread-badge">{{ $unreadCount }}</span> @endif
+                        </button>
+                    </li>
+                </ul>
             </div>
-
-            <ul class="nav nav-pills mb-4 bg-white p-2 rounded-4 shadow-sm" id="pills-tab" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="pills-orders-tab" data-bs-toggle="pill" data-bs-target="#pills-orders" type="button" role="tab">
-                        <i class="fa-solid fa-bag-shopping me-2"></i>Đơn hàng
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link position-relative" id="pills-notifications-tab" data-bs-toggle="pill" data-bs-target="#pills-notifications" type="button" role="tab">
-                        <i class="fa-solid fa-bell me-2"></i>Thông báo
-                        @if($unreadCount > 0)
-                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="unread-badge">
-                                {{ $unreadCount }}
-                            </span>
-                        @endif
-                    </button>
-                </li>
-            </ul>
 
             <div class="tab-content" id="pills-tabContent">
                 <!-- Orders Tab -->
-                <div class="tab-pane fade show active" id="pills-orders" role="tabpanel">
-                    @if($orders->isEmpty())
-                        <div class="card profile-card bg-white text-center py-5">
-                            <i class="fa-solid fa-box-open fa-4x text-light mb-3"></i>
-                            <h5 class="text-muted">Bạn chưa có đơn hàng nào</h5>
-                            <a href="{{ route('sanpham.index') }}" class="btn btn-primary rounded-pill mt-3 px-4">Mua sắm ngay</a>
+                <div class="tab-pane fade show active" id="pills-orders">
+                    <div class="card border-0 rounded-4 shadow-sm overflow-hidden" style="background: #fff;">
+                        <div class="card-header bg-white p-4 border-0">
+                            <h5 class="fw-bold mb-0">Lịch Sử Mua Hàng</h5>
                         </div>
-                    @else
                         <div class="table-responsive">
-                            <table class="table align-middle">
-                                <thead>
-                                    <tr class="text-secondary small text-uppercase">
-                                        <th class="ps-4">Đơn hàng</th>
-                                        <th>Ngày đặt</th>
-                                        <th>Tổng cộng</th>
-                                        <th>Trạng thái</th>
-                                        <th class="text-center">Thao tác</th>
+                            <table class="table align-middle mb-0">
+                                <thead class="bg-light">
+                                    <tr class="text-uppercase small fw-bold text-muted" style="letter-spacing: 1px;">
+                                        <th class="ps-4">Mã Đơn</th>
+                                        <th>Ngày Đặt</th>
+                                        <th>Tổng Tiền</th>
+                                        <th>Trạng Thái</th>
+                                        <th class="text-center">Thao Tác</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach($orders as $order)
                                     <tr>
-                                        <td class="ps-4">
-                                            <span class="fw-bold text-dark">#{{ $order->MaDH }}</span>
-                                        </td>
-                                        <td>
-                                            <div class="text-dark fw-medium">{{ date('d/m/Y', strtotime($order->NgayDat)) }}</div>
-                                            <small class="text-muted">{{ date('H:i', strtotime($order->NgayDat)) }}</small>
-                                        </td>
-                                        <td>
-                                            <span class="text-primary fw-bold">{{ number_format($order->TongTien, 0, ',', '.') }}₫</span>
-                                        </td>
+                                        <td class="ps-4 fw-bold">#ORD-{{ $order->MaDH }}</td>
+                                        <td>{{ date('d/m/Y', strtotime($order->NgayDat)) }}</td>
+                                        <td class="fw-bold text-dark">{{ number_format($order->TongTien, 0, ',', '.') }}₫</td>
                                         <td>
                                             @php
-                                                $statusMap = [
-                                                    'ChoXacNhan' => ['bg-warning-subtle', 'text-warning', 'Chờ xác nhận'],
-                                                    'DaXacNhan'  => ['bg-info-subtle', 'text-info', 'Đã xác nhận'],
-                                                    'DangGiao'   => ['bg-primary-subtle', 'text-primary', 'Đang giao'],
-                                                    'DaGiao'     => ['bg-success-subtle', 'text-success', 'Đã giao'],
-                                                    'DaHuy'      => ['bg-danger-subtle', 'text-danger', 'Đã hủy'],
-                                                ];
-                                                $s = $statusMap[$order->TrangThai] ?? ['bg-secondary-subtle', 'text-secondary', $order->TrangThai];
+                                                $s = match($order->TrangThai) {
+                                                    'ChoXacNhan' => ['#fffbeb', '#92400e', 'Chờ xác nhận'],
+                                                    'DaXacNhan'  => ['#eff6ff', '#1e40af', 'Đã xác nhận'],
+                                                    'DangGiao'   => ['#f0f9ff', '#0369a1', 'Đang giao'],
+                                                    'DaGiao'     => ['#f0fdf4', '#166534', 'Đã giao'],
+                                                    'DaHuy'      => ['#fef2f2', '#991b1b', 'Đã hủy'],
+                                                    default      => ['#f9fafb', '#374151', $order->TrangThai]
+                                                };
                                             @endphp
-                                            <span class="status-badge {{ $s[0] }} {{ $s[1] }}">{{ $s[2] }}</span>
+                                            <span class="badge px-3 py-2 rounded-pill" style="background: {{ $s[0] }}; color: {{ $s[1] }}; font-size: 0.7rem;">{{ $s[2] }}</span>
                                         </td>
                                         <td class="text-center">
-                                            <button onclick="viewOrderDetail({{ $order->MaDH }})" class="btn btn-sm btn-white border rounded-3 shadow-sm px-3">
-                                                Chi tiết
-                                            </button>
+                                            <button onclick="viewOrderDetail({{ $order->MaDH }})" class="btn btn-sm btn-outline-dark rounded-pill px-3">Chi tiết</button>
                                         </td>
                                     </tr>
                                     @endforeach
                                 </tbody>
                             </table>
                         </div>
-                    @endif
+                    </div>
                 </div>
 
-                <!-- Notifications Tab -->
-                <div class="tab-pane fade" id="pills-notifications" role="tabpanel">
-                    <div class="card profile-card bg-white">
-                        <div class="card-header bg-transparent border-0 p-4 d-flex justify-content-between align-items-center">
-                            <h5 class="fw-bold mb-0">Thông báo mới nhất</h5>
+                <!-- Notis Tab -->
+                <div class="tab-pane fade" id="pills-notis">
+                    <div class="card border-0 rounded-4 shadow-sm" style="background: #fff;">
+                        <div class="card-header bg-white p-4 border-0 d-flex justify-content-between align-items-center">
+                            <h5 class="fw-bold mb-0">Thông Báo Của Tôi</h5>
                             @if($unreadCount > 0)
-                                <button onclick="markAllAsRead()" class="btn btn-sm btn-link text-primary text-decoration-none p-0">Đánh dấu tất cả là đã đọc</button>
+                                <button onclick="markAllAsRead()" class="btn btn-link text-dark fw-bold text-decoration-none small">Đánh dấu đã đọc</button>
                             @endif
                         </div>
-                        <div class="list-group list-group-flush" id="notification-list">
-                            @php $user_notifications = \App\Models\ThongBao::where('MaKH', $customer->MaKH)->orderBy('NgayGui', 'desc')->take(10)->get(); @endphp
+                        <div class="list-group list-group-flush">
+                            @php $user_notifications = \App\Models\ThongBao::where('MaKH', $customer->MaKH)->orderBy('NgayGui', 'desc')->get(); @endphp
                             @forelse($user_notifications as $tb)
-                                <div id="noti-{{ $tb->MaTB }}" 
-                                     class="list-group-item notification-item p-4 {{ $tb->TrangThaiDoc ? '' : 'unread' }}"
-                                     onclick="markAsRead({{ $tb->MaTB }}, '{{ $tb->LienKet }}')" style="cursor: pointer;">
-                                    <div class="d-flex justify-content-between align-items-start mb-1">
-                                        <h6 class="fw-bold mb-0 {{ $tb->TrangThaiDoc ? 'text-secondary' : 'text-dark' }}">{{ $tb->TieuDe }}</h6>
-                                        <span class="small text-muted">{{ date('d/m/H i:s', strtotime($tb->NgayGui)) }}</span>
+                                <div id="noti-{{ $tb->MaTB }}" class="list-group-item p-4 border-0 mb-2 rounded-4 mx-3 {{ $tb->TrangThaiDoc ? 'opacity-75' : 'bg-light border-start border-4 border-dark' }}" 
+                                     style="cursor: pointer; transition: 0.3s;" onclick="markAsRead({{ $tb->MaTB }}, '{{ $tb->LienKet }}')">
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <h6 class="fw-bold mb-0">{{ $tb->TieuDe }}</h6>
+                                        <small class="text-muted">{{ date('d/m/Y', strtotime($tb->NgayGui)) }}</small>
                                     </div>
                                     <p class="mb-0 text-secondary small">{{ $tb->NoiDung }}</p>
                                 </div>
                             @empty
-                                <div class="p-5 text-center text-muted">Không có thông báo nào</div>
+                                <div class="text-center py-5"><p class="text-muted">Không có thông báo mới.</p></div>
                             @endforelse
                         </div>
                     </div>
@@ -276,6 +141,12 @@
         </div>
     </div>
 </div>
+
+<style>
+    .nav-pills .nav-link { color: #64748b; }
+    .nav-pills .nav-link.active { background: var(--text-main) !important; color: white !important; }
+    .table tbody tr:hover { background: #fafafa; }
+</style>
 
 <!-- Modal Chi tiết đơn hàng chuyên nghiệp -->
 <div class="modal fade" id="orderModal" tabindex="-1" aria-hidden="true">

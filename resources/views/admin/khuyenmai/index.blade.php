@@ -3,163 +3,119 @@
 @section('title', 'Quản Lý Khuyến Mãi')
 
 @section('content')
-<style>
-    .table-card {
-        background: var(--bg-white);
-        border: 1px solid var(--border-color);
-        border-radius: 12px;
-        overflow: hidden;
-    }
-
-    .table thead {
-        background: var(--bg-light);
-        border-bottom: 2px solid var(--border-color);
-    }
-
-    .table thead th {
-        font-weight: 600;
-        color: var(--text-primary);
-        font-size: 0.875rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        padding: 16px;
-        border: none;
-    }
-
-    .table tbody td {
-        padding: 16px;
-        vertical-align: middle;
-        border-bottom: 1px solid var(--border-color);
-    }
-
-    .table tbody tr:hover {
-        background: var(--bg-light);
-    }
-
-    .btn-action {
-        padding: 6px 12px;
-        border-radius: 6px;
-        font-size: 0.8rem;
-        border: 1px solid var(--border-color);
-        transition: all 0.2s;
-    }
-
-    .btn-action:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-</style>
-
-<div class="container-fluid">
-    <!-- Page Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="mb-1 fw-semibold" style="color: var(--text-primary); font-size: 1.75rem;">
-                Quản Lý Khuyến Mãi
-            </h2>
-            <p class="text-muted mb-0" style="font-size: 0.9rem;">Tổng cộng: <strong>{{ $list->count() }}</strong> khuyến mãi</p>
-        </div>
-        <button type="button" class="btn btn-primary btn-lg shadow-sm" data-bs-toggle="modal" data-bs-target="#modalKM" onclick="openModalThem()">
-            <i class="fas fa-plus me-2"></i>Thêm khuyến mãi
+<div class="d-md-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h3 class="mb-0 fw-bold">Quản Lý Khuyến Mãi</h3>
+        <p class="text-muted small mb-0">Tổng cộng: <strong>{{ $list->count() }}</strong> chương trình đang chạy</p>
+    </div>
+    <div class="mt-3 mt-md-0">
+        <button type="button" class="btn btn-luxury-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#modalKM" onclick="openModalThem()">
+            <i class="fas fa-plus me-2"></i>Thêm khuyến mãi mới
         </button>
     </div>
-
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
-
-    @if ($errors->any())
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <ul class="mb-0">
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
-
-    @if ($list->count() > 0)
-        <div class="table-card">
-            <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead>
-                        <tr>
-                            <th width="5%">#</th>
-                            <th>Tên KM / Mã</th>
-                            <th>Loại / Danh mục</th>
-                            <th>Giảm (%)</th>
-                            <th>ĐK tối thiểu</th>
-                            <th>Hiệu lực</th>
-                            <th width="12%" class="text-center">Hành động</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($list as $index => $item)
-                            <tr>
-                                <td class="text-muted fw-semibold">{{ $index + 1 }}</td>
-                                <td>
-                                    <div class="fw-bold" style="color: var(--text-primary);">{{ $item->TenKM }}</div>
-                                    @if($item->MaGiamGia)
-                                        <span class="badge bg-light text-dark border">Mã: {{ $item->MaGiamGia }}</span>
-                                    @endif
-                                </td>
-                                <td>
-                                    <span class="small">{{ $item->LoaiKM == 'DanhMuc' ? 'Theo danh mục' : 'Toàn đơn hàng' }}</span>
-                                    @if($item->LoaiKM == 'DanhMuc' && $item->danhMuc)
-                                        <div class="small text-muted">({{ $item->danhMuc->TenDM }})</div>
-                                    @endif
-                                </td>
-                                <td><span class="badge bg-success">{{ $item->PhanTramGiam }}%</span></td>
-                                <td>{{ number_format($item->DieuKienToiThieu) }}₫</td>
-                                <td class="small">
-                                    <div>Từ: {{ $item->NgayBatDau ? date('d/m/Y', strtotime($item->NgayBatDau)) : '...' }}</div>
-                                    <div>Đến: {{ $item->NgayKetThuc ? date('d/m/Y', strtotime($item->NgayKetThuc)) : '...' }}</div>
-                                </td>
-                                <td class="text-center">
-                                    <div class="d-flex justify-content-center gap-2">
-                                        <button type="button" 
-                                                class="btn btn-warning btn-action" 
-                                                title="Sửa"
-                                                onclick="openModalSua('{{ $item->MaKM }}', '{{ addslashes($item->TenKM) }}', '{{ $item->PhanTramGiam }}', '{{ $item->NgayBatDau ? date('Y-m-d', strtotime($item->NgayBatDau)) : '' }}', '{{ $item->NgayKetThuc ? date('Y-m-d', strtotime($item->NgayKetThuc)) : '' }}', '{{ $item->LoaiKM }}', '{{ $item->MaDM }}', '{{ $item->DieuKienToiThieu }}', '{{ $item->MaGiamGia }}')">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <form action="{{ route('admin.khuyenmai.destroy', $item->MaKM) }}" method="POST" onsubmit="return confirm('Xóa khuyến mãi &quot;{{ $item->TenKM }}&quot;?')">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-action" style="background: #fee2e2; color: #991b1b; border-color: #fecaca;" title="Xóa">
-                                                <i class="fas fa-trash-alt"></i>
-                                            </button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    @else
-        <div class="table-card text-center py-5">
-            <i class="fas fa-percentage" style="font-size: 3rem; color: var(--text-light); margin-bottom: 1rem;"></i>
-            <h5 style="color: var(--text-secondary); margin-bottom: 0.5rem;">Chưa có khuyến mãi nào</h5>
-            <button type="button" class="btn btn-primary btn-lg shadow-sm" data-bs-toggle="modal" data-bs-target="#modalKM" onclick="openModalThem()">
-                <i class="fas fa-plus me-2"></i>Thêm khuyến mãi
-            </button>
-        </div>
-    @endif
 </div>
+
+@if(session('success'))
+    <div class="alert alert-success border-0 shadow-sm rounded-3 mb-4 d-flex align-items-center" role="alert">
+        <i class="fas fa-check-circle me-2"></i>
+        <div>{{ session('success') }}</div>
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+    </div>
+@endif
+
+@if ($list->count() > 0)
+    <div class="table-custom-container">
+        <div class="table-responsive">
+            <table class="table-custom">
+                <thead>
+                    <tr>
+                        <th width="5%">#</th>
+                        <th>Chương trình / Mã</th>
+                        <th>Áp dụng</th>
+                        <th class="text-center">Giảm (%)</th>
+                        <th>ĐK tối thiểu</th>
+                        <th>Thời gian</th>
+                        <th width="12%" class="text-center">Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($list as $index => $item)
+                        <tr>
+                            <td class="text-muted fw-bold">{{ $index + 1 }}</td>
+                            <td>
+                                <div class="fw-bold text-main">{{ $item->TenKM }}</div>
+                                @if($item->MaGiamGia)
+                                    <span class="badge bg-primary bg-opacity-10 text-primary border-0 small mt-1">CODE: {{ $item->MaGiamGia }}</span>
+                                @endif
+                            </td>
+                            <td>
+                                @if($item->LoaiKM == 'DanhMuc' && $item->danhMuc)
+                                    <span class="text-muted small">Danh mục: <strong>{{ $item->danhMuc->TenDM }}</strong></span>
+                                @else
+                                    <span class="text-muted small">Toàn cửa hàng</span>
+                                @endif
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-success bg-opacity-10 text-success badge-luxury">{{ $item->PhanTramGiam }}%</span>
+                            </td>
+                            <td><span class="fw-bold">{{ number_format($item->DieuKienToiThieu) }}₫</span></td>
+                            <td>
+                                <div class="small">
+                                    <span class="text-muted">Từ:</span> {{ $item->NgayBatDau ? date('d/m/Y', strtotime($item->NgayBatDau)) : '...' }}<br>
+                                    <span class="text-muted">Đến:</span> {{ $item->NgayKetThuc ? date('d/m/Y', strtotime($item->NgayKetThuc)) : '...' }}
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <div class="dropdown">
+                                    <button class="btn btn-light btn-sm border-0 rounded-circle p-2" data-bs-toggle="dropdown">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    <ul class="dropdown-menu glass-card border-0 shadow-lg p-2">
+                                        <li>
+                                            <button type="button" class="dropdown-item rounded-2 py-2" 
+                                                    onclick="openModalSua('{{ $item->MaKM }}', '{{ addslashes($item->TenKM) }}', '{{ $item->PhanTramGiam }}', '{{ $item->NgayBatDau ? date('Y-m-d', strtotime($item->NgayBatDau)) : '' }}', '{{ $item->NgayKetThuc ? date('Y-m-d', strtotime($item->NgayKetThuc)) : '' }}', '{{ $item->LoaiKM }}', '{{ $item->MaDM }}', '{{ $item->DieuKienToiThieu }}', '{{ $item->MaGiamGia }}')">
+                                                <i class="fas fa-edit me-2 text-warning"></i> Chỉnh sửa
+                                            </button>
+                                        </li>
+                                        <li><hr class="dropdown-divider opacity-50"></li>
+                                        <li>
+                                            <form action="{{ route('admin.khuyenmai.destroy', $item->MaKM) }}" method="POST" onsubmit="return confirm('Xóa khuyến mãi &quot;{{ $item->TenKM }}&quot;?')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="dropdown-item rounded-2 py-2 text-danger">
+                                                    <i class="fas fa-trash me-2"></i> Xóa KM
+                                                </button>
+                                            </form>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
+@else
+    <div class="admin-card text-center py-5">
+        <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-4" style="width: 80px; height: 80px;">
+            <i class="fas fa-percentage fs-1 text-muted"></i>
+        </div>
+        <h5 class="fw-bold">Chưa có khuyến mãi nào</h5>
+        <p class="text-muted mb-4">Hãy tạo chương trình khuyến mãi đầu tiên của bạn.</p>
+        <button type="button" class="btn btn-luxury-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#modalKM" onclick="openModalThem()">
+            <i class="fas fa-plus me-2"></i>Thêm khuyến mãi mới
+        </button>
+    </div>
+@endif
 
 <!-- Modal Thêm/Sửa -->
 <div class="modal fade" id="modalKM" tabindex="-1" aria-labelledby="modalKMLabel" aria-hidden="true" data-bs-backdrop="static">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 1rem; overflow: hidden;">
-            <div class="modal-header bg-white border-bottom border-light p-4">
-                <h5 class="modal-title fw-bold text-dark" id="modalKMLabel">
-                    <i class="fas fa-percentage me-2 text-primary"></i><span id="modalTitle">Thêm Khuyến Mãi Mới</span>
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content glass-card border-0">
+            <div class="modal-header border-bottom border-light p-4">
+                <h5 class="modal-title fw-bold" id="modalKMLabel">
+                    <i class="fas fa-percentage me-2 text-luxury-gold"></i><span id="modalTitle">Thêm Khuyến Mãi Mới</span>
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
@@ -167,61 +123,64 @@
                 <form method="post" id="formKM" action="{{ route('admin.khuyenmai.store') }}">
                     @csrf
                     <div id="methodField"></div>
-                    <div class="row">
-                        <div class="col-md-7 mb-3">
-                            <label class="form-label fw-semibold">Tên khuyến mãi <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="inputTen" name="TenKM" required placeholder="VD: Giảm giá mùa hè">
+                    
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label class="admin-form-label">Tên khuyến mãi <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control form-control-luxury" id="inputTen" name="TenKM" required placeholder="VD: Giảm giá mùa hè">
                         </div>
-                        <div class="col-md-5 mb-3">
-                            <label class="form-label fw-semibold">Mã giảm giá</label>
-                            <input type="text" class="form-control" id="inputMaGiamGia" name="MaGiamGia" placeholder="VD: SUMMER2026">
+                        <div class="col-md-4">
+                            <label class="admin-form-label">Mã code</label>
+                            <input type="text" class="form-control form-control-luxury" id="inputMaGiamGia" name="MaGiamGia" placeholder="SUMMER26">
                         </div>
-                    </div>
 
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label fw-semibold">Phần trăm giảm (%) <span class="text-danger">*</span></label>
-                            <input type="number" class="form-control" id="inputGiam" name="PhanTramGiam" required min="1" max="100">
+                        <div class="col-md-6">
+                            <label class="admin-form-label">Phần trăm giảm (%) <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <input type="number" class="form-control form-control-luxury border-end-0" id="inputGiam" name="PhanTramGiam" required min="1" max="100">
+                                <span class="input-group-text bg-light border-start-0 text-muted">%</span>
+                            </div>
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label fw-semibold">Đơn tối thiểu (₫)</label>
-                            <input type="number" class="form-control" id="inputMin" name="DieuKienToiThieu" value="0">
+                        <div class="col-md-6">
+                            <label class="admin-form-label">Đơn tối thiểu (₫)</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control form-control-luxury border-end-0" id="inputMin" name="DieuKienToiThieu" value="0">
+                                <span class="input-group-text bg-light border-start-0 text-muted">₫</span>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label fw-semibold">Loại KM</label>
-                            <select name="LoaiKM" id="inputLoai" class="form-select" onchange="toggleDM()">
+                        <div class="col-md-6">
+                            <label class="admin-form-label">Loại KM</label>
+                            <select name="LoaiKM" id="inputLoai" class="form-select form-control-luxury" onchange="toggleDM()">
                                 <option value="ToanDon">Toàn đơn hàng</option>
                                 <option value="DanhMuc">Theo danh mục</option>
                             </select>
                         </div>
-                        <div class="col-md-6 mb-3" id="divDM" style="display:none">
-                            <label class="form-label fw-semibold">Danh mục áp dụng</label>
-                            <select name="MaDM" id="inputMaDM" class="form-select">
-                                <option value="">-- Tất cả sản phẩm --</option>
+                        <div class="col-md-6" id="divDM" style="display:none">
+                            <label class="admin-form-label">Danh mục áp dụng</label>
+                            <select name="MaDM" id="inputMaDM" class="form-select form-control-luxury">
+                                <option value="">-- Tất cả danh mục --</option>
                                 @foreach($categories as $cat)
                                     <option value="{{ $cat->MaDM }}">{{ $cat->TenDM }}</option>
                                 @endforeach
                             </select>
                         </div>
-                    </div>
 
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label fw-semibold">Ngày bắt đầu</label>
-                            <input type="date" class="form-control" id="inputBD" name="NgayBatDau">
+                        <div class="col-md-6">
+                            <label class="admin-form-label">Ngày bắt đầu</label>
+                            <input type="date" class="form-control form-control-luxury" id="inputBD" name="NgayBatDau">
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label fw-semibold">Ngày kết thúc</label>
-                            <input type="date" class="form-control" id="inputKT" name="NgayKetThuc">
+                        <div class="col-md-6">
+                            <label class="admin-form-label">Ngày kết thúc</label>
+                            <input type="date" class="form-control form-control-luxury" id="inputKT" name="NgayKetThuc">
                         </div>
                     </div>
 
                     <div class="d-flex justify-content-end gap-2 mt-4">
-                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Hủy</button>
-                        <button type="submit" class="btn btn-primary shadow-sm px-4"><span id="btnSubmitText">Thêm mới</span></button>
+                        <button type="button" class="btn btn-luxury-outline" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-luxury-primary px-4">
+                            <i class="fas fa-save me-2"></i><span id="btnSubmitText">Thêm mới</span>
+                        </button>
                     </div>
                 </form>
             </div>

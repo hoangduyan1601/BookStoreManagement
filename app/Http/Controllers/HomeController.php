@@ -6,6 +6,8 @@ use App\Models\SanPham;
 use App\Models\DanhMuc;
 use Illuminate\Http\Request;
 
+use Illuminate\Support\Facades\Auth;
+
 class HomeController extends Controller
 {
     public function index()
@@ -19,7 +21,8 @@ class HomeController extends Controller
 
     public function profile()
     {
-        $user = auth()->user();
+        /** @var \App\Models\TaiKhoan $user */
+        $user = Auth::user();
         
         // Lấy khách hàng liên kết với tài khoản này
         $customer = \App\Models\KhachHang::where('MaTK', $user->MaTK)->first();
@@ -49,7 +52,8 @@ class HomeController extends Controller
 
     public function markAllRead()
     {
-        $user = auth()->user();
+        /** @var \App\Models\TaiKhoan $user */
+        $user = Auth::user();
         $khachHang = \App\Models\KhachHang::where('MaTK', $user->MaTK)->first();
         if ($khachHang) {
             \App\Models\ThongBao::where('MaKH', $khachHang->MaKH)
@@ -64,7 +68,8 @@ class HomeController extends Controller
         $order = \App\Models\DonHang::with(['khachHang', 'chiTietDonHangs.sanPham'])->findOrFail($id);
         
         // Kiểm tra quyền (chỉ chủ đơn hàng hoặc admin mới được xem)
-        $user = auth()->user();
+        /** @var \App\Models\TaiKhoan $user */
+        $user = Auth::user();
         $khachHang = \App\Models\KhachHang::where('MaTK', $user->MaTK)->first();
         
         if ($user->VaiTro !== 'Admin' && (!$khachHang || $order->MaKH !== $khachHang->MaKH)) {

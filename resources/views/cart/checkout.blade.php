@@ -1,190 +1,163 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container mt-5 mb-5">
-    <div class="card shadow-sm border-0">
-        <div class="card-body p-4">
-            <h4 class="fw-bold mb-4 text-uppercase border-start border-4 border-danger ps-3">
-                Xác nhận thanh toán
-            </h4>
+<div class="container py-5">
+    <div class="d-flex align-items-center mb-5 pb-2" style="border-bottom: 2px solid var(--gold-primary);">
+        <h2 class="font-luxury fw-bold m-0 text-dark">HOÀN TẤT ĐƠN HÀNG</h2>
+    </div>
 
-            @if(session('success'))
-                <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
-                    <i class="fa-solid fa-circle-check me-2"></i> {{ session('success') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
+    @if(session('error'))
+        <div class="alert alert-danger alert-dismissible fade show rounded-4 border-0 shadow-sm mb-5" role="alert" style="background: #fef2f2; color: #991b1b;">
+            <i class="fa-solid fa-circle-exclamation me-2"></i> {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
 
-            @if(session('error'))
-                <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
-                    <i class="fa-solid fa-circle-exclamation me-2"></i> {{ session('error') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
-
-            <div class="row">
-                <div class="col-md-7">
-                    <h5 class="mb-3 fw-bold text-secondary">1. Thông tin giao hàng</h5>
-                    
-                    <form method="POST" action="{{ route('checkout.process') }}">
-                        @csrf
-                        <div class="mb-3">
-                            <label class="form-label fw-bold small">Họ và tên người nhận</label>
-                            <input type="text" name="fullname" class="form-control" 
-                                   value="{{ $khachHang->HoTen ?? '' }}" required>
+    <div class="row g-5">
+        <div class="col-lg-7">
+            <h5 class="font-luxury fw-bold mb-4 text-dark text-uppercase small" style="letter-spacing: 1px;">1. Địa Chỉ Giao Hàng</h5>
+            
+            <div class="glass-panel p-4 rounded-4 bg-white shadow-sm border-0 mb-5">
+                <form method="POST" action="{{ route('checkout.process') }}" id="checkout-form">
+                    @csrf
+                    <div class="row g-3">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold small text-muted">HỌ VÀ TÊN NGƯỜI NHẬN</label>
+                            <input type="text" name="fullname" class="form-control rounded-pill px-4 py-2 border" 
+                                   value="{{ $khachHang->HoTen ?? '' }}" required style="background: var(--bg-soft);">
                         </div>
                         
-                        <div class="mb-3">
-                            <label class="form-label fw-bold small">Số điện thoại</label>
-                            <input type="text" name="phone" class="form-control" 
-                                   value="{{ $khachHang->SDT ?? '' }}" required>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold small text-muted">SỐ ĐIỆN THOẠI</label>
+                            <input type="text" name="phone" class="form-control rounded-pill px-4 py-2 border" 
+                                   value="{{ $khachHang->SDT ?? '' }}" required style="background: var(--bg-soft);">
                         </div>
                         
-                        <div class="mb-3">
-                            <label class="form-label fw-bold small">Địa chỉ giao hàng</label>
-                            <textarea name="address" class="form-control" rows="3" required placeholder="Số nhà, tên đường, phường/xã, quận/huyện...">{{ $khachHang->DiaChi ?? '' }}</textarea>
-                            <div class="form-text text-muted">Chúng tôi sẽ giao hàng đến địa chỉ này.</div>
+                        <div class="col-12 mb-4">
+                            <label class="form-label fw-bold small text-muted">ĐỊA CHỈ GIAO HÀNG CHI TIẾT</label>
+                            <textarea name="address" class="form-control rounded-4 px-4 py-3 border" rows="3" required placeholder="Số nhà, tên đường, khu vực..." style="background: var(--bg-soft);">{{ $khachHang->DiaChi ?? '' }}</textarea>
                         </div>
+                    </div>
 
-                        <div class="mb-4">
-                            <label class="form-label fw-bold small">Phương thức thanh toán</label>
-                            <div class="card p-3 bg-light border-0">
-                                <div class="form-check mb-2">
-                                    <input class="form-check-input" type="radio" name="payment_method" id="pay1" value="TienMat" checked>
-                                    <label class="form-check-label" for="pay1">
-                                        <i class="fa-solid fa-money-bill-wave text-success me-2"></i> Thanh toán khi nhận hàng (COD)
-                                    </label>
+                    <h5 class="font-luxury fw-bold mb-4 text-dark text-uppercase small mt-2" style="letter-spacing: 1px;">2. Phương Thức Thanh Toán</h5>
+                    <div class="payment-methods mb-4">
+                        <div class="form-check p-3 rounded-4 border mb-3 position-relative transition-all" style="background: white; cursor: pointer;">
+                            <input class="form-check-input ms-0 me-3 mt-1" type="radio" name="payment_method" id="pay1" value="TienMat" checked>
+                            <label class="form-check-label d-flex align-items-center" for="pay1" style="cursor: pointer;">
+                                <div class="bg-light p-2 rounded-3 me-3 text-success"><i class="fa-solid fa-money-bill-wave"></i></div>
+                                <div>
+                                    <span class="fw-bold d-block text-dark">Thanh toán khi nhận hàng (COD)</span>
+                                    <small class="text-muted">Kiểm tra sách và thanh toán cho nhân viên giao hàng</small>
                                 </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="payment_method" id="pay2" value="ChuyenKhoan">
-                                    <label class="form-check-label" for="pay2">
-                                        <i class="fa-solid fa-building-columns text-primary me-2"></i> Chuyển khoản ngân hàng
-                                    </label>
+                            </label>
+                        </div>
+                        <div class="form-check p-3 rounded-4 border mb-3 position-relative transition-all" style="background: white; cursor: pointer;">
+                            <input class="form-check-input ms-0 me-3 mt-1" type="radio" name="payment_method" id="pay2" value="ChuyenKhoan">
+                            <label class="form-check-label d-flex align-items-center" for="pay2" style="cursor: pointer;">
+                                <div class="bg-light p-2 rounded-3 me-3 text-primary"><i class="fa-solid fa-building-columns"></i></div>
+                                <div>
+                                    <span class="fw-bold d-block text-dark">Chuyển khoản ngân hàng</span>
+                                    <small class="text-muted">Nhận mã đơn hàng và thực hiện chuyển khoản sau khi đặt</small>
                                 </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mt-5">
+                        <a href="{{ route('cart.index') }}" class="text-muted fw-bold text-decoration-none small hover-gold">
+                            <i class="fa-solid fa-arrow-left me-2"></i> GIỎ HÀNG
+                        </a>
+                        <button type="submit" class="btn btn-dark rounded-pill px-5 py-3 fw-bold text-uppercase shadow-sm">
+                            ĐẶT HÀNG NGAY
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="sticky-top" style="top: 100px;">
+                <h5 class="font-luxury fw-bold mb-4 text-dark text-uppercase small" style="letter-spacing: 1px;">3. Tóm Tắt Đơn Hàng</h5>
+                <div class="glass-panel p-4 rounded-4 bg-white shadow-sm border-0 mb-4">
+                    <div class="order-items mb-4" style="max-height: 300px; overflow-y: auto;">
+                        @foreach ($cart as $item)
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="position-relative">
+                                    <img src="{{ $item['image'] ? asset('assets/images/products/' . $item['image']) : 'https://via.placeholder.com/60' }}" class="rounded-3 border" style="width: 50px; height: 70px; object-fit: contain; background: white;">
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-dark" style="font-size: 0.6rem;">{{ $item['qty'] }}</span>
+                                </div>
+                                <div class="ms-3 flex-grow-1">
+                                    <div class="fw-bold text-dark text-truncate small" style="max-width: 200px;">{{ $item['name'] }}</div>
+                                    <small class="text-muted extra-small">{{ number_format($item['price'], 0, ',', '.') }}₫</small>
+                                </div>
+                                <div class="fw-bold text-dark small">{{ number_format($item['price'] * $item['qty'], 0, ',', '.') }}₫</div>
                             </div>
-                        </div>
+                        @endforeach
+                    </div>
 
-                        <div class="d-flex justify-content-between align-items-center">
-                            <a href="{{ route('cart.index') }}" class="text-decoration-none text-secondary">
-                                <i class="fa-solid fa-arrow-left"></i> Quay lại giỏ hàng
-                            </a>
-                            <button type="submit" class="btn btn-danger px-4 py-2 fw-bold text-uppercase shadow-sm">
-                                Đặt hàng ngay
-                            </button>
+                    <div class="promotions-section mb-4">
+                        <h6 class="fw-bold text-dark small mb-3">MÃ GIẢM GIÁ</h6>
+                        <div class="input-group mb-2">
+                            <input type="text" id="promo-code" class="form-control rounded-start-pill py-2 px-3 border" placeholder="Nhập mã ưu đãi...">
+                            <button class="btn btn-outline-dark rounded-end-pill px-3 py-2 fw-bold small" type="button" onclick="applyPromotion()">ÁP DỤNG</button>
                         </div>
-                    </form>
-                </div>
-
-                <div class="col-md-5 mt-4 mt-md-0">
-                    <div class="bg-light p-4 rounded-3">
-                        <h5 class="mb-3 fw-bold text-secondary">2. Đơn hàng của bạn</h5>
+                        <div id="promo-error" class="text-danger extra-small mt-1"></div>
+                        <div id="promo-success" class="text-success extra-small mt-1"></div>
                         
-                        <div class="list-group mb-3 shadow-sm">
-                            @foreach ($cart as $item)
-                                <div class="list-group-item d-flex justify-content-between align-items-center bg-white border-0 mb-1 rounded">
-                                    <div class="d-flex align-items-center">
-                                        <span class="badge bg-secondary rounded-pill me-2">{{ $item['qty'] }}</span>
-                                        <div>
-                                            <div class="fw-bold small text-truncate" style="max-width: 180px;">
-                                                {{ $item['name'] }}
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="fw-bold text-dark small">
-                                        {{ number_format($item['price'] * $item['qty'], 0, ',', '.') }} đ
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
-
-                        <div class="mb-4">
-                            <h6 class="fw-bold text-secondary">✨ Khuyến mãi có thể áp dụng</h6>
-                            @if ($promotions->isEmpty())
-                                <p class="text-muted small">Hiện không có khuyến mãi nào.</p>
-                            @else
-                                <div class="list-group">
+                        @if (!$promotions->isEmpty())
+                            <div class="mt-3">
+                                <small class="text-muted fw-bold d-block mb-2 extra-small">KHUYẾN MÃI DÀNH CHO BẠN:</small>
+                                <div class="d-flex flex-column gap-2">
                                     @foreach ($promotions as $km)
-                                        @php
-                                            $is_applicable = false;
-                                            $reason = '';
-                                            if ($km->LoaiKM == 'ToanDon') {
-                                                if ($totalPrice >= $km->DieuKienToiThieu) {
-                                                    $is_applicable = true;
-                                                } else {
-                                                    $reason = 'Chưa đủ ĐK đơn tối thiểu';
-                                                }
-                                            } elseif ($km->LoaiKM == 'DanhMuc') {
-                                                $category_in_cart = false;
-                                                foreach ($cart as $item) {
-                                                    if (isset($item['ma_dm']) && $item['ma_dm'] == $km->MaDM) {
-                                                        $category_in_cart = true;
-                                                        break;
-                                                    }
-                                                }
-                                                if ($category_in_cart) {
-                                                    if ($totalPrice >= $km->DieuKienToiThieu) {
-                                                        $is_applicable = true;
-                                                    } else {
-                                                        $reason = 'Chưa đủ ĐK đơn tối thiểu';
-                                                    }
-                                                } else {
-                                                    $reason = 'Giỏ hàng không có SP thuộc danh mục';
-                                                }
-                                            }
-                                        @endphp
-                                        <div class="list-group-item list-group-item-action {{ $is_applicable ? 'border-success' : '' }}" style="cursor: pointer;" onclick="usePromo('{{ $km->MaGiamGia ?? $km->MaKM }}')">
-                                            <div class="d-flex w-100 justify-content-between">
-                                                <h6 class="mb-1 fw-bold {{ $is_applicable ? 'text-success' : '' }}">{{ $km->TenKM }}</h6>
-                                                <small class="text-muted">{{ number_format($km->PhanTramGiam, 0) }}%</small>
+                                        <div class="p-2 border rounded-3 small d-flex justify-content-between align-items-center hover-bg-light" style="cursor: pointer; transition: 0.2s;" onclick="usePromo('{{ $km->MaGiamGia ?? $km->MaKM }}')">
+                                            <div>
+                                                <span class="fw-bold text-dark">{{ $km->TenKM }}</span>
+                                                <span class="badge bg-light text-dark ms-1" style="font-size: 0.6rem;">{{ $km->MaGiamGia }}</span>
                                             </div>
-                                            <p class="mb-1 small">
-                                                <span class="badge bg-light text-dark">CODE: {{ $km->MaGiamGia ?? $km->MaKM }}</span>
-                                                Áp dụng cho {!! $km->LoaiKM == 'DanhMuc' ? 'danh mục <strong>' . e($km->danhMuc->TenDM ?? '') . '</strong>' : 'toàn bộ đơn hàng' !!}
-                                                từ {{ number_format($km->DieuKienToiThieu, 0, ',', '.') }}₫.
-                                            </p>
-                                            @if (!$is_applicable)
-                                                <small class="text-danger fst-italic">({{ $reason }})</small>
-                                            @endif
+                                            <span class="text-danger fw-bold">-{{ number_format($km->PhanTramGiam, 0) }}%</span>
                                         </div>
                                     @endforeach
                                 </div>
-                            @endif
-                        </div>
+                            </div>
+                        @endif
+                    </div>
 
-                        <div class="mb-3">
-                            <div class="input-group">
-                                <input type="text" id="promo-code" class="form-control" placeholder="Nhập mã khuyến mãi">
-                                <button class="btn btn-outline-secondary" type="button" onclick="applyPromotion()">Áp dụng</button>
-                            </div>
-                            <div id="promo-error" class="text-danger small mt-1"></div>
-                            <div id="promo-success" class="text-success small mt-1"></div>
+                    <div class="summary-totals border-top pt-4">
+                        <div class="d-flex justify-content-between mb-2 small text-muted">
+                            <span>Tạm tính</span>
+                            <span class="fw-bold">{{ number_format($totalPrice, 0, ',', '.') }}₫</span>
                         </div>
-
-                        <div class="border-top pt-3">
-                            <div class="d-flex justify-content-between mb-2 small">
-                                <span class="text-muted">Tạm tính</span>
-                                <strong>{{ number_format($totalPrice, 0, ',', '.') }} đ</strong>
-                            </div>
-                            <div class="d-flex justify-content-between mb-2 small" id="discount-row" style="display: none;">
-                                <span class="text-muted">Giảm giá</span>
-                                <strong id="discount-amount">0 đ</strong>
-                            </div>
-                            <div class="d-flex justify-content-between mb-2 small">
-                                <span class="text-muted">Phí vận chuyển</span>
-                                <span class="text-success fw-bold">Miễn phí</span>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
-                                <span class="fw-bold fs-5">Tổng cộng</span>
-                                <span class="fw-bold text-danger fs-4" id="total-price">{{ number_format($totalPrice, 0, ',', '.') }} đ</span>
-                            </div>
+                        <div class="d-flex justify-content-between mb-2 small text-danger" id="discount-row" style="display: none;">
+                            <span>Giảm giá</span>
+                            <span id="discount-amount">-0₫</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-3 small text-muted">
+                            <span>Vận chuyển</span>
+                            <span class="text-success fw-bold">MIỄN PHÍ</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-end pt-3 border-top border-2 border-dark">
+                            <span class="fw-bold text-dark fs-5">TỔNG CỘNG</span>
+                            <span class="fw-bold fs-3 text-dark" id="total-price">{{ number_format($totalPrice, 0, ',', '.') }}₫</span>
                         </div>
                     </div>
+                </div>
+                
+                <div class="p-4 rounded-4" style="background: rgba(175, 146, 69, 0.05); border: 1px dashed var(--gold-primary);">
+                    <small class="text-muted d-block text-center lh-base" style="font-size: 0.75rem;">
+                        <i class="fa-solid fa-lock me-1"></i> Thanh toán an toàn và bảo mật. <br>Cam kết chất lượng sách chính hãng 100%.
+                    </small>
                 </div>
             </div>
         </div>
     </div>
 </div>
-@endsection
+
+<style>
+    .form-check:hover { border-color: var(--gold-primary) !important; transform: scale(1.01); }
+    .form-check-input:checked { background-color: var(--text-main); border-color: var(--text-main); }
+    .extra-small { font-size: 0.7rem; }
+    .hover-bg-light:hover { background-color: var(--bg-soft); }
+</style>
 
 @push('scripts')
 <script>
@@ -201,18 +174,11 @@ function applyPromotion() {
     errorDiv.textContent = '';
     successDiv.textContent = '';
 
-    if (!promoCode) {
-        errorDiv.textContent = 'Vui lòng nhập mã khuyến mãi.';
-        return;
-    }
+    if (!promoCode) return;
 
     fetch('{{ route("checkout.applyPromotion") }}', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-            'X-Requested-With': 'XMLHttpRequest'
-        },
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'X-Requested-With': 'XMLHttpRequest' },
         body: JSON.stringify({ promo_code: promoCode })
     })
     .then(response => response.json())
@@ -220,8 +186,8 @@ function applyPromotion() {
         if (data.status === 'success') {
             successDiv.textContent = data.message;
             document.getElementById('discount-row').style.display = 'flex';
-            document.getElementById('discount-amount').textContent = '-' + data.discount_amount.toLocaleString('vi-VN') + ' đ';
-            document.getElementById('total-price').textContent = data.new_total.toLocaleString('vi-VN') + ' đ';
+            document.getElementById('discount-amount').textContent = '-' + Number(data.discount_amount).toLocaleString('vi-VN') + '₫';
+            document.getElementById('total-price').textContent = Number(data.new_total).toLocaleString('vi-VN') + '₫';
         } else {
             errorDiv.textContent = data.message;
         }
@@ -233,3 +199,4 @@ function applyPromotion() {
 }
 </script>
 @endpush
+@endsection
