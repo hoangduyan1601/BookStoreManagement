@@ -16,4 +16,9 @@ class ChiTietNhapHang extends Model
         'SoLuongNhap',
         'DonGiaNhap',
     ];
+
+    public function sanPham()
+    {
+        return $this->belongsTo(SanPham::class, 'MaSP', 'MaSP');
+    }
 }

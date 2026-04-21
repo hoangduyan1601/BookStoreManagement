@@ -20,4 +20,9 @@ class LichSuNhapHang extends Model
     {
         return $this->belongsTo(NhaCungCap::class, 'MaNCC', 'MaNCC');
     }
+
+    public function chiTietNhapHangs()
+    {
+        return $this->hasMany(ChiTietNhapHang::class, 'MaNhap', 'MaNhap');
+    }
 }

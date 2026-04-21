@@ -46,6 +46,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
     Route::post('/checkout', [CheckoutController::class, 'process'])->name('checkout.process');
     Route::post('/checkout/apply-promotion', [CheckoutController::class, 'applyPromotion'])->name('checkout.applyPromotion');
+
+    // Thông báo & Đơn hàng cho người dùng
+    Route::post('/notifications/mark-as-read/{id}', [HomeController::class, 'markNotificationRead']);
+    Route::post('/notifications/mark-all-read', [HomeController::class, 'markAllRead']);
+    Route::get('/orders/detail/{id}', [HomeController::class, 'orderDetail']);
 });
 
 // Admin routes
@@ -97,4 +102,29 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(fun
 
     // Profile
     Route::get('/profile', [DashboardController::class, 'profile'])->name('profile');
+
+    // Route tạm thời để fix ảnh sản phẩm
+    Route::get('/fix-images', function() {
+        $products = \App\Models\SanPham::whereNull('HinhAnh')->orWhere('HinhAnh', '')->get();
+        $files = array_diff(scandir(public_path('assets/images/products')), array('.', '..'));
+        $imageFiles = array_values(preg_grep('/\.(jpg|jpeg|png|gif|webp)$/i', $files));
+
+        if (count($imageFiles) == 0) return "Không tìm thấy file ảnh nào trong public/assets/images/products";
+
+        $count = 0;
+        foreach ($products as $index => $sp) {
+            // Lấy ảnh theo vòng lặp từ danh sách file
+            $img = $imageFiles[$index % count($imageFiles)];
+            $sp->HinhAnh = $img;
+            $sp->save();
+            
+            // Đồng thời tạo bản ghi trong HinhAnhSanPham nếu chưa có
+            \App\Models\HinhAnhSanPham::updateOrCreate(
+                ['MaSP' => $sp->MaSP, 'DuongDan' => $img],
+                ['LaAnhChinh' => 1]
+            );
+            $count++;
+        }
+        return "Đã cập nhật ảnh cho $count sản phẩm.";
+    });
 });

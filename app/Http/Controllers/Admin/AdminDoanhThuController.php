@@ -9,71 +9,86 @@ use App\Models\ChiTietDonHang;
 use App\Models\ChiTietNhapHang;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class AdminDoanhThuController extends Controller
 {
     public function index(Request $request)
     {
-        // Lấy năm mới nhất có dữ liệu trong DB nếu không có input
-        $latestYearInDb = DonHang::select(DB::raw('YEAR(NgayDat) as year'))
-            ->union(LichSuNhapHang::select(DB::raw('YEAR(NgayNhap) as year')))
-            ->orderBy('year', 'desc')
-            ->first();
-            
-        $defaultYear = $latestYearInDb ? $latestYearInDb->year : date('Y');
-        $nam = $request->get('nam', $defaultYear);
+        // Chỉ xem 3 năm: 2024, 2025, 2026
+        $yearsWithData = [2026, 2025, 2024];
+        $currentYear = (int)date('Y');
+        $nam = (int)$request->get('nam', in_array($currentYear, $yearsWithData) ? $currentYear : 2026);
 
-        // 1. DOANH THU THEO THÁNG
-        $doanhthu_thang = [];
-        for ($i = 1; $i <= 12; $i++) {
-            $tong = DonHang::whereYear('NgayDat', $nam)
-                ->whereMonth('NgayDat', $i)
-                ->whereIn('TrangThai', ['DaGiao', 'DangGiao'])
-                ->sum('TongTien');
-            $doanhthu_thang[] = (float)$tong;
+        // Lọc theo khoảng thời gian tùy chọn
+        $tu_ngay = $request->get('tu_ngay');
+        $den_ngay = $request->get('den_ngay');
+
+        // 1. THỐNG KÊ TỔNG QUÁT (Dựa trên năm hoặc khoảng thời gian)
+        $queryDoanhThu = DonHang::where('TrangThai', 'DaGiao');
+        $queryNhapHang = LichSuNhapHang::query();
+
+        if ($tu_ngay && $den_ngay) {
+            $queryDoanhThu->whereBetween('NgayDat', [$tu_ngay, $den_ngay . ' 23:59:59']);
+            $queryNhapHang->whereBetween('NgayNhap', [$tu_ngay, $den_ngay . ' 23:59:59']);
+        } else {
+            $queryDoanhThu->whereYear('NgayDat', $nam);
+            $queryNhapHang->whereYear('NgayNhap', $nam);
         }
 
-        // 2. NHẬP HÀNG THEO THÁNG
-        $nhaphang_thang = [];
-        for ($i = 1; $i <= 12; $i++) {
-            $tong = LichSuNhapHang::whereYear('NgayNhap', $nam)
-                ->whereMonth('NgayNhap', $i)
-                ->sum('TongTienNhap');
-            $nhaphang_thang[] = (float)$tong;
-        }
-
-        // 3. TỔNG DOANH THU – NHẬP – LỢI NHUẬN
-        $tong_doanh_thu = array_sum($doanhthu_thang);
-        $tong_nhap = array_sum($nhaphang_thang);
+        $tong_doanh_thu = $queryDoanhThu->sum('TongTien');
+        $tong_nhap = $queryNhapHang->sum('TongTienNhap');
         $loi_nhuan = $tong_doanh_thu - $tong_nhap;
 
-        // 4. TOP 5 SẢN PHẨM BÁN CHẠY (Trong năm được chọn)
-        $top_ban = DB::table('chitietdonhang')
+        // 2. DOANH THU & NHẬP HÀNG THEO THÁNG (Cho biểu đồ năm)
+        $doanhthu_thang = [];
+        $nhaphang_thang = [];
+        for ($i = 1; $i <= 12; $i++) {
+            $doanhthu_thang[] = (float)DonHang::where('TrangThai', 'DaGiao')->whereYear('NgayDat', $nam)->whereMonth('NgayDat', $i)->sum('TongTien');
+            $nhaphang_thang[] = (float)LichSuNhapHang::whereYear('NgayNhap', $nam)->whereMonth('NgayNhap', $i)->sum('TongTienNhap');
+        }
+
+        // 3. THỐNG KÊ THEO TUẦN (7 tuần gần nhất)
+        $doanhthu_tuan = [];
+        $nhaphang_tuan = [];
+        $labels_tuan = [];
+        for ($i = 6; $i >= 0; $i--) {
+            $startOfWeek = Carbon::now()->subWeeks($i)->startOfWeek();
+            $endOfWeek = Carbon::now()->subWeeks($i)->endOfWeek();
+            $labels_tuan[] = 'T' . $startOfWeek->format('d/m');
+            
+            $doanhthu_tuan[] = (float)DonHang::where('TrangThai', 'DaGiao')->whereBetween('NgayDat', [$startOfWeek, $endOfWeek])->sum('TongTien');
+            $nhaphang_tuan[] = (float)LichSuNhapHang::whereBetween('NgayNhap', [$startOfWeek, $endOfWeek])->sum('TongTienNhap');
+        }
+
+        // 4. TOP SẢN PHẨM (Theo điều kiện lọc)
+        $top_ban_query = DB::table('chitietdonhang')
             ->join('donhang', 'chitietdonhang.MaDH', '=', 'donhang.MaDH')
             ->join('sanpham', 'chitietdonhang.MaSP', '=', 'sanpham.MaSP')
             ->select('sanpham.TenSP', DB::raw('SUM(chitietdonhang.SoLuong) as SoLuongBan'))
-            ->whereYear('donhang.NgayDat', $nam)
-            ->whereIn('donhang.TrangThai', ['DaGiao', 'DangGiao'])
-            ->groupBy('chitietdonhang.MaSP', 'sanpham.TenSP')
-            ->orderBy('SoLuongBan', 'desc')
-            ->limit(5)
-            ->get();
-
-        // 5. TOP 5 SẢN PHẨM NHẬP NHIỀU (Trong năm được chọn)
-        $top_nhap = DB::table('chitietnhaphang')
+            ->where('donhang.TrangThai', 'DaGiao');
+        
+        $top_nhap_query = DB::table('chitietnhaphang')
             ->join('lichsunhaphang', 'chitietnhaphang.MaNhap', '=', 'lichsunhaphang.MaNhap')
             ->join('sanpham', 'chitietnhaphang.MaSP', '=', 'sanpham.MaSP')
-            ->select('sanpham.TenSP', DB::raw('SUM(chitietnhaphang.SoLuongNhap) as SoLuongNhap'))
-            ->whereYear('lichsunhaphang.NgayNhap', $nam)
-            ->groupBy('chitietnhaphang.MaSP', 'sanpham.TenSP')
-            ->orderBy('SoLuongNhap', 'desc')
-            ->limit(5)
-            ->get();
+            ->select('sanpham.TenSP', DB::raw('SUM(chitietnhaphang.SoLuongNhap) as SoLuongNhap'));
+
+        if ($tu_ngay && $den_ngay) {
+            $top_ban_query->whereBetween('donhang.NgayDat', [$tu_ngay, $den_ngay . ' 23:59:59']);
+            $top_nhap_query->whereBetween('lichsunhaphang.NgayNhap', [$tu_ngay, $den_ngay . ' 23:59:59']);
+        } else {
+            $top_ban_query->whereYear('donhang.NgayDat', $nam);
+            $top_nhap_query->whereYear('lichsunhaphang.NgayNhap', $nam);
+        }
+
+        $top_ban = $top_ban_query->groupBy('chitietdonhang.MaSP', 'sanpham.TenSP')->orderBy('SoLuongBan', 'desc')->limit(5)->get();
+        $top_nhap = $top_nhap_query->groupBy('chitietnhaphang.MaSP', 'sanpham.TenSP')->orderBy('SoLuongNhap', 'desc')->limit(5)->get();
 
         return view('admin.doanhthu.index', compact(
-            'nam', 'doanhthu_thang', 'nhaphang_thang', 
+            'nam', 'yearsWithData', 'doanhthu_thang', 'nhaphang_thang', 
             'tong_doanh_thu', 'tong_nhap', 'loi_nhuan',
-            'top_ban', 'top_nhap'
+            'top_ban', 'top_nhap', 'doanhthu_tuan', 'nhaphang_tuan', 'labels_tuan',
+            'tu_ngay', 'den_ngay'
         ));
     }
 }

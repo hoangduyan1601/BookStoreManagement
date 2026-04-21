@@ -5,215 +5,114 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>@yield('title', 'Bookstore - Thế giới tri thức')</title>
+    <title>@yield('title', 'LUXURY STORE')</title>
     
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <!-- Google Fonts: Playfair Display & Lato -->
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
     
     <!-- CSS Assets -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
     
-    <style>
-        :root {
-            --primary-color: #2c3e50;
-            --accent-color: #e67e22;
-            --text-color: #333;
-            --bg-light: #f8f9fa;
-        }
-        body { font-family: 'Inter', sans-serif; margin: 0; color: var(--text-color); background: var(--bg-light); }
-        
-        /* Header Container */
-        .main-header {
-            background: #fff;
-            border-bottom: 1px solid #eee;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        }
-        .header-inner {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            height: 70px;
-        }
-
-        /* Logo */
-        .logo a {
-            font-size: 24px;
-            font-weight: 800;
-            color: var(--primary-color);
-            text-decoration: none;
-            letter-spacing: -1px;
-        }
-        .logo span { color: var(--accent-color); }
-
-        /* Search Bar */
-        .search-box {
-            flex: 0 1 400px;
-            display: flex;
-            background: var(--bg-light);
-            border-radius: 20px;
-            padding: 5px 15px;
-            border: 1px solid transparent;
-        }
-        .search-box:focus-within { border-color: var(--accent-color); }
-        .search-box input {
-            border: none; background: none; outline: none; padding: 8px; width: 100%;
-        }
-        .search-box button {
-            border: none; background: none; color: #888; cursor: pointer;
-        }
-
-        /* Navigation */
-        .nav-menu { display: flex; gap: 20px; align-items: center; }
-        .nav-menu a {
-            text-decoration: none; color: var(--text-color); font-weight: 500; font-size: 14px; transition: 0.3s;
-        }
-        .nav-menu a:hover { color: var(--accent-color); }
-
-        /* Icons & Utilities */
-        .user-utilities { display: flex; gap: 15px; align-items: center; }
-        .icon-link {
-            position: relative; color: var(--primary-color); font-size: 18px; text-decoration: none; cursor: pointer;
-        }
-        .badge-cart {
-            position: absolute; top: -8px; right: -10px;
-            background: var(--accent-color); color: #fff;
-            font-size: 10px; padding: 2px 5px; border-radius: 50%;
-        }
-    </style>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ asset('assets/css/luxury.css') }}">
+    
     @stack('styles')
 </head>
-<body>
-<header class="main-header">
-    <div class="header-inner">
-        <div class="logo">
-            <a href="{{ url('/') }}">BOOK<span>STORE</span></a>
-        </div>
+<body data-barba="wrapper">
 
-        <form action="{{ route('sanpham.search') }}" method="GET" class="search-box">
-            <input type="text" name="keyword" value="{{ request('keyword') }}" placeholder="Tìm kiếm sách, tác giả...">
-            <button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
-        </form>
+    <!-- Lớp phủ chuyển cảnh 3D -->
+    <div class="barba-transition-layer">
+        <div class="logo-loader">BOOKSTORE</div>
+    </div>
 
-        <nav class="nav-menu">
-            <a href="{{ route('home') }}">Trang chủ</a>
-            <a href="{{ route('sanpham.index') }}">Cửa hàng</a>
+    <!-- Header thông minh -->
+    <header class="smart-header glass-panel py-3">
+        <div class="container d-flex justify-content-between align-items-center">
+            <a href="{{ url('/') }}" class="text-decoration-none font-luxury fs-3 text-dark fw-bold">BOOKSTORE<span style="color: var(--gold-primary)">.</span></a>
             
-            <div class="user-utilities">
-                <a href="{{ url('/cart') }}" class="icon-link">
-                    <i class="fa-solid fa-cart-shopping"></i>
+            <form action="{{ route('sanpham.search') }}" method="GET" class="d-none d-md-flex align-items-center" style="background: var(--bg-soft); border-radius: 25px; padding: 6px 20px; border: 1px solid var(--border-color);">
+                <input type="text" name="keyword" value="{{ request('keyword') }}" placeholder="Tìm kiếm tinh hoa..." style="background: none; border: none; color: var(--text-main); outline: none; width: 250px; font-size: 0.9rem;">
+                <button type="submit" style="background: none; border: none; color: var(--gold-primary);"><i class="fa-solid fa-magnifying-glass"></i></button>
+            </form>
+
+            <nav class="d-flex align-items-center">
+                <a href="{{ route('home') }}" class="text-dark me-4 text-decoration-none small text-uppercase fw-bold hover-gold">Trang chủ</a>
+                <a href="{{ route('sanpham.index') }}" class="text-dark me-4 text-decoration-none small text-uppercase fw-bold hover-gold">Cửa hàng</a>
+                
+                <div class="d-flex gap-4 align-items-center">
+                    <a href="{{ url('/cart') }}" class="text-dark position-relative hover-gold" title="Giỏ hàng">
+                        <i class="fa-solid fa-cart-shopping fs-5"></i>
+                        @auth
+                            @if(isset($cartCount) && $cartCount > 0)
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-dark" style="font-size: 0.6rem;">{{ $cartCount }}</span>
+                            @endif
+                        @endauth
+                    </a>
+
                     @auth
-                        <span class="badge-cart">{{ $cartCount ?? 0 }}</span>
+                        @php
+                            $customer = \App\Models\KhachHang::where('MaTK', auth()->user()->MaTK)->first();
+                            $unreadCount = $customer ? \App\Models\ThongBao::where('MaKH', $customer->MaKH)->where('TrangThaiDoc', false)->count() : 0;
+                        @endphp
+                        <a href="{{ route('customer.profile') }}#notifications" class="text-dark position-relative hover-gold" title="Thông báo">
+                            <i class="fa-solid fa-bell fs-5"></i>
+                            @if($unreadCount > 0)
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6rem;" id="header-unread-badge">{{ $unreadCount }}</span>
+                            @endif
+                        </a>
+                        <a href="{{ route('customer.profile') }}" class="text-dark hover-gold" title="Tài khoản">
+                            <i class="fa-regular fa-user fs-5"></i>
+                        </a>
+                        <a href="{{ route('logout') }}" 
+                           class="btn btn-dark btn-sm px-4 rounded-pill no-barba ms-2"
+                           onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                           Thoát
+                        </a>
+                        <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+                            @csrf
+                        </form>
+                    @else
+                        <a href="{{ route('login') }}" class="btn btn-luxury btn-sm px-4 rounded-pill ms-2">Đăng nhập</a>
                     @endauth
-                </a>
-
-                @auth
-                    <a href="{{ route('customer.profile') }}" class="icon-link" title="Tài khoản của tôi">
-                        <i class="fa-regular fa-user"></i>
-                    </a>
-                    <a href="{{ route('logout') }}" 
-                       class="btn btn-sm btn-outline-danger" 
-                       style="padding:6px 10px; font-size:13px;"
-                       onclick="event.preventDefault(); if(confirm('Bạn có chắc chắn muốn đăng xuất?')) document.getElementById('logout-form').submit();">
-                       Đăng xuất
-                    </a>
-                    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
-                        @csrf
-                    </form>
-                @else
-                    <a href="{{ route('login') }}" class="btn btn-sm btn-outline-primary" style="padding:6px 10px; font-size:13px;">Đăng nhập</a>
-                @endauth
-            </div>
-        </nav>
-    </div>
-</header>
-
-<main style="padding-bottom: 50px;">
-    @yield('content')
-</main>
-
-<footer class="bg-dark text-light pt-5 pb-3" style="background-color: #2c3e50 !important;">
-    <div class="container">
-        <div class="row">
-            <div class="col-md-4 mb-4">
-                <h5 class="text-uppercase fw-bold mb-3" style="color: #e67e22;">BookStore Premium</h5>
-                <p class="small text-white-50">
-                    Nền tảng thương mại điện tử chuyên cung cấp sách chính hãng, uy tín hàng đầu. 
-                    Chúng tôi cam kết mang lại tri thức và trải nghiệm mua sắm tuyệt vời nhất.
-                </p>
-                <div class="d-flex gap-3 mt-3">
-                    <a href="#" class="text-white fs-5 hover-orange"><i class="fa-brands fa-facebook"></i></a>
-                    <a href="#" class="text-white fs-5 hover-orange"><i class="fa-brands fa-instagram"></i></a>
-                    <a href="#" class="text-white fs-5 hover-orange"><i class="fa-brands fa-tiktok"></i></a>
-                    <a href="#" class="text-white fs-5 hover-orange"><i class="fa-brands fa-youtube"></i></a>
                 </div>
-            </div>
-
-            <div class="col-md-3 mb-4">
-                <h6 class="text-uppercase fw-bold mb-3">Hỗ trợ khách hàng</h6>
-                <ul class="list-unstyled small">
-                    <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none hover-orange">Hướng dẫn mua hàng</a></li>
-                    <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none hover-orange">Chính sách đổi trả</a></li>
-                    <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none hover-orange">Phương thức vận chuyển</a></li>
-                    <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none hover-orange">Câu hỏi thường gặp (FAQ)</a></li>
-                </ul>
-            </div>
-
-            <div class="col-md-2 mb-4">
-                <h6 class="text-uppercase fw-bold mb-3">Tài khoản</h6>
-                <ul class="list-unstyled small">
-                    <li class="mb-2"><a href="{{ route('login') }}" class="text-white-50 text-decoration-none hover-orange">Đăng nhập</a></li>
-                    <li class="mb-2"><a href="{{ route('register') }}" class="text-white-50 text-decoration-none hover-orange">Đăng ký</a></li>
-                    <li class="mb-2"><a href="{{ url('/cart') }}" class="text-white-50 text-decoration-none hover-orange">Giỏ hàng</a></li>
-                    <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none hover-orange">Lịch sử đơn hàng</a></li>
-                </ul>
-            </div>
-
-            <div class="col-md-3 mb-4">
-                <h6 class="text-uppercase fw-bold mb-3">Liên hệ</h6>
-                <ul class="list-unstyled small text-white-50">
-                    <li class="mb-2"><i class="fa-solid fa-location-dot me-2 text-warning"></i> 123 Đường Sách, Q.1, TP.HCM</li>
-                    <li class="mb-2"><i class="fa-solid fa-phone me-2 text-warning"></i> 1900 123 456</li>
-                    <li class="mb-2"><i class="fa-solid fa-envelope me-2 text-warning"></i> hotro@bookstore.vn</li>
-                    <li class="mb-2"><i class="fa-solid fa-clock me-2 text-warning"></i> 8:00 - 22:00 (Hàng ngày)</li>
-                </ul>
-            </div>
+            </nav>
         </div>
+    </header>
 
-        <hr class="border-secondary my-4">
-
-        <div class="row align-items-center">
-            <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
-                <p class="small text-white-50 mb-0">&copy; {{ date('Y') }} <strong>BookStore Premium</strong>. All Rights Reserved.</p>
-            </div>
-            <div class="col-md-6 text-center text-md-end">
-                <i class="fa-brands fa-cc-visa text-white-50 fs-4 me-2"></i>
-                <i class="fa-brands fa-cc-mastercard text-white-50 fs-4 me-2"></i>
-                <i class="fa-solid fa-money-bill-wave text-white-50 fs-4"></i>
-            </div>
+    <!-- Khu vực Barba Container -->
+    <main data-barba="container" data-barba-namespace="{{ Route::currentRouteName() ?? 'home' }}" class="barba-container">
+        <div class="page-content" style="padding-top: 80px;">
+            @yield('content')
         </div>
-    </div>
-</footer>
+        
+        <!-- Footer -->
+        <footer class="bg-white text-center py-5 border-top mt-auto" style="border-color: var(--border-color)!important;">
+            <div class="container">
+                <h4 class="font-luxury mb-3 fw-bold">BOOKSTORE<span style="color: var(--gold-primary)">.</span></h4>
+                <p class="small text-muted mb-4 mx-auto" style="max-width: 500px;">Nâng tầm tri thức và kiến tạo không gian đọc sách sang trọng cho mọi độc giả.</p>
+                <div class="d-flex justify-content-center gap-4 mb-4 text-dark">
+                    <a href="#" class="text-dark"><i class="fa-brands fa-instagram fs-5"></i></a>
+                    <a href="#" class="text-dark"><i class="fa-brands fa-facebook fs-5"></i></a>
+                    <a href="#" class="text-dark"><i class="fa-brands fa-twitter fs-5"></i></a>
+                </div>
+                <p class="extra-small text-muted opacity-75">&copy; {{ date('Y') }} BookStore Premium. Nền tảng tri thức chuẩn quốc tế.</p>
+            </div>
+        </footer>
+    </main>
 
-<style>
-    .hover-orange:hover {
-        color: #e67e22 !important;
-        padding-left: 5px; /* Hiệu ứng đẩy nhẹ sang phải */
-        transition: all 0.3s ease;
-    }
-</style>
+    <style>
+        .hover-gold:hover { color: var(--gold-primary) !important; transition: color 0.3s; }
+        .extra-small { font-size: 0.75rem; }
+    </style>
 
-<!-- Scripts -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="{{ asset('assets/js/main.js') }}"></script>
-@stack('scripts')
-
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://unpkg.com/@barba/core"></script>
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.1.1/model-viewer.min.js"></script>
+    <script src="{{ asset('assets/js/luxury-app.js') }}"></script>
+    @stack('scripts')
 </body>
 </html>

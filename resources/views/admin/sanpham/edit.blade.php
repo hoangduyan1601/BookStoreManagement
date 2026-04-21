@@ -1,121 +1,190 @@
 @extends('layouts.admin')
 
-@section('title', 'Sửa Sản Phẩm')
+@section('title', 'Chỉnh Sửa Sản Phẩm')
 
 @section('content')
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-md-12">
-            <div class="card shadow-sm border-0 rounded-4">
-                <div class="card-header bg-primary text-white py-3 rounded-4-top">
-                    <h2 class="card-title mb-0 h4"><i class="fas fa-edit me-2"></i>Sửa Sản Phẩm</h2>
+<div class="d-md-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h3 class="mb-0 fw-bold">Chỉnh Sửa Sản Phẩm</h3>
+        <p class="text-muted small mb-0">Cập nhật thông tin cho sản phẩm: <strong>{{ $product->TenSP }}</strong></p>
+    </div>
+    <div class="mt-3 mt-md-0">
+        <a href="{{ route('admin.sanpham.index') }}" class="btn btn-luxury-outline">
+            <i class="fas fa-arrow-left me-2"></i> Quay lại danh sách
+        </a>
+    </div>
+</div>
+
+@if ($errors->any())
+    <div class="alert alert-danger border-0 shadow-sm rounded-3 mb-4 d-flex align-items-center" role="alert">
+        <i class="fas fa-exclamation-circle me-2"></i>
+        <ul class="mb-0 ps-3">
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+    </div>
+@endif
+
+<form action="{{ route('admin.sanpham.update', $product->MaSP) }}" method="POST" enctype="multipart/form-data">
+    @csrf
+    @method('PUT')
+    <div class="row g-4">
+        <!-- Main Info -->
+        <div class="col-lg-8">
+            <div class="admin-card p-4 mb-4">
+                <h5 class="fw-bold mb-4"><i class="fas fa-info-circle me-2 text-primary"></i>Thông tin cơ bản</h5>
+                
+                <div class="mb-3">
+                    <label class="admin-form-label">Tên sản phẩm <span class="text-danger">*</span></label>
+                    <input type="text" name="TenSP" class="form-control form-control-luxury" value="{{ old('TenSP', $product->TenSP) }}" placeholder="Nhập tên sách..." required>
                 </div>
-                <div class="card-body p-4">
-                    @if ($errors->any())
-                        <div class="alert alert-danger rounded-4">
-                            <ul class="mb-0">
-                                @foreach ($errors->all() as $error)
-                                    <li><strong>{{ $error }}</strong></li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endif
 
-                    <form action="{{ route('admin.sanpham.update', $product->MaSP) }}" method="POST" enctype="multipart/form-data">
-                        @csrf
-                        @method('PUT')
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="TenSP" class="form-label fw-bold">Tên sản phẩm</label>
-                                    <input type="text" class="form-control form-control-lg" id="TenSP" name="TenSP" value="{{ old('TenSP', $product->TenSP) }}" required>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="DonGia" class="form-label fw-bold">Giá</label>
-                                    <input type="number" class="form-control form-control-lg" id="DonGia" name="DonGia" value="{{ old('DonGia', $product->DonGia) }}" required>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="MoTa" class="form-label fw-bold">Mô tả</label>
-                            <textarea class="form-control" id="MoTa" name="MoTa" rows="5">{{ old('MoTa', $product->MoTa) }}</textarea>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="MaDM" class="form-label fw-bold">Danh mục</label>
-                                    <select class="form-select form-select-lg" id="MaDM" name="MaDM">
-                                        @foreach($all_categories as $cat)
-                                            <option value="{{ $cat->MaDM }}" {{ $cat->MaDM == $product->MaDM ? 'selected' : '' }}>
-                                                {{ $cat->TenDM }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="MaNXB" class="form-label fw-bold">Nhà xuất bản</label>
-                                    <select class="form-select form-select-lg" id="MaNXB" name="MaNXB">
-                                        @foreach($all_nxbs as $nxb)
-                                            <option value="{{ $nxb->MaNXB }}" {{ $nxb->MaNXB == $product->MaNXB ? 'selected' : '' }}>
-                                                {{ $nxb->TenNXB }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
+                <div class="mb-3">
+                    <label class="admin-form-label">Mô tả sản phẩm</label>
+                    <textarea name="MoTa" class="form-control form-control-luxury" rows="8" placeholder="Viết mô tả chi tiết...">{{ old('MoTa', $product->MoTa) }}</textarea>
+                </div>
+            </div>
 
-                        <h5 class="mt-4 fw-bold"><i class="fas fa-images me-2"></i>Ảnh hiện tại</h5>
-                        <div class="row">
-                            @foreach($product->hinhanhsanpham as $img)
-                            <div class="col-md-3 mb-3">
-                                <div class="card h-100 border-0 shadow-sm rounded-3 overflow-hidden">
-                                    <img src="{{ asset('assets/images/products/' . $img->DuongDan) }}" class="card-img-top" alt="Ảnh sản phẩm" style="height: 150px; object-fit: cover;">
-                                    <div class="card-body p-2 bg-light">
-                                        <div class="form-check mb-1">
-                                            <input class="form-check-input" type="checkbox" name="xoa_anh[]" value="{{ $img->MaHinh }}" id="xoa_{{ $img->MaHinh }}">
-                                            <label class="form-check-label small" for="xoa_{{ $img->MaHinh }}">
-                                                Xóa ảnh này
-                                            </label>
-                                        </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="radio" name="anh_chinh" value="{{ $img->MaHinh }}" id="chinh_{{ $img->MaHinh }}" {{ $img->LaAnhChinh == 1 ? 'checked' : '' }}>
-                                            <label class="form-check-label small fw-bold" for="chinh_{{ $img->MaHinh }}">
-                                                Đặt làm ảnh chính
-                                            </label>
-                                        </div>
-                                    </div>
+            <div class="admin-card p-4">
+                <h5 class="fw-bold mb-4"><i class="fas fa-images me-2 text-primary"></i>Quản lý hình ảnh</h5>
+                
+                <div class="row g-3 mb-4">
+                    <label class="admin-form-label px-3">Ảnh hiện tại</label>
+                    @foreach($product->hinhanhsanpham as $img)
+                    <div class="col-md-4 col-sm-6">
+                        <div class="admin-card overflow-hidden h-100 border-0 shadow-sm">
+                            <div class="position-relative" style="padding-top: 100%;">
+                                <img src="{{ asset('assets/images/products/' . $img->DuongDan) }}" class="position-absolute top-0 start-0 w-100 h-100" style="object-fit: cover;">
+                                @if($img->LaAnhChinh)
+                                    <span class="position-absolute top-0 end-0 m-2 badge bg-warning text-dark"><i class="fas fa-star me-1"></i>Ảnh chính</span>
+                                @endif
+                            </div>
+                            <div class="p-3 bg-light">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" name="xoa_anh[]" value="{{ $img->MaHinh }}" id="xoa_{{ $img->MaHinh }}">
+                                    <label class="form-check-label small text-danger" for="xoa_{{ $img->MaHinh }}">
+                                        Xóa ảnh này
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="anh_chinh" value="{{ $img->MaHinh }}" id="chinh_{{ $img->MaHinh }}" {{ $img->LaAnhChinh == 1 ? 'checked' : '' }}>
+                                    <label class="form-check-label small fw-bold" for="chinh_{{ $img->MaHinh }}">
+                                        Đặt làm ảnh chính
+                                    </label>
                                 </div>
                             </div>
-                            @endforeach
                         </div>
+                    </div>
+                    @endforeach
+                </div>
 
-                        <h5 class="mt-4 fw-bold"><i class="fas fa-file-upload me-2"></i>Thêm ảnh mới</h5>
-                        <div class="mb-4">
-                            <input type="file" class="form-control form-control-lg" name="images[]" multiple accept="image/*">
-                            <div class="form-text">Bạn có thể chọn nhiều ảnh cùng lúc.</div>
-                        </div>
+                <div class="mb-4">
+                    <label class="admin-form-label">Thêm ảnh mới</label>
+                    <div class="upload-zone p-4 border-2 border-dashed rounded-4 text-center bg-light transition-all" id="drop-zone" style="border-style: dashed !important; border-color: var(--border-color) !important;">
+                        <i class="fas fa-cloud-upload-alt fs-2 text-muted mb-2"></i>
+                        <p class="mb-2">Kéo thả hoặc nhấn để chọn thêm ảnh</p>
+                        <input type="file" name="images[]" id="file-input" class="d-none" multiple accept="image/*">
+                        <button type="button" class="btn btn-luxury-outline btn-sm" onclick="document.getElementById('file-input').click()">Chọn tệp</button>
+                    </div>
+                    <div id="image-preview" class="row g-2 mt-3"></div>
+                </div>
+            </div>
+        </div>
 
-                        <div class="d-flex justify-content-end gap-2 mt-4">
-                            <a href="{{ route('admin.sanpham.index') }}" class="btn btn-outline-secondary btn-lg px-4 rounded-pill">
-                                <i class="fas fa-times me-2"></i>Hủy
-                            </a>
-                            <button type="submit" class="btn btn-primary btn-lg px-5 rounded-pill shadow-sm">
-                                <i class="fas fa-save me-2"></i>Lưu cập nhật
-                            </button>
-                        </div>
-                    </form>
+        <!-- Sidebar Info -->
+        <div class="col-lg-4">
+            <div class="admin-card p-4 mb-4">
+                <h5 class="fw-bold mb-4"><i class="fas fa-tag me-2 text-primary"></i>Phân loại & Giá</h5>
+                
+                <div class="mb-3">
+                    <label class="admin-form-label">Giá bán (VNĐ) <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <input type="number" name="DonGia" class="form-control form-control-luxury border-end-0" value="{{ old('DonGia', $product->DonGia) }}" min="1000" placeholder="0" required>
+                        <span class="input-group-text bg-light border-start-0 text-muted">₫</span>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="admin-form-label">Danh mục <span class="text-danger">*</span></label>
+                    <select name="MaDM" class="form-select form-control-luxury" required>
+                        @foreach($all_categories as $cat)
+                            <option value="{{ $cat->MaDM }}" {{ old('MaDM', $product->MaDM) == $cat->MaDM ? 'selected' : '' }}>{{ $cat->TenDM }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="mb-0">
+                    <label class="admin-form-label">Nhà xuất bản <span class="text-danger">*</span></label>
+                    <select name="MaNXB" class="form-select form-control-luxury" required>
+                        @foreach($all_nxbs as $nxb)
+                            <option value="{{ $nxb->MaNXB }}" {{ old('MaNXB', $product->MaNXB) == $nxb->MaNXB ? 'selected' : '' }}>{{ $nxb->TenNXB }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+
+            <div class="admin-card p-4">
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-luxury-primary py-3">
+                        <i class="fas fa-save me-2"></i> Lưu cập nhật
+                    </button>
+                    <a href="{{ route('admin.sanpham.index') }}" class="btn btn-luxury-outline py-3">
+                        Hủy bỏ
+                    </a>
+                </div>
+                <hr class="my-4 opacity-50">
+                <div class="text-center">
+                    <small class="text-muted">Cập nhật lần cuối: <br> {{ $product->updated_at ? $product->updated_at->format('d/m/Y H:i') : 'N/A' }}</small>
                 </div>
             </div>
         </div>
     </div>
-</div>
+</form>
 
-<style>
-    .rounded-4-top { border-top-left-radius: 1rem !important; border-top-right-radius: 1rem !important; }
-</style>
+@push('scripts')
+<script>
+    // Preview images before upload
+    document.getElementById('file-input').addEventListener('change', function(e) {
+        const preview = document.getElementById('image-preview');
+        preview.innerHTML = '';
+        
+        if (this.files) {
+            [].forEach.call(this.files, function(file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const col = document.createElement('div');
+                    col.className = 'col-4';
+                    col.innerHTML = `
+                        <div class="position-relative rounded-3 overflow-hidden" style="padding-top: 100%;">
+                            <img src="${event.target.result}" class="position-absolute top-0 start-0 w-100 h-100" style="object-fit: cover;">
+                        </div>
+                    `;
+                    preview.appendChild(col);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+    });
+
+    // Simple Drag and Drop
+    const dropZone = document.getElementById('drop-zone');
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('bg-primary-subtle');
+    });
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.classList.remove('bg-primary-subtle');
+    });
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('bg-primary-subtle');
+        const files = e.dataTransfer.files;
+        document.getElementById('file-input').files = files;
+        const event = new Event('change');
+        document.getElementById('file-input').dispatchEvent(event);
+    });
+</script>
+@endpush
 @endsection

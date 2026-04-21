@@ -6,6 +6,8 @@ use App\Models\SanPham;
 use App\Models\DanhMuc;
 use Illuminate\Http\Request;
 
+use Illuminate\Support\Facades\Auth;
+
 class HomeController extends Controller
 {
     public function index()
@@ -19,20 +21,61 @@ class HomeController extends Controller
 
     public function profile()
     {
-        $user = auth()->user();
-        // Sử dụng relationship khachHang() đã định nghĩa trong model TaiKhoan
-        $customer = $user->khachHang; 
+        /** @var \App\Models\TaiKhoan $user */
+        $user = Auth::user();
         
-        if (!$customer) {
-            // Nếu không tìm thấy trong bảng khachhang, thử tìm theo MaTK
-            $customer = \App\Models\KhachHang::where('MaTK', $user->MaTK)->first();
-        }
+        // Lấy khách hàng liên kết với tài khoản này
+        $customer = \App\Models\KhachHang::where('MaTK', $user->MaTK)->first();
 
         if (!$customer) {
-            return redirect()->route('home')->with('error', 'Không tìm thấy thông tin khách hàng cho tài khoản này (MaTK: ' . $user->MaTK . ')');
+            return redirect()->route('home')->with('error', 'Không tìm thấy thông tin khách hàng.');
         }
 
-        $orders = \App\Models\DonHang::where('MaKH', $customer->MaKH)->orderBy('NgayDat', 'desc')->get();
-        return view('home.profile', compact('customer', 'orders'));
+        // Lấy tất cả đơn hàng của khách hàng này
+        $orders = \App\Models\DonHang::where('MaKH', $customer->MaKH)
+            ->orderBy('NgayDat', 'desc')
+            ->get();
+
+        $unreadCount = \App\Models\ThongBao::where('MaKH', $customer->MaKH)
+            ->where('TrangThaiDoc', false)
+            ->count();
+            
+        return view('home.profile', compact('customer', 'orders', 'unreadCount'));
+    }
+
+    public function markNotificationRead($id)
+    {
+        $tb = \App\Models\ThongBao::findOrFail($id);
+        $tb->update(['TrangThaiDoc' => true]);
+        return response()->json(['status' => 'success']);
+    }
+
+    public function markAllRead()
+    {
+        /** @var \App\Models\TaiKhoan $user */
+        $user = Auth::user();
+        $khachHang = \App\Models\KhachHang::where('MaTK', $user->MaTK)->first();
+        if ($khachHang) {
+            \App\Models\ThongBao::where('MaKH', $khachHang->MaKH)
+                ->where('TrangThaiDoc', false)
+                ->update(['TrangThaiDoc' => true]);
+        }
+        return response()->json(['status' => 'success']);
+    }
+
+    public function orderDetail($id)
+    {
+        $order = \App\Models\DonHang::with(['khachHang', 'chiTietDonHangs.sanPham'])->findOrFail($id);
+        
+        // Kiểm tra quyền (chỉ chủ đơn hàng hoặc admin mới được xem)
+        /** @var \App\Models\TaiKhoan $user */
+        $user = Auth::user();
+        $khachHang = \App\Models\KhachHang::where('MaTK', $user->MaTK)->first();
+        
+        if ($user->VaiTro !== 'Admin' && (!$khachHang || $order->MaKH !== $khachHang->MaKH)) {
+            return response()->json(['status' => 'error', 'message' => 'Bạn không có quyền xem đơn hàng này.'], 403);
+        }
+
+        return response()->json($order);
     }
 }

@@ -1,0 +1,140 @@
+:root {
+    --bg-main: #ffffff;
+    --bg-soft: #fbfbfb;
+    --gold-primary: #af9245;
+    --gold-dark: #8c7336;
+    --text-main: #1a1a1a;
+    --text-muted: #757575;
+    --border-soft: rgba(0,0,0,0.06);
+    --card-shadow: 0 20px 40px rgba(0,0,0,0.04);
+}
+
+/* Custom Cursor */
+#custom-cursor {
+    width: 20px;
+    height: 20px;
+    background: var(--gold-primary);
+    border-radius: 50%;
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    mix-blend-mode: difference;
+    transition: transform 0.1s ease;
+}
+
+/* Scroll Progress */
+#scroll-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 0%;
+    height: 3px;
+    background: linear-gradient(to right, var(--gold-primary), var(--gold-light));
+    z-index: 10000;
+}
+
+body {
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    font-family: 'Lato', sans-serif;
+    line-height: 1.6;
+}
+
+/* Typography Nâng Cao */
+.font-luxury { font-family: 'Playfair Display', serif; }
+.ls-2 { letter-spacing: 2px; }
+.ls-5 { letter-spacing: 5px; }
+
+/* Bento Grid */
+.bento-container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(2, 300px);
+    gap: 20px;
+}
+.bento-item {
+    position: relative;
+    border-radius: 24px;
+    overflow: hidden;
+    background: var(--bg-soft);
+}
+.bento-item-1 { grid-column: span 2; grid-row: span 2; }
+.bento-item-2 { grid-column: span 2; }
+
+/* Product Card Luxury v2 */
+.product-card {
+    background: #fff;
+    border: none;
+    border-radius: 0; /* Luxury style thường dùng góc vuông hoặc bo cực nhẹ */
+    transition: all 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+    position: relative;
+}
+.product-card .img-box {
+    background: var(--bg-soft);
+    padding: 40px;
+    height: 350px;
+    overflow: hidden;
+}
+.product-card:hover {
+    transform: translateY(-10px);
+}
+.product-card:hover .img-box img {
+    transform: scale(1.1);
+}
+
+/* Quick Action Buttons on Card */
+.card-actions {
+    position: absolute;
+    right: 20px;
+    top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    opacity: 0;
+    transform: translateX(20px);
+    transition: 0.3s;
+}
+.product-card:hover .card-actions {
+    opacity: 1;
+    transform: translateX(0);
+}
+.action-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    color: var(--text-main);
+    transition: 0.3s;
+}
+.action-btn:hover {
+    background: var(--text-main);
+    color: white;
+}
+
+/* Section Decor */
+.section-tag {
+    color: var(--gold-primary);
+    font-weight: 700;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    display: block;
+    margin-bottom: 15px;
+}
+
+/* Service Box */
+.service-box {
+    padding: 40px;
+    text-align: center;
+    border-right: 1px solid var(--border-soft);
+}
+.service-box:last-child { border-right: none; }
+.service-icon {
+    font-size: 2.5rem;
+    color: var(--gold-primary);
+    margin-bottom: 25px;
+}

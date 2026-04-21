@@ -11,6 +11,7 @@ class SanPhamController extends Controller
     public function index(Request $request)
     {
         $categoryId = $request->query('id', 0);
+        $sort = $request->query('sort', 'latest');
         $categories = DanhMuc::all();
         
         $query = SanPham::with(['danhmuc', 'tacgias']);
@@ -23,10 +24,27 @@ class SanPhamController extends Controller
             $pageTitle = "Tất cả sách";
         }
 
-        $products = $query->orderBy('NgayCapNhat', 'desc')->paginate(12);
+        // Logic sắp xếp
+        switch ($sort) {
+            case 'price_asc':
+                $query->orderBy('DonGia', 'asc');
+                break;
+            case 'price_desc':
+                $query->orderBy('DonGia', 'desc');
+                break;
+            case 'name':
+                $query->orderBy('TenSP', 'asc');
+                break;
+            case 'latest':
+            default:
+                $query->orderBy('NgayCapNhat', 'desc');
+                break;
+        }
+
+        $products = $query->paginate(12)->withQueryString();
         $totalRecords = $products->total();
 
-        return view('sanpham.list', compact('products', 'categories', 'pageTitle', 'totalRecords', 'categoryId'));
+        return view('sanpham.list', compact('products', 'categories', 'pageTitle', 'totalRecords', 'categoryId', 'sort'));
     }
 
     public function search(Request $request)

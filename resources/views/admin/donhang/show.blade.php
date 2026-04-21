@@ -3,233 +3,176 @@
 @section('title', 'Chi Tiết Đơn Hàng #' . str_pad($order->MaDH, 5, '0', STR_PAD_LEFT))
 
 @section('content')
-<style>
-    .detail-card {
-        background: var(--bg-white);
-        border: 1px solid var(--border-color);
-        border-radius: 12px;
-        overflow: hidden;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    }
+<div class="d-md-flex align-items-center justify-content-between mb-4 no-print">
+    <div>
+        <h3 class="mb-0 fw-bold">Chi Tiết Đơn Hàng</h3>
+        <p class="text-muted small mb-0">Mã đơn: <strong>#{{ str_pad($order->MaDH, 5, '0', STR_PAD_LEFT) }}</strong> | Ngày đặt: {{ date('d/m/Y H:i', strtotime($order->NgayDat)) }}</p>
+    </div>
+    <div class="mt-3 mt-md-0 d-flex gap-2">
+        <button onclick="window.print()" class="btn btn-luxury-outline">
+            <i class="fas fa-print me-2"></i> In hóa đơn
+        </button>
+        <a href="{{ route('admin.donhang.index') }}" class="btn btn-luxury-primary">
+            <i class="fas fa-arrow-left me-2"></i> Quay lại
+        </a>
+    </div>
+</div>
 
-    .detail-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 24px;
-    }
-
-    .detail-body {
-        padding: 24px;
-    }
-
-    .info-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 12px 0;
-        border-bottom: 1px solid var(--border-color);
-    }
-
-    .info-row:last-child {
-        border-bottom: none;
-    }
-
-    .info-label {
-        font-weight: 600;
-        color: var(--text-primary);
-    }
-
-    .info-value {
-        color: var(--text-secondary);
-    }
-
-    .status-badge {
-        padding: 6px 12px;
-        border-radius: 20px;
-        font-size: 0.875rem;
-        font-weight: 500;
-    }
-
-    .status-pending { background: #fef3c7; color: #92400e; }
-    .status-shipping { background: #dbeafe; color: #1e40af; }
-    .status-delivered { background: #d1fae5; color: #065f46; }
-    .status-cancelled { background: #fee2e2; color: #991b1b; }
-
-    .table {
-        border-radius: 8px;
-        overflow: hidden;
-    }
-
-    .table thead {
-        background: var(--bg-light);
-    }
-
-    .table thead th {
-        font-weight: 600;
-        color: var(--text-primary);
-        border: none;
-        padding: 16px;
-    }
-
-    .table tbody td {
-        padding: 16px;
-        border-bottom: 1px solid var(--border-color);
-    }
-
-    .total-row {
-        background: #f1f5f9;
-        font-weight: bold;
-        color: #dc2626;
-    }
-
-    .btn-back {
-        background: var(--text-primary);
-        color: white;
-        border: none;
-        padding: 12px 24px;
-        border-radius: 8px;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        transition: all 0.2s;
-    }
-
-    .btn-back:hover {
-        background: #334155;
-        color: white;
-        transform: translateY(-1px);
-    }
-</style>
-
-<div class="container-fluid py-4">
-    <div class="row justify-content-center">
-        <div class="col-lg-10">
-            <div class="detail-card">
-                <div class="detail-header">
-                    <div class="d-flex align-items-center gap-3">
-                        <i class="fas fa-receipt fa-2x"></i>
-                        <div>
-                            <h2 class="mb-1">Chi tiết đơn hàng</h2>
-                            <p class="mb-0 opacity-75">#{{ str_pad($order->MaDH, 5, '0', STR_PAD_LEFT) }}</p>
-                        </div>
-                    </div>
+<div class="row g-4">
+    <!-- Customer & Shipping Info -->
+    <div class="col-lg-4">
+        <div class="admin-card p-4 mb-4 h-100">
+            <h5 class="fw-bold mb-4"><i class="fas fa-user-circle me-2 text-primary"></i>Thông tin khách hàng</h5>
+            
+            <div class="d-flex align-items-center mb-4">
+                <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                    <i class="fas fa-user fs-4"></i>
                 </div>
+                <div>
+                    <h6 class="mb-1 fw-bold">{{ $order->khachHang->HoTen ?? 'Khách vãng lai' }}</h6>
+                    <p class="text-muted small mb-0">{{ $order->khachHang->Email ?? 'Không có email' }}</p>
+                </div>
+            </div>
 
-                <div class="detail-body">
-                    <!-- Thông tin cơ bản -->
-                    <div class="row g-3 mb-4">
-                        <div class="col-md-6">
-                            <div class="info-row">
-                                <span class="info-label">Khách hàng:</span>
-                                <span class="info-value">{{ $order->khachHang->HoTen ?? 'Khách vãng lai' }}</span>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-label">Ngày đặt:</span>
-                                <span class="info-value">{{ date('d/m/Y H:i', strtotime($order->NgayDat)) }}</span>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-label">Tổng tiền:</span>
-                                <span class="info-value fw-bold text-primary">{{ number_format($order->TongTien, 0, ',', '.') }} ₫</span>
-                            </div>
+            <div class="mb-4">
+                <label class="admin-form-label mb-1">Số điện thoại</label>
+                <p class="text-main fw-medium">{{ $order->khachHang->SDT ?? 'N/A' }}</p>
+            </div>
+
+            <div class="mb-4">
+                <label class="admin-form-label mb-1">Địa chỉ giao hàng</label>
+                <p class="text-main fw-medium mb-0">{{ $order->DiaChiGiaoHang ?? 'N/A' }}</p>
+            </div>
+
+            <div class="mb-0">
+                <label class="admin-form-label mb-1">Ghi chú từ khách</label>
+                <p class="text-muted small italic mb-0">{{ $order->GhiChu ?: 'Không có ghi chú' }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Summary -->
+    <div class="col-lg-8">
+        <div class="admin-card p-4 mb-4">
+            <h5 class="fw-bold mb-4"><i class="fas fa-shopping-bag me-2 text-primary"></i>Tóm tắt đơn hàng</h5>
+            
+            <div class="row g-3 mb-4">
+                <div class="col-sm-6 col-md-3">
+                    <label class="admin-form-label mb-1">Trạng thái</label>
+                    @php
+                        $statusClass = match($order->TrangThai) {
+                            'ChoXacNhan' => 'bg-warning text-dark',
+                            'DangGiao'   => 'bg-info text-white',
+                            'DaGiao'     => 'bg-success text-white',
+                            'DaHuy'      => 'bg-danger text-white',
+                            default      => 'bg-secondary text-white'
+                        };
+                        $statusText = match($order->TrangThai) {
+                            'ChoXacNhan' => 'Chờ xác nhận',
+                            'DangGiao'   => 'Đang giao',
+                            'DaGiao'     => 'Đã giao',
+                            'DaHuy'      => 'Đã hủy',
+                            default      => $order->TrangThai
+                        };
+                    @endphp
+                    <span class="badge {{ $statusClass }} py-2 px-3 w-100 rounded-pill">{{ $statusText }}</span>
+                </div>
+                <div class="col-sm-6 col-md-3">
+                    <label class="admin-form-label mb-1">Thanh toán</label>
+                    <span class="badge bg-light text-dark py-2 px-3 w-100 rounded-pill border">
+                        {{ $order->PhuongThucThanhToan === 'ChuyenKhoan' ? 'Chuyển khoản' : 'Tiền mặt (COD)' }}
+                    </span>
+                </div>
+                <div class="col-md-6">
+                    <form action="{{ route('admin.donhang.update_status', $order->MaDH) }}" method="POST" class="d-flex gap-2 align-items-end justify-content-md-end">
+                        @csrf
+                        <div class="flex-grow-1" style="max-width: 200px;">
+                            <label class="admin-form-label mb-1">Cập nhật trạng thái</label>
+                            <select name="status" class="form-select form-control-luxury py-2">
+                                <option value="ChoXacNhan" {{ $order->TrangThai == 'ChoXacNhan' ? 'selected' : '' }}>Chờ xác nhận</option>
+                                <option value="DangGiao" {{ $order->TrangThai == 'DangGiao' ? 'selected' : '' }}>Đang giao</option>
+                                <option value="DaGiao" {{ $order->TrangThai == 'DaGiao' ? 'selected' : '' }}>Đã giao</option>
+                                <option value="DaHuy" {{ $order->TrangThai == 'DaHuy' ? 'selected' : '' }}>Hủy đơn hàng</option>
+                            </select>
                         </div>
-                        <div class="col-md-6">
-                            <div class="info-row">
-                                <span class="info-label">Trạng thái:</span>
-                                @php
-                                    $statusClass = match($order->TrangThai) {
-                                        'ChoXacNhan' => 'status-pending',
-                                        'DangGiao'   => 'status-shipping',
-                                        'DaGiao'     => 'status-delivered',
-                                        'DaHuy'      => 'status-cancelled',
-                                        default      => 'status-pending'
-                                    };
-                                    $statusText = match($order->TrangThai) {
-                                        'ChoXacNhan' => 'Chờ xác nhận',
-                                        'DangGiao'   => 'Đang giao',
-                                        'DaGiao'     => 'Đã giao',
-                                        'DaHuy'      => 'Đã hủy',
-                                        default      => $order->TrangThai
-                                    };
-                                @endphp
-                                <span class="status-badge {{ $statusClass }}">
-                                    {{ $statusText }}
-                                </span>
+                        <button type="submit" class="btn btn-primary py-2 px-3"><i class="fas fa-check"></i></button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="table-custom-container">
+                <div class="table-responsive">
+                    <table class="table-custom">
+                        <thead>
+                            <tr>
+                                <th width="10%">Mã SP</th>
+                                <th>Sản phẩm</th>
+                                <th class="text-center" width="15%">Số lượng</th>
+                                <th class="text-end" width="20%">Đơn giá</th>
+                                <th class="text-end" width="20%">Thành tiền</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($order->chiTietDonHangs as $r)
+                                <tr>
+                                    <td class="text-muted fw-bold">#{{ $r->MaSP }}</td>
+                                    <td>
+                                        <div class="fw-bold text-main">{{ $r->sanPham->TenSP ?? 'Sản phẩm đã xóa' }}</div>
+                                        @if($r->sanPham && $r->sanPham->danhmuc)
+                                            <small class="text-muted">{{ $r->sanPham->danhmuc->TenDM }}</small>
+                                        @endif
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="fw-bold">{{ (int)$r->SoLuong }}</span>
+                                    </td>
+                                    <td class="text-end">
+                                        {{ number_format($r->DonGia, 0, ',', '.') }}₫
+                                    </td>
+                                    <td class="text-end fw-bold text-primary">
+                                        {{ number_format($r->ThanhTien, 0, ',', '.') }}₫
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                <div class="p-4 bg-light border-top">
+                    <div class="row justify-content-end">
+                        <div class="col-md-5 col-lg-4">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Tạm tính:</span>
+                                <span class="fw-medium">{{ number_format($order->TongTien + ($order->SoTienGiam ?? 0), 0, ',', '.') }}₫</span>
                             </div>
-                            <div class="info-row">
-                                <span class="info-label">Thanh toán:</span>
-                                <span class="info-value">
-                                    {{ $order->PhuongThucThanhToan === 'ChuyenKhoan' ? 'Chuyển khoản' : 'Tiền mặt (COD)' }}
-                                </span>
-                            </div>
-                            @if (!empty($order->DiaChiGiaoHang))
-                            <div class="info-row">
-                                <span class="info-label">Địa chỉ:</span>
-                                <span class="info-value">{{ $order->DiaChiGiaoHang }}</span>
+                            @if($order->SoTienGiam > 0)
+                            <div class="d-flex justify-content-between mb-2 text-danger">
+                                <span>Giảm giá:</span>
+                                <span>-{{ number_format($order->SoTienGiam, 0, ',', '.') }}₫</span>
                             </div>
                             @endif
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Phí vận chuyển:</span>
+                                <span class="fw-medium">Miễn phí</span>
+                            </div>
+                            <hr>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="h5 mb-0 fw-bold">Tổng thanh toán:</span>
+                                <span class="h4 mb-0 fw-bold text-primary">{{ number_format($order->TongTien, 0, ',', '.') }}₫</span>
+                            </div>
                         </div>
-                    </div>
-
-                    <!-- Chi tiết sản phẩm -->
-                    <h5 class="mb-3 fw-semibold" style="color: var(--text-primary);">
-                        <i class="fas fa-shopping-cart me-2"></i>Chi tiết sản phẩm
-                    </h5>
-
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-4">
-                            <thead>
-                                <tr>
-                                    <th width="10%">Mã SP</th>
-                                    <th>Sản phẩm</th>
-                                    <th class="text-center" width="15%">Số lượng</th>
-                                    <th class="text-center" width="20%">Đơn giá</th>
-                                    <th class="text-center" width="20%">Thành tiền</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($order->chiTietDonHang as $r)
-                                    <tr>
-                                        <td class="fw-semibold">#{{ $r->MaSP }}</td>
-                                        <td>
-                                            <div class="fw-semibold" style="color: var(--text-primary);">
-                                                {{ $r->sanpham->TenSP ?? 'Sản phẩm đã xóa' }}
-                                            </div>
-                                        </td>
-                                        <td class="text-center">
-                                            <span class="badge bg-light text-dark">
-                                                {{ (int)$r->SoLuong }}
-                                            </span>
-                                        </td>
-                                        <td class="text-center">
-                                            {{ number_format($r->DonGia, 0, ',', '.') }} ₫
-                                        </td>
-                                        <td class="text-center fw-semibold text-primary">
-                                            {{ number_format($r->ThanhTien, 0, ',', '.') }} ₫
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                            <tfoot>
-                                <tr class="total-row">
-                                    <th colspan="4" class="text-end py-3">Tổng cộng</th>
-                                    <th class="text-center py-3 fs-5">
-                                        {{ number_format($order->TongTien, 0, ',', '.') }} ₫
-                                    </th>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
-
-                    <div class="text-center">
-                        <a href="{{ route('admin.donhang.index') }}" class="btn-back">
-                            <i class="fas fa-arrow-left"></i>
-                            Quay lại danh sách đơn hàng
-                        </a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    @media print {
+        .no-print { display: none !important; }
+        .main-content { margin-left: 0 !important; padding-top: 0 !important; }
+        .sidebar, .topbar { display: none !important; }
+        .admin-card { border: 1px solid #eee !important; box-shadow: none !important; }
+        body { background: white !important; }
+    }
+</style>
 @endsection
