@@ -290,8 +290,4 @@
     }
 </script>
 @endpush
-@endsection   });
-    }
-</script>
-@endpush
 @endsection

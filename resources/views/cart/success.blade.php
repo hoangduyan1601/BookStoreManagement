@@ -12,24 +12,60 @@
                 <p class="text-muted lead">Cảm ơn bạn đã lựa chọn tri thức tại <span class="fw-bold text-dark">Luxury Bookstore</span>. Tuyệt tác của bạn đang được chuẩn bị.</p>
             </div>
 
-            <div class="glass-panel p-4 rounded-4 bg-white shadow-sm border-0 mb-5 text-start" data-aos="fade-up" data-aos-delay="200">
+            <div class="glass-panel p-4 rounded-4 bg-white shadow-sm border-0 mb-4 text-start" data-aos="fade-up" data-aos-delay="200">
                 <div class="d-flex justify-content-between mb-3 pb-3 border-bottom">
                     <span class="text-muted small fw-bold text-uppercase ls-1">Mã đơn hàng:</span>
                     <span class="fw-bold text-dark">#{{ $order->MaDH }}</span>
                 </div>
-                <div class="d-flex justify-content-between mb-3 pb-3 border-bottom">
-                    <span class="text-muted small fw-bold text-uppercase ls-1">Ngày đặt:</span>
-                    <span class="text-dark">{{ \Carbon\Carbon::parse($order->NgayDat)->format('d/m/Y H:i') }}</span>
+                
+                <!-- Danh sách sản phẩm -->
+                <div class="mb-4">
+                    <span class="text-muted small fw-bold text-uppercase ls-1 d-block mb-3">Chi tiết tác phẩm:</span>
+                    @foreach($order->chiTietDonHangs as $ct)
+                    <div class="d-flex align-items-center mb-3">
+                        <img src="{{ $ct->sanPham->HinhAnh ? (Str::startsWith($ct->sanPham->HinhAnh, 'http') ? $ct->sanPham->HinhAnh : asset('assets/images/products/' . $ct->sanPham->HinhAnh)) : 'https://via.placeholder.com/50x70' }}" 
+                             class="rounded-2 border" style="width: 40px; height: 55px; object-fit: contain; background: #f8f9fa;">
+                        <div class="ms-3 flex-grow-1">
+                            <div class="small fw-bold text-dark text-truncate" style="max-width: 250px;">{{ $ct->sanPham->TenSP }}</div>
+                            <small class="text-muted">{{ $ct->SoLuong }} x {{ number_format($ct->DonGia, 0, ',', '.') }}₫</small>
+                        </div>
+                        <div class="small fw-bold text-dark">{{ number_format($ct->ThanhTien, 0, ',', '.') }}₫</div>
+                    </div>
+                    @endforeach
                 </div>
-                <div class="d-flex justify-content-between mb-3 pb-3 border-bottom">
-                    <span class="text-muted small fw-bold text-uppercase ls-1">Tổng thanh toán:</span>
-                    <span class="fw-bold text-dark fs-5">{{ number_format($order->TongTien, 0, ',', '.') }}₫</span>
+
+                <div class="border-top pt-3">
+                    @if($order->SoTienGiam > 0)
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted small">Tạm tính:</span>
+                        <span class="small text-dark">{{ number_format($order->TongTien + $order->SoTienGiam, 0, ',', '.') }}₫</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted small">Giảm giá:</span>
+                        <span class="small text-danger">-{{ number_format($order->SoTienGiam, 0, ',', '.') }}₫</span>
+                    </div>
+                    @endif
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted small">Phí vận chuyển:</span>
+                        <span class="small text-success fw-bold">Miễn phí</span>
+                    </div>
+                    <div class="d-flex justify-content-between pt-2 border-top">
+                        <span class="text-muted small fw-bold text-uppercase ls-1">Tổng thanh toán:</span>
+                        <span class="fw-bold text-dark fs-5">{{ number_format($order->TongTien, 0, ',', '.') }}₫</span>
+                    </div>
                 </div>
-                <div class="d-flex justify-content-between">
-                    <span class="text-muted small fw-bold text-uppercase ls-1">Phương thức:</span>
-                    <span class="text-dark">
-                        {{ $order->PhuongThucThanhToan === 'TienMat' ? 'Thanh toán khi nhận hàng' : 'Chuyển khoản ngân hàng' }}
-                    </span>
+
+                <div class="mt-4 pt-3 border-top">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted small">Ngày đặt:</span>
+                        <span class="small text-dark">{{ \Carbon\Carbon::parse($order->NgayDat)->format('d/m/Y H:i') }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted small">Phương thức:</span>
+                        <span class="small text-dark">
+                            {{ $order->PhuongThucThanhToan === 'TienMat' ? 'Thanh toán khi nhận hàng' : 'Chuyển khoản ngân hàng' }}
+                        </span>
+                    </div>
                 </div>
             </div>
 

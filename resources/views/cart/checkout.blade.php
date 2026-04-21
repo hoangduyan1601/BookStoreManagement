@@ -20,6 +20,7 @@
             <div class="glass-panel p-4 rounded-4 bg-white shadow-sm border-0 mb-5">
                 <form method="POST" action="{{ route('checkout.process') }}" id="checkout-form">
                     @csrf
+                    <input type="hidden" name="selected_ids" value="{{ implode(',', $selectedIds) }}">
                     <div class="row g-3">
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-bold small text-muted">HỌ VÀ TÊN NGƯỜI NHẬN</label>
@@ -109,12 +110,28 @@
                                 <small class="text-muted fw-bold d-block mb-2 extra-small">KHUYẾN MÃI DÀNH CHO BẠN:</small>
                                 <div class="d-flex flex-column gap-2">
                                     @foreach ($promotions as $km)
-                                        <div class="p-2 border rounded-3 small d-flex justify-content-between align-items-center hover-bg-light" style="cursor: pointer; transition: 0.2s;" onclick="usePromo('{{ $km->MaGiamGia ?? $km->MaKM }}')">
-                                            <div>
-                                                <span class="fw-bold text-dark">{{ $km->TenKM }}</span>
-                                                <span class="badge bg-light text-dark ms-1" style="font-size: 0.6rem;">{{ $km->MaGiamGia }}</span>
+                                        @php
+                                            $isEligible = $totalPrice >= $km->DieuKienToiThieu;
+                                        @endphp
+                                        <div class="p-2 border rounded-4 small d-flex justify-content-between align-items-center {{ $isEligible ? 'hover-bg-light' : 'opacity-75 bg-light' }}" 
+                                             style="transition: 0.2s;">
+                                            <div class="flex-grow-1">
+                                                <div class="d-flex align-items-center mb-1">
+                                                    <span class="fw-bold text-dark">{{ $km->TenKM }}</span>
+                                                    <span class="badge bg-white text-dark border ms-2" style="font-size: 0.6rem;">{{ $km->MaGiamGia }}</span>
+                                                </div>
+                                                <div class="extra-small text-muted">
+                                                    Đơn tối thiểu: <span class="fw-bold">{{ number_format($km->DieuKienToiThieu, 0, ',', '.') }}₫</span>
+                                                </div>
                                             </div>
-                                            <span class="text-danger fw-bold">-{{ number_format($km->PhanTramGiam, 0) }}%</span>
+                                            <div class="text-end ms-3">
+                                                <div class="text-danger fw-bold mb-1">-{{ number_format($km->PhanTramGiam, 0) }}%</div>
+                                                @if($isEligible)
+                                                    <button type="button" onclick="usePromo('{{ $km->MaGiamGia }}')" class="btn btn-dark btn-sm py-1 px-3 rounded-pill extra-small fw-bold">ÁP DỤNG</button>
+                                                @else
+                                                    <button type="button" class="btn btn-light btn-sm py-1 px-3 rounded-pill extra-small fw-bold text-muted border" disabled title="Chưa đủ điều kiện">CHƯA ĐỦ</button>
+                                                @endif
+                                            </div>
                                         </div>
                                     @endforeach
                                 </div>

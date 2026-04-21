@@ -53,6 +53,30 @@ class HomeController extends Controller
         return view('home.profile', compact('customer', 'ordersInProgress', 'ordersCompleted', 'unreadCount'));
     }
 
+    public function updateProfile(Request $request)
+    {
+        $user = Auth::user();
+        $customer = \App\Models\KhachHang::where('MaTK', $user->MaTK)->first();
+
+        if (!$customer) {
+            return back()->with('error', 'Không tìm thấy thông tin khách hàng.');
+        }
+
+        $request->validate([
+            'HoTen' => 'required|string|max:255',
+            'SDT' => 'required|string|max:20',
+            'DiaChi' => 'required|string|max:500',
+        ]);
+
+        $customer->update([
+            'HoTen' => $request->HoTen,
+            'SDT' => $request->SDT,
+            'DiaChi' => $request->DiaChi,
+        ]);
+
+        return back()->with('success', 'Cập nhật hồ sơ thành công.');
+    }
+
     public function markNotificationRead($id)
     {
         $tb = \App\Models\ThongBao::findOrFail($id);

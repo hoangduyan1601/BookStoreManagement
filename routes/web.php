@@ -43,6 +43,7 @@ Route::get('/danhmuc/{id}', [SanPhamController::class, 'index'])->name('danhmuc.
 
 // Trang cá nhân khách hàng - đặt trước nhóm Admin
 Route::get('/profile', [HomeController::class, 'profile'])->name('customer.profile')->middleware('auth');
+Route::post('/profile/update', [HomeController::class, 'updateProfile'])->name('customer.profile.update')->middleware('auth');
 
 Route::middleware('auth')->group(function () {
     // Giỏ hàng
@@ -122,6 +123,14 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(fun
 
     // Profile
     Route::get('/profile', [DashboardController::class, 'profile'])->name('profile');
+
+    // Prank Mode Toggle
+    Route::post('/toggle-prank-mode', function(\Illuminate\Http\Request $request) {
+        $effect = $request->input('effect', 'none');
+        // Lưu vào cache toàn hệ thống
+        cache()->forever('prank_mode', $effect);
+        return response()->json(['status' => 'success', 'prank_mode' => $effect]);
+    })->name('toggle_prank_mode');
 
     // Route tạm thời để fix ảnh sản phẩm
     Route::get('/fix-images', function() {

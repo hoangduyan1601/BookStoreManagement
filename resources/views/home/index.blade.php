@@ -62,11 +62,11 @@
                 <div class="img-box position-relative">
                     <img src="{{ $sp->HinhAnh ? (Str::startsWith($sp->HinhAnh, 'http') ? $sp->HinhAnh : asset('assets/images/products/' . $sp->HinhAnh)) : 'https://via.placeholder.com/400x600' }}" class="img-fluid w-100 h-100 object-fit-contain transition-all">
                     
-                    <div class="card-actions">
+                    <div class="card-actions position-absolute top-0 end-0 p-3 d-flex flex-column gap-2" style="opacity: 0; transform: translateX(20px); transition: 0.3s; z-index: 10;">
                         <a href="{{ route('sanpham.detail', $sp->MaSP) }}" class="action-btn" title="Xem chi tiết"><i class="fa-solid fa-eye"></i></a>
-                        <button onclick="addToCart({{ $sp->MaSP }})" class="action-btn" title="Thêm vào giỏ"><i class="fa-solid fa-cart-plus"></i></button>
-                        <button onclick="toggleFavorite({{ $sp->MaSP }}, this)" class="action-btn" title="Yêu thích">
-                            <i class="{{ $sp->is_favorite ? 'fa-solid text-danger' : 'fa-regular' }} fa-heart"></i>
+                        <button onclick="addToCartIndex({{ $sp->MaSP }})" class="action-btn" title="Thêm vào giỏ"><i class="fa-solid fa-cart-plus"></i></button>
+                        <button onclick="toggleFavorite({{ $sp->MaSP }}, this)" class="action-btn {{ $sp->is_favorite ? 'active' : '' }}" title="Yêu thích">
+                            <i class="{{ $sp->is_favorite ? 'fa-solid' : 'fa-regular' }} fa-heart"></i>
                         </button>
                     </div>
 
@@ -132,7 +132,7 @@
         document.getElementById("scroll-progress").style.width = scrolled + "%";
     };
 
-    function addToCart(id) {
+    function addToCartIndex(id) {
         const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
         fetch(`{{ url('/cart/add') }}`, {
             method: 'POST',
