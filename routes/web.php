@@ -20,7 +20,15 @@ use App\Http\Controllers\Admin\AdminDoanhThuController;
 use App\Http\Controllers\Admin\AdminTaiKhoanController;
 use App\Http\Controllers\Admin\AdminThongBaoController;
 
+use App\Http\Controllers\YeuThichController;
+use App\Http\Controllers\BaiVietController;
+use App\Http\Controllers\Admin\AdminBaiVietController;
+
 Route::get('/', [HomeController::class, 'index'])->name('home');
+
+// Bài viết cho người dùng
+Route::get('/baiviet', [BaiVietController::class, 'index'])->name('baiviet.index');
+Route::get('/baiviet/{slug}', [BaiVietController::class, 'show'])->name('baiviet.show');
 
 Route::get('/login', [AuthController::class, 'login'])->name('login');
 Route::post('/login', [AuthController::class, 'handleLogin']);
@@ -37,26 +45,38 @@ Route::get('/danhmuc/{id}', [SanPhamController::class, 'index'])->name('danhmuc.
 Route::get('/profile', [HomeController::class, 'profile'])->name('customer.profile')->middleware('auth');
 
 Route::middleware('auth')->group(function () {
+    // Giỏ hàng
     Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
     Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
     Route::post('/cart/update', [CartController::class, 'update'])->name('cart.update');
+    Route::post('/cart/ajax-update', [CartController::class, 'ajaxUpdate'])->name('cart.ajaxUpdate');
+    Route::post('/cart/ajax-remove', [CartController::class, 'ajaxRemove'])->name('cart.ajaxRemove');
     Route::get('/cart/remove/{id}', [CartController::class, 'remove'])->name('cart.remove');
     Route::get('/cart/clear', [CartController::class, 'clear'])->name('cart.clear');
 
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
     Route::post('/checkout', [CheckoutController::class, 'process'])->name('checkout.process');
+    Route::get('/checkout/success/{id}', [CheckoutController::class, 'success'])->name('checkout.success');
     Route::post('/checkout/apply-promotion', [CheckoutController::class, 'applyPromotion'])->name('checkout.applyPromotion');
 
     // Thông báo & Đơn hàng cho người dùng
     Route::post('/notifications/mark-as-read/{id}', [HomeController::class, 'markNotificationRead']);
     Route::post('/notifications/mark-all-read', [HomeController::class, 'markAllRead']);
     Route::get('/orders/detail/{id}', [HomeController::class, 'orderDetail']);
+    Route::post('/orders/cancel/{id}', [HomeController::class, 'cancelOrder'])->name('orders.cancel');
+
+    // Yêu thích
+    Route::get('/favorites', [YeuThichController::class, 'index'])->name('favorites.index');
+    Route::post('/favorites/toggle', [YeuThichController::class, 'toggle'])->name('favorites.toggle');
 });
 
 // Admin routes
 Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/', [DashboardController::class, 'index']); // Fallback for /admin
+    
+    // Bài viết
+    Route::resource('baiviet', AdminBaiVietController::class);
     
     // Danh Muc
     Route::resource('danhmuc', AdminDanhMucController::class);

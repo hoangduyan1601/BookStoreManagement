@@ -104,6 +104,10 @@
     </a>
 
     <div class="nav-group-title">Quản lý kho</div>
+    <a href="{{ route('admin.baiviet.index') }}" class="sidebar-nav-link {{ request()->routeIs('admin.baiviet.*') ? 'active' : '' }}">
+        <i class="fas fa-newspaper"></i>
+        <span>Bài viết</span>
+    </a>
     <a href="{{ route('admin.sanpham.index') }}" class="sidebar-nav-link {{ request()->routeIs('admin.sanpham.*') ? 'active' : '' }}">
         <i class="fas fa-book"></i>
         <span>Sản phẩm</span>

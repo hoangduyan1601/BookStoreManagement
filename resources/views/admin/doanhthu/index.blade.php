@@ -165,6 +165,64 @@
     </div>
 </div>
 
+<!-- Favorite Statistics -->
+<div class="row g-4 mt-1">
+    <div class="col-lg-12">
+        <div class="admin-card p-4">
+            <h5 class="mb-4 fw-bold"><i class="fas fa-heart text-danger me-2"></i>Thống kê mức độ yêu thích sản phẩm</h5>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light text-uppercase small fw-bold">
+                        <tr>
+                            <th width="5%" class="ps-4">STT</th>
+                            <th width="10%">Mã SP</th>
+                            <th>Tên sản phẩm</th>
+                            <th class="text-center">Số lượt yêu thích</th>
+                            <th class="text-center">Xếp hạng quan tâm</th>
+                            <th width="10%" class="text-end pe-4">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($favorite_stats as $index => $sp)
+                        <tr>
+                            <td class="ps-4 text-muted">{{ $index + 1 }}</td>
+                            <td><span class="badge bg-light text-dark border">#SP{{ $sp->MaSP }}</span></td>
+                            <td>
+                                <div class="fw-bold text-dark">{{ $sp->TenSP }}</div>
+                            </td>
+                            <td class="text-center">
+                                <div class="d-inline-flex align-items-center bg-danger bg-opacity-10 text-danger px-3 py-1 rounded-pill fw-bold shadow-sm">
+                                    <i class="fas fa-heart me-2"></i> {{ $sp->favorites_count }}
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                @if($index == 0)
+                                    <span class="badge bg-warning text-dark"><i class="fas fa-crown me-1"></i> TOP 1</span>
+                                @elseif($index < 3)
+                                    <span class="badge bg-info text-white">Xu hướng</span>
+                                @else
+                                    <span class="text-muted small">Bình thường</span>
+                                @endif
+                            </td>
+                            <td class="text-end pe-4">
+                                <a href="{{ route('admin.sanpham.edit', $sp->MaSP) }}" class="btn btn-sm btn-outline-primary rounded-pill"><i class="fas fa-edit"></i></a>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="6" class="text-center py-5">
+                                <div class="text-muted mb-2"><i class="fas fa-heart-broken fs-2"></i></div>
+                                <div>Chưa có dữ liệu yêu thích nào được ghi nhận.</div>
+                            </td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>

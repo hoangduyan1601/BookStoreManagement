@@ -42,7 +42,46 @@
 
                 <div class="mb-3">
                     <label class="admin-form-label">Mô tả sản phẩm</label>
-                    <textarea name="MoTa" class="form-control form-control-luxury" rows="8" placeholder="Viết mô tả chi tiết về nội dung sách, giới thiệu tác phẩm...">{{ old('MoTa') }}</textarea>
+                    <textarea name="MoTa" class="form-control form-control-luxury" rows="8" placeholder="Viết mô tả ngắn gọn...">{{ old('MoTa') }}</textarea>
+                </div>
+            </div>
+
+            <div class="admin-card p-4 mb-4">
+                <h5 class="fw-bold mb-4"><i class="fas fa-list me-2 text-primary"></i>Thông số kỹ thuật</h5>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="admin-form-label">Số trang</label>
+                        <input type="number" name="SoTrang" class="form-control form-control-luxury" value="{{ old('SoTrang', 200) }}" placeholder="Ví dụ: 350">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="admin-form-label">Kích thước</label>
+                        <input type="text" name="KichThuoc" class="form-control form-control-luxury" value="{{ old('KichThuoc', '14.5 x 20.5 cm') }}" placeholder="Ví dụ: 14.5 x 20.5 cm">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="admin-form-label">Loại bìa</label>
+                        <select name="LoaiBia" class="form-select form-control-luxury">
+                            <option value="">-- Chọn loại bìa --</option>
+                            <option value="Bìa mềm" {{ old('LoaiBia', 'Bìa mềm') == 'Bìa mềm' ? 'selected' : '' }}>Bìa mềm</option>
+                            <option value="Bìa cứng" {{ old('LoaiBia') == 'Bìa cứng' ? 'selected' : '' }}>Bìa cứng</option>
+                            <option value="Bìa da" {{ old('LoaiBia') == 'Bìa da' ? 'selected' : '' }}>Bìa da</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="admin-form-label">Trọng lượng (gr)</label>
+                        <input type="number" name="TrongLuong" class="form-control form-control-luxury" value="{{ old('TrongLuong', 300) }}" placeholder="Ví dụ: 500">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="admin-form-label">Năm xuất bản</label>
+                        <input type="number" name="NamXuatBan" class="form-control form-control-luxury" value="{{ old('NamXuatBan', date('Y')) }}" placeholder="Ví dụ: 2024">
+                    </div>
+                </div>
+            </div>
+
+            <div class="admin-card p-4 mb-4">
+                <h5 class="fw-bold mb-4"><i class="fas fa-file-alt me-2 text-primary"></i>Nội dung chi tiết</h5>
+                <div class="mb-3">
+                    <label class="admin-form-label">Nội dung/Review chi tiết (Dùng cho trang sản phẩm)</label>
+                    <textarea name="NoiDungChiTiet" class="form-control form-control-luxury" rows="12" placeholder="Nhập nội dung review, giới thiệu chi tiết, mục lục...">{{ old('NoiDungChiTiet') }}</textarea>
                 </div>
             </div>
 
@@ -95,6 +134,15 @@
                             <option value="{{ $cat->MaDM }}" {{ old('MaDM') == $cat->MaDM ? 'selected' : '' }}>{{ $cat->TenDM }}</option>
                         @endforeach
                     </select>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-12">
+                        <label class="admin-form-label">Tồn kho ban đầu <span class="text-danger">*</span></label>
+                        <input type="number" name="SoLuong" class="form-control form-control-luxury" value="{{ old('SoLuong', 0) }}" min="0" required>
+                        <input type="hidden" name="SoLuongDaBan" value="0">
+                        <small class="text-muted">Nhập số lượng thực tế hiện có trong kho.</small>
+                    </div>
                 </div>
 
                 <div class="mb-0">

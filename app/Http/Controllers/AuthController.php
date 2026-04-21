@@ -55,8 +55,8 @@ class AuthController extends Controller
 
     private function redirectUser($role)
     {
-        $role = trim($role);
-        if (strcasecmp($role, 'QuanLy') === 0 || strcasecmp($role, 'NhanVien') === 0) {
+        $role = strtolower(trim($role));
+        if ($role === 'quanly' || $role === 'nhanvien' || $role === 'admin') {
             return redirect()->intended('/admin/dashboard');
         }
         return redirect()->intended('/');

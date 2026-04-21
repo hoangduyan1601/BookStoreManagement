@@ -18,7 +18,7 @@ class CheckoutController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $khachHang = KhachHang::where('MaTK', $user->id)->first();
+        $khachHang = KhachHang::where('MaTK', $user->MaTK)->first();
         
         if (!$khachHang) {
             return redirect()->route('cart.index')->with('error', 'Không tìm thấy thông tin khách hàng.');
@@ -44,6 +44,7 @@ class CheckoutController extends Controller
                         'name'  => $item->sanPham->TenSP,
                         'price' => $item->sanPham->DonGia,
                         'qty'   => $item->SoLuong,
+                        'image' => $item->sanPham->HinhAnh,
                         'ma_dm' => $item->sanPham->MaDM
                     ];
                     $totalPrice += $item->sanPham->DonGia * $item->SoLuong;
@@ -61,7 +62,7 @@ class CheckoutController extends Controller
     public function process(Request $request)
     {
         $user = Auth::user();
-        $khachHang = KhachHang::where('MaTK', $user->id)->first();
+        $khachHang = KhachHang::where('MaTK', $user->MaTK)->first();
         
         if (!$khachHang) {
             return redirect()->route('cart.index')->with('error', 'Không tìm thấy thông tin khách hàng.');
@@ -95,7 +96,8 @@ class CheckoutController extends Controller
         $tongTien = 0;
         foreach($items as $item) {
             if ($item->sanPham) {
-                $tongTien += $item->sanPham->DonGia * $item->SoLuong;
+                // Sử dụng gia_hien_tai để tính toán chính xác (đã bao gồm giảm giá trực tiếp SP/DM)
+                $tongTien += $item->sanPham->gia_hien_tai * $item->SoLuong;
             }
         }
 
@@ -104,10 +106,10 @@ class CheckoutController extends Controller
 
         if (session()->has('cart_promotion')) {
             $promo = session('cart_promotion');
+            // Kiểm tra lại điều kiện tối thiểu một lần nữa trước khi lưu
             if ($tongTien >= $promo['DieuKienToiThieu']) {
                 $maKM = $promo['MaKM'];
                 $soTienGiam = $promo['SoTienGiam'];
-                $tongTien -= $soTienGiam;
             }
         }
 
@@ -115,7 +117,7 @@ class CheckoutController extends Controller
         try {
             $donHang = DonHang::create([
                 'NgayDat' => now(),
-                'TongTien' => $tongTien,
+                'TongTien' => $tongTien - $soTienGiam, // Chỉ trừ một lần ở đây
                 'TrangThai' => 'ChoXacNhan',
                 'PhuongThucThanhToan' => $pttt,
                 'MaKH' => $khachHang->MaKH,
@@ -126,12 +128,12 @@ class CheckoutController extends Controller
 
             foreach ($items as $item) {
                 if ($item->sanPham) {
-                    $thanhTien = $item->sanPham->DonGia * $item->SoLuong;
+                    $thanhTien = $item->sanPham->gia_hien_tai * $item->SoLuong;
                     ChiTietDonHang::create([
                         'MaDH' => $donHang->MaDH,
                         'MaSP' => $item->MaSP,
                         'SoLuong' => $item->SoLuong,
-                        'DonGia' => $item->sanPham->DonGia,
+                        'DonGia' => $item->sanPham->gia_hien_tai,
                         'ThanhTien' => $thanhTien
                     ]);
 
@@ -144,13 +146,26 @@ class CheckoutController extends Controller
             session()->forget('cart_promotion');
             DB::commit();
 
-            // Redirect to a success page or customer orders
-            return redirect('/')->with('success', "Đặt hàng thành công! Mã đơn: #{$donHang->MaDH}");
+            return redirect()->route('checkout.success', $donHang->MaDH);
 
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Lỗi: ' . $e->getMessage());
         }
+    }
+
+    public function success($id)
+    {
+        $order = DonHang::with(['chiTietDonHangs.sanPham'])->findOrFail($id);
+        
+        // Bảo mật: Đảm bảo khách hàng chỉ xem được đơn hàng của chính mình
+        $user = Auth::user();
+        $khachHang = KhachHang::where('MaTK', $user->MaTK)->first();
+        if ($order->MaKH !== $khachHang->MaKH) {
+            return redirect('/')->with('error', 'Bạn không có quyền xem đơn hàng này.');
+        }
+
+        return view('cart.success', compact('order'));
     }
 
     public function applyPromotion(Request $request)
@@ -165,7 +180,6 @@ class CheckoutController extends Controller
             return response()->json(['status' => 'error', 'message' => 'Vui lòng nhập mã khuyến mãi.']);
         }
 
-        // In the view it says MaGiamGia but that's what we'll use.
         $promotion = KhuyenMai::where('MaGiamGia', $promoCode)
             ->where('NgayKetThuc', '>=', now())
             ->where('NgayBatDau', '<=', now())
@@ -175,15 +189,17 @@ class CheckoutController extends Controller
             return response()->json(['status' => 'error', 'message' => 'Mã khuyến mãi không hợp lệ hoặc đã hết hạn.']);
         }
 
-        $khachHang = KhachHang::where('MaTK', $user->id)->first();
+        $khachHang = KhachHang::where('MaTK', $user->MaTK)->first();
         $gioHang = GioHang::where('MaKH', $khachHang->MaKH)->first();
-        
+
         $totalPrice = 0;
         if ($gioHang) {
-            $totalPrice = DB::table('chitietgiohang')
-                ->join('sanpham', 'chitietgiohang.MaSP', '=', 'sanpham.MaSP')
-                ->where('chitietgiohang.MaGH', $gioHang->MaGH)
-                ->sum(DB::raw('sanpham.DonGia * chitietgiohang.SoLuong'));
+            $items = ChiTietGioHang::where('MaGH', $gioHang->MaGH)->with('sanPham')->get();
+            foreach ($items as $item) {
+                if ($item->sanPham) {
+                    $totalPrice += $item->sanPham->gia_hien_tai * $item->SoLuong;
+                }
+            }
         }
 
         if ($totalPrice < $promotion->DieuKienToiThieu) {

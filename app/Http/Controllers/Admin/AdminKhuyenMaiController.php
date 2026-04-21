@@ -11,16 +11,43 @@ use Illuminate\Http\Request;
 
 class AdminKhuyenMaiController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $list = KhuyenMai::with('danhMuc')->get();
+        $status = $request->get('status', 'active');
+        $type = $request->get('type', 'all');
+        $now = now();
+
+        $query = KhuyenMai::with('danhMuc');
+
+        // Lọc theo trạng thái thời gian
+        if ($status == 'active') {
+            $query->where('NgayBatDau', '<=', $now)->where('NgayKetThuc', '>=', $now);
+        } elseif ($status == 'upcoming') {
+            $query->where('NgayBatDau', '>', $now);
+        } elseif ($status == 'expired') {
+            $query->where('NgayKetThuc', '<', $now);
+        }
+
+        // Lọc theo loại khuyến mãi
+        if ($type !== 'all') {
+            $query->where('LoaiKM', $type);
+        }
+
+        $list = $query->orderBy('NgayBatDau', 'desc')->get();
         $categories = DanhMuc::all();
-        return view('admin.khuyenmai.index', compact('list', 'categories'));
+
+        // Đếm số lượng cho các nhãn (Giữ nguyên logic cũ cho nhãn status)
+        $countActive = KhuyenMai::where('NgayBatDau', '<=', $now)->where('NgayKetThuc', '>=', $now)->count();
+        $countUpcoming = KhuyenMai::where('NgayBatDau', '>', $now)->count();
+        $countExpired = KhuyenMai::where('NgayKetThuc', '<', $now)->count();
+
+        return view('admin.khuyenmai.index', compact('list', 'categories', 'status', 'type', 'countActive', 'countUpcoming', 'countExpired'));
     }
 
     public function create()
     {
-        return view('admin.khuyenmai.create');
+        $categories = DanhMuc::all();
+        return view('admin.khuyenmai.create', compact('categories'));
     }
 
     public function store(Request $request)
@@ -28,11 +55,17 @@ class AdminKhuyenMaiController extends Controller
         $request->validate([
             'TenKM' => 'required',
             'PhanTramGiam' => 'required|numeric',
+            'LoaiKM' => 'required'
         ]);
 
         $data = $request->all();
-        if (empty($data['MaDM'])) {
+        
+        // Reset dữ liệu dựa trên loại KM
+        if ($data['LoaiKM'] !== 'DanhMuc') {
             $data['MaDM'] = null;
+        }
+        if ($data['LoaiKM'] !== 'DonHang') {
+            $data['MaGiamGia'] = null;
         }
 
         $km = KhuyenMai::create($data);
@@ -67,7 +100,8 @@ class AdminKhuyenMaiController extends Controller
     public function edit($id)
     {
         $km = KhuyenMai::findOrFail($id);
-        return view('admin.khuyenmai.edit', compact('km'));
+        $categories = DanhMuc::all();
+        return view('admin.khuyenmai.edit', compact('km', 'categories'));
     }
 
     public function update(Request $request, $id)
@@ -75,13 +109,20 @@ class AdminKhuyenMaiController extends Controller
         $request->validate([
             'TenKM' => 'required',
             'PhanTramGiam' => 'required|numeric',
+            'LoaiKM' => 'required'
         ]);
 
         $km = KhuyenMai::findOrFail($id);
         $data = $request->all();
-        if (empty($data['MaDM'])) {
+
+        // Reset dữ liệu dựa trên loại KM
+        if ($data['LoaiKM'] !== 'DanhMuc') {
             $data['MaDM'] = null;
         }
+        if ($data['LoaiKM'] !== 'DonHang') {
+            $data['MaGiamGia'] = null;
+        }
+
         $km->update($data);
 
         return redirect()->route('admin.khuyenmai.index')->with('success', 'Cập nhật khuyến mãi thành công!');

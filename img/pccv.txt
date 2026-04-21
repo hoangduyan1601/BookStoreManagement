@@ -1,0 +1,21 @@
+# BẢNG PHÂN CHIA CÔNG VIỆC THÀNH VIÊN NHÓM
+DỰ ÁN: NHÀ SÁCH LUXURY - LARAVEL
+
+| TT | Họ và tên SV | Công việc được phân công |
+|----|--------------|-------------------------|
+| 1  | [Tên SV 1]   | Thiết kế hệ thống (Database, Migrations, Models, Layout chính Admin/App) |
+| 2  | [Tên SV 1]   | Quản lý Sản phẩm (Danh mục, Tác giả, Nhà xuất bản, Sản phẩm, Chi tiết sản phẩm) |
+| 3  | [Tên SV 1]   | Quản lý Nhập hàng (Nhà cung cấp, Lịch sử nhập hàng, Chi tiết nhập hàng) |
+| 4  | [Tên SV 1]   | Xây dựng Trang chủ, danh sách sản phẩm, bộ lọc tìm kiếm và trang chi tiết |
+| 5  | [Tên SV 1]   | Module Bài viết (Quản lý tin tức, blog và hiển thị phía người dùng) |
+| 6  | [Tên SV 2]   | Xây dựng hệ thống Xác thực (Auth): Đăng ký, Đăng nhập, Phân quyền người dùng |
+| 7  | [Tên SV 2]   | Xử lý Logic Giỏ hàng và quy trình Thanh toán (Checkout) |
+| 8  | [Tên SV 2]   | Quản lý Đơn hàng (Tiếp nhận và cập nhật trạng thái giao hàng) |
+| 9  | [Tên SV 2]   | Quản lý Khuyến mãi (Thiết lập mã giảm giá, chương trình ưu đãi theo danh mục) |
+| 10 | [Tên SV 2]   | Xây dựng Module Báo cáo & Thống kê (Doanh thu, lợi nhuận, sản phẩm bán chạy) |
+| 11 | [Tên SV 2]   | Tương tác khách hàng (Hệ thống thông báo và danh sách Sản phẩm yêu thích) |
+
+---
+**Ghi chú:**
+- SV 1 tập trung vào cấu trúc dữ liệu và các module quản lý kho/sản phẩm (Core & Inventory).
+- SV 2 tập trung vào luồng nghiệp vụ mua hàng, tài khoản và báo cáo (User Flow & Analytics).

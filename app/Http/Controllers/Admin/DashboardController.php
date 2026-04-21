@@ -39,8 +39,14 @@ class DashboardController extends BaseAdminController
             $data[] = $val;
         }
 
+        // TOP SẢN PHẨM YÊU THÍCH NHẤT
+        $topFavorites = SanPham::withCount('favorites')
+            ->orderBy('favorites_count', 'desc')
+            ->take(5)
+            ->get();
+
         return view('admin.dashboard', compact(
-            'tongSP', 'hetHang', 'khachHang', 'tongDon', 'donChoXacNhan', 'doanhThuThang', 'labels', 'data'
+            'tongSP', 'hetHang', 'khachHang', 'tongDon', 'donChoXacNhan', 'doanhThuThang', 'labels', 'data', 'topFavorites'
         ));
     }
 

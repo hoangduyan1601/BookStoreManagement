@@ -54,10 +54,11 @@
                 <thead>
                     <tr>
                         <th width="5%">#</th>
-                        <th width="25%">Sản phẩm</th>
+                        <th width="20%">Sản phẩm</th>
                         <th width="12%">Giá bán</th>
-                        <th width="10%">Số lượng</th>
-                        <th width="15%">Danh mục</th>
+                        <th width="10%">Tồn kho</th>
+                        <th width="10%">Đã bán</th>
+                        <th width="12%">Danh mục</th>
                         <th width="12%">Hình ảnh</th>
                         <th width="13%">Tác giả</th>
                         <th width="8%" class="text-center">Hành động</th>
@@ -71,7 +72,10 @@
                                 <div class="fw-bold text-main">{{ $sp->TenSP }}</div>
                                 <div class="text-muted small" style="font-size: 0.75rem;">{{ $sp->nhaxuatban->TenNXB ?? 'N/A' }}</div>
                             </td>
-                            <td><span class="fw-bold text-primary">{{ number_format($sp->DonGia) }}₫</span></td>
+                            <td>
+                                <div class="text-muted small text-decoration-line-through">{{ number_format($sp->DonGia) }}₫</div>
+                                <div class="fw-bold text-primary">{{ number_format($sp->gia_hien_tai) }}₫</div>
+                            </td>
                             <td>
                                 @if($sp->SoLuong > 20)
                                     <span class="badge bg-success bg-opacity-10 text-success badge-luxury">{{ $sp->SoLuong }}</span>
@@ -80,6 +84,9 @@
                                 @else
                                     <span class="badge bg-danger bg-opacity-10 text-danger badge-luxury">{{ $sp->SoLuong }}</span>
                                 @endif
+                            </td>
+                            <td>
+                                <span class="badge bg-info bg-opacity-10 text-info badge-luxury">{{ $sp->SoLuongDaBan ?? 0 }}</span>
                             </td>
                             <td><span class="text-muted small">{{ $sp->danhmuc->TenDM ?? 'Chưa có' }}</span></td>
                             <td>

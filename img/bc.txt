@@ -1,0 +1,56 @@
+# MẪU BÁO CÁO CHI TIẾT MODULE DỰ ÁN
+DỰ ÁN: NHÀ SÁCH LUXURY
+
+---
+
+## MODULE VÍ DỤ: QUẢN LÝ SẢN PHẨM (PRODUCT MANAGEMENT)
+
+### 1. Giới thiệu Module
+- **Chức năng:** Cho phép quản trị viên thêm, sửa, xóa và theo dõi danh sách sách trong hệ thống. Khách hàng có thể xem thông tin chi tiết của sách.
+- **Đối tượng sử dụng:** Admin (Quản lý), Khách hàng (Xem).
+
+### 2. Thiết kế Cơ sở dữ liệu (Database)
+Các bảng liên quan trực tiếp:
+- `sanpham`: Lưu thông tin chính (Tên, giá, số lượng...).
+- `danhmuc`: Liên kết loại sách (Khóa ngoại `MaDM`).
+- `chi_tiet_san_pham`: Lưu mô tả kỹ thuật, số trang, kích thước.
+- `sanpham_tacgia`: Bảng trung gian lưu quan hệ với tác giả.
+
+### 3. Cấu hình Router (`routes/web.php`)
+Các đường dẫn chính cho module này:
+```php
+// Phía Admin
+Route::resource('admin/sanpham', AdminSanPhamController::class);
+
+// Phía Khách hàng
+Route::get('/san-pham', [SanPhamController::class, 'index'])->name('sanpham.index');
+Route::get('/san-pham/{id}', [SanPhamController::class, 'detail'])->name('sanpham.detail');
+```
+
+### 4. Xử lý Logic (Controller)
+File: `app/Http/Controllers/Admin/AdminSanPhamController.php`
+- `index()`: Lấy danh sách sản phẩm phân trang và truyền ra View.
+- `store()`: Nhận dữ liệu từ Form, validate hình ảnh, lưu vào bảng `sanpham` và `chi_tiet_san_pham`.
+- `update()`: Cập nhật thông tin sản phẩm và xử lý thay đổi ảnh cũ/mới.
+- `destroy()`: Xóa sản phẩm và các ràng buộc liên quan (ảnh phụ, chi tiết).
+
+### 5. Giao diện (View - Blade Template)
+Thư mục: `resources/views/admin/sanpham/`
+- `index.blade.php`: Hiển thị bảng danh sách sản phẩm với các nút chức năng (Sửa/Xóa).
+- `create.blade.php`: Form nhập liệu sử dụng `enctype="multipart/form-data"` để upload ảnh.
+- `edit.blade.php`: Đổ dữ liệu cũ vào Form để người dùng chỉnh sửa.
+
+### 6. Mô tả luồng hoạt động (Sequence)
+1. Admin truy cập vào menu "Sản phẩm".
+2. Router gọi hàm `index()` của `AdminSanPhamController`.
+3. Controller truy vấn Model `SanPham` lấy dữ liệu.
+4. Dữ liệu được trả về View `admin.sanpham.index` để hiển thị lên trình duyệt.
+
+---
+
+## GỢI Ý CÁC MODULE KHÁC CẦN TRÌNH BÀY TƯƠNG TỰ:
+1. Module Đăng nhập & Phân quyền (Auth).
+2. Module Giỏ hàng & Thanh toán (Cart & Checkout).
+3. Module Quản lý Đơn hàng (Order Management).
+4. Module Khuyến mãi (Promotion).
+5. Module Báo cáo Doanh thu (Statistics).

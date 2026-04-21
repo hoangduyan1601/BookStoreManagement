@@ -19,7 +19,7 @@ class AdminSanPhamController extends Controller
         $search = $request->get('search');
         $categoryId = $request->get('category_id');
 
-        $query = SanPham::with(['danhmuc', 'nhaxuatban', 'tacgias']);
+        $query = SanPham::with(['danhmuc', 'nhaxuatban', 'tacgias'])->orderBy('MaSP', 'desc');
 
         if ($search) {
             $query->where('TenSP', 'LIKE', "%{$search}%");
@@ -47,6 +47,8 @@ class AdminSanPhamController extends Controller
         $request->validate([
             'TenSP' => 'required',
             'DonGia' => 'required|numeric',
+            'SoLuong' => 'required|integer|min:0',
+            'SoLuongDaBan' => 'nullable|integer|min:0',
             'MaDM' => 'required',
             'MaNXB' => 'required',
             'images.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048'
@@ -54,7 +56,19 @@ class AdminSanPhamController extends Controller
 
         DB::beginTransaction();
         try {
-            $product = SanPham::create($request->only(['TenSP', 'DonGia', 'MoTa', 'MaDM', 'MaNXB']) + ['SoLuong' => 0]);
+            $data = $request->only(['TenSP', 'DonGia', 'MoTa', 'MaDM', 'MaNXB', 'SoLuong']);
+            $data['SoLuongDaBan'] = $request->get('SoLuongDaBan', 0);
+            $product = SanPham::create($data);
+
+            // Lưu chi tiết sản phẩm
+            $product->chiTiet()->create([
+                'SoTrang' => $request->SoTrang,
+                'KichThuoc' => $request->KichThuoc,
+                'LoaiBia' => $request->LoaiBia,
+                'TrongLuong' => $request->TrongLuong,
+                'NamXuatBan' => $request->NamXuatBan,
+                'NoiDungChiTiet' => $request->NoiDungChiTiet,
+            ]);
 
             if ($request->hasFile('images')) {
                 $anhChinhIndex = $request->get('anh_chinh', 0);
@@ -90,7 +104,7 @@ class AdminSanPhamController extends Controller
 
     public function edit($id)
     {
-        $product = SanPham::with('hinhanhsanpham')->findOrFail($id);
+        $product = SanPham::with(['hinhanhsanpham', 'chiTiet'])->findOrFail($id);
         $all_categories = DanhMuc::all();
         $all_nxbs = NhaXuatBan::all();
         return view('admin.sanpham.edit', compact('product', 'all_categories', 'all_nxbs'));
@@ -102,11 +116,26 @@ class AdminSanPhamController extends Controller
         $request->validate([
             'TenSP' => 'required',
             'DonGia' => 'required|numeric',
+            'SoLuong' => 'required|integer|min:0',
+            'SoLuongDaBan' => 'nullable|integer|min:0',
         ]);
 
         DB::beginTransaction();
         try {
-            $product->update($request->only(['TenSP', 'DonGia', 'MoTa', 'MaDM', 'MaNXB']));
+            $product->update($request->only(['TenSP', 'DonGia', 'MoTa', 'MaDM', 'MaNXB', 'SoLuong', 'SoLuongDaBan']));
+
+            // Cập nhật hoặc tạo mới chi tiết sản phẩm
+            $product->chiTiet()->updateOrCreate(
+                ['MaSP' => $product->MaSP],
+                [
+                    'SoTrang' => $request->SoTrang,
+                    'KichThuoc' => $request->KichThuoc,
+                    'LoaiBia' => $request->LoaiBia,
+                    'TrongLuong' => $request->TrongLuong,
+                    'NamXuatBan' => $request->NamXuatBan,
+                    'NoiDungChiTiet' => $request->NoiDungChiTiet,
+                ]
+            );
 
             // Xóa ảnh được chọn
             if ($request->has('xoa_anh')) {
@@ -137,13 +166,26 @@ class AdminSanPhamController extends Controller
                 }
             }
 
-            // Cập nhật ảnh chính
+            // Cập nhật ảnh chính từ danh sách ảnh cũ
             if ($request->has('anh_chinh')) {
                 HinhAnhSanPham::where('MaSP', $id)->update(['LaAnhChinh' => 0]);
-                $mainImg = HinhAnhSanPham::findOrFail($request->anh_chinh);
-                $mainImg->update(['LaAnhChinh' => 1]);
-                $product->HinhAnh = $mainImg->DuongDan;
-                $product->save();
+                $mainImg = HinhAnhSanPham::find($request->anh_chinh);
+                if ($mainImg) {
+                    $mainImg->update(['LaAnhChinh' => 1]);
+                    $product->update(['HinhAnh' => $mainImg->DuongDan]);
+                }
+            }
+
+            // Nếu xóa ảnh mà ảnh đó là ảnh chính, hãy gán ảnh khác làm ảnh chính
+            $currentMain = HinhAnhSanPham::where('MaSP', $id)->where('LaAnhChinh', 1)->first();
+            if (!$currentMain) {
+                $anyImg = HinhAnhSanPham::where('MaSP', $id)->first();
+                if ($anyImg) {
+                    $anyImg->update(['LaAnhChinh' => 1]);
+                    $product->update(['HinhAnh' => $anyImg->DuongDan]);
+                } else {
+                    $product->update(['HinhAnh' => null]);
+                }
             }
 
             DB::commit();

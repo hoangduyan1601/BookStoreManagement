@@ -28,4 +28,9 @@ class KhachHang extends Model
     {
         return $this->hasMany(DonHang::class, 'MaKH', 'MaKH');
     }
+
+    public function favorites()
+    {
+        return $this->belongsToMany(SanPham::class, 'yeuthich', 'MaKH', 'MaSP')->withPivot('NgayThem');
+    }
 }
