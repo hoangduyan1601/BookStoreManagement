@@ -1,0 +1,82 @@
+# THIẾT KẾ CƠ SỞ DỮ LIỆU & SƠ ĐỒ LỚP - DỰ ÁN NHÀ SÁCH LUXURY
+
+## I. THIẾT KẾ CƠ SỞ DỮ LIỆU (DATABASE DESIGN - ERD)
+
+Dưới đây là danh sách 20 bảng trong hệ thống được đánh số thứ tự:
+
+### 1. Nhóm Danh mục & Sản phẩm
+1. **danhmuc**: Lưu thông tin các loại sách (Văn học, Kinh tế, Kỹ năng...).
+   - MaDM (PK), TenDM, MoTa
+2. **nhaxuatban**: Thông tin các nhà xuất bản.
+   - MaNXB (PK), TenNXB, DiaChi, SDT, Email
+3. **tacgia**: Thông tin tác giả sách.
+   - MaTacGia (PK), TenTacGia, NgaySinh, QuocTich, MoTa, AnhDaiDien
+4. **sanpham**: Thông tin chính của sách.
+   - MaSP (PK), TenSP, DonGia, SoLuong, MoTa, HinhAnh, MaDM (FK), MaNXB (FK), NgayCapNhat, SoLuongDaBan
+5. **chi_tiet_san_pham**: Thông tin kỹ thuật bổ sung cho sách.
+   - MaSP (PK, FK), SoTrang, KichThuoc, LoaiBia, TrongLuong, NamXuatBan, NoiDungChiTiet
+6. **hinhanhsanpham**: Lưu trữ nhiều hình ảnh cho một sản phẩm.
+   - MaHinh (PK), MaSP (FK), DuongDan, LaAnhChinh
+7. **sanpham_tacgia**: Bảng trung gian nối Sản phẩm và Tác giả (Quan hệ N-N).
+   - MaSP (PK, FK), MaTacGia (PK, FK), VaiTro
+
+### 2. Nhóm Người dùng & Khách hàng
+8. **taikhoan**: Quản lý thông tin đăng nhập và phân quyền.
+   - MaTK (PK), TenDangNhap (Unique), MatKhau, VaiTro, TrangThai
+9. **khachhang**: Thông tin định danh của khách hàng.
+   - MaKH (PK), HoTen, Email, SDT, DiaChi, NgayDangKy, MaTK (FK)
+10. **yeuthich**: Danh sách sản phẩm khách hàng đánh dấu yêu thích.
+    - MaKH (PK, FK), MaSP (PK, FK), NgayThem
+
+### 3. Nhóm Giao dịch & Đơn hàng
+11. **donhang**: Thông tin tổng quát của một đơn hàng.
+    - MaDH (PK), NgayDat, TongTien, TrangThai, PhuongThucThanhToan, MaKH (FK), DiaChiGiaoHang, MaKM (FK), SoTienGiam
+12. **chitietdonhang**: Danh sách các sản phẩm và số lượng trong đơn hàng.
+    - MaDH (PK, FK), MaSP (PK, FK), SoLuong, DonGia, ThanhTien
+13. **giohang**: Giỏ hàng hiện tại của khách hàng.
+    - MaGH (PK), MaKH (FK), NgayTao
+14. **chitietgiohang**: Các sản phẩm đang nằm trong giỏ hàng.
+    - MaGH (PK, FK), MaSP (PK, FK), SoLuong, DonGiaTamTinh
+
+### 4. Nhóm Nhập hàng & Nhà cung cấp
+15. **nhacungcap**: Thông tin các đơn vị cung cấp sách.
+    - MaNCC (PK), TenNCC, SDT, DiaChi, Email
+16. **lichsunhaphang**: Quản lý các đợt nhập hàng về kho.
+    - MaNhap (PK), NgayNhap, MaNCC (FK), TongTienNhap
+17. **chitietnhaphang**: Chi tiết số lượng và giá vốn của từng sản phẩm khi nhập.
+    - MaNhap (PK, FK), MaSP (PK, FK), SoLuongNhap, DonGiaNhap
+
+### 5. Nhóm Khác
+18. **khuyenmai**: Quản lý các mã giảm giá và chương trình ưu đãi.
+    - MaKM (PK), TenKM, PhanTramGiam, NgayBatDau, NgayKetThuc, DieuKien, LoaiKM, MaDM (FK), MaGiamGia
+19. **baiviet**: Tin tức, blog hoặc bài giới thiệu sách.
+    - MaBV (PK), TieuDe, Slug, TomTat, NoiDung, HinhAnh, NgayDang, TrangThai, MaTK (FK)
+20. **thongbao**: Gửi thông báo đến khách hàng.
+    - MaTB (PK), MaKH (FK), TieuDe, NoiDung, NgayGui, DaDoc
+21. **doanhthu**: Bảng tổng hợp số liệu báo cáo.
+    - MaBC (PK), Thang, Nam, TongDoanhThu, LoiNhuan
+
+---
+
+## II. SƠ ĐỒ LỚP (CLASS DIAGRAM - MODELS)
+
+Các Model chính trong Laravel và các mối quan hệ (Relationships):
+
+1. **Model SanPham**:
+   - `danhmuc()` (BelongsTo), `nhaxuatban()` (BelongsTo), `tacgias()` (BelongsToMany), `hinhanhsanpham()` (HasMany), `chiTiet()` (HasOne).
+2. **Model KhachHang**:
+   - `taiKhoan()` (BelongsTo), `donHangs()` (HasMany), `favorites()` (BelongsToMany).
+3. **Model TaiKhoan**:
+   - `khachHang()` (HasOne).
+4. **Model DonHang**:
+   - `khachHang()` (BelongsTo), `chiTietDonHangs()` (HasMany), `khuyenMai()` (BelongsTo).
+5. **Model GioHang**:
+   - `khachHang()` (BelongsTo), `chiTietGioHangs()` (HasMany).
+
+---
+
+## III. TỔNG KẾT MỐI QUAN HỆ CHÍNH
+
+- **Quan hệ 1 - 1**: (8-9) TaiKhoan - KhachHang; (4-5) SanPham - ChiTietSanPham.
+- **Quan hệ 1 - N**: (1-4) DanhMuc - SanPham; (9-11) KhachHang - DonHang; (11-12) DonHang - ChiTietDonHang.
+- **Quan hệ N - N**: (3-4) TacGia - SanPham qua bảng số (7); (9-4) KhachHang - SanPham qua bảng số (10).

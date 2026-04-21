@@ -135,6 +135,54 @@
     </div>
 </div>
 
+<div class="row g-4 mt-1">
+    <!-- Top Favorites -->
+    <div class="col-lg-12">
+        <div class="admin-card p-4">
+            <h5 class="mb-4 fw-bold"><i class="fas fa-heart text-danger me-2"></i>Sản phẩm được yêu thích nhất</h5>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr class="text-uppercase small fw-bold text-muted">
+                            <th width="10%" class="ps-4">Mã SP</th>
+                            <th>Tên sản phẩm</th>
+                            <th>Giá hiện tại</th>
+                            <th class="text-center">Lượt yêu thích</th>
+                            <th width="15%" class="text-end pe-4">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($topFavorites as $sp)
+                        <tr>
+                            <td class="ps-4">#SP{{ $sp->MaSP }}</td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <img src="{{ $sp->HinhAnh ? asset('assets/images/products/'.$sp->HinhAnh) : 'https://via.placeholder.com/40' }}" class="rounded-2 me-3" style="width: 40px; height: 50px; object-fit: cover;">
+                                    <div class="fw-bold">{{ $sp->TenSP }}</div>
+                                </div>
+                            </td>
+                            <td><span class="text-primary fw-bold">{{ number_format($sp->gia_hien_tai) }}₫</span></td>
+                            <td class="text-center">
+                                <div class="d-inline-flex align-items-center bg-danger bg-opacity-10 text-danger px-3 py-1 rounded-pill fw-bold">
+                                    <i class="fas fa-heart me-2"></i> {{ $sp->favorites_count }}
+                                </div>
+                            </td>
+                            <td class="text-end pe-4">
+                                <a href="{{ route('sanpham.detail', $sp->MaSP) }}" target="_blank" class="btn btn-sm btn-light rounded-pill border"><i class="fas fa-eye me-1"></i> Xem web</a>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="5" class="text-center py-4 text-muted">Chưa có dữ liệu yêu thích.</td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>

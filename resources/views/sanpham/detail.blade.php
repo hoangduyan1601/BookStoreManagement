@@ -45,8 +45,8 @@
         </div>
 
         <div class="col-lg-6">
-            <div class="glass-panel p-5 rounded-4 product-info-panel">
-                <h1 class="font-luxury display-5 mb-3">{{ $product->TenSP }}</h1>
+            <div class="product-info-panel p-lg-5 p-4 rounded-4 shadow-sm bg-white border">
+                <h1 class="font-luxury display-5 mb-3 text-dark">{{ $product->TenSP }}</h1>
                 
                 <div class="d-flex align-items-center gap-3 mb-4 small text-muted text-uppercase" style="letter-spacing: 1px;">
                     <span><i class="fa-solid fa-pen-nib me-2" style="color: var(--gold-primary)"></i>{{ $product->tac_gia_string ?? 'Tác giả ẩn danh' }}</span>
@@ -55,48 +55,109 @@
                 </div>
 
                 <div class="mb-4">
-                    <span class="display-5 fw-bold" style="color: var(--gold-light);">{{ number_format($product->DonGia, 0, ',', '.') }} VNĐ</span>
+                    @if($product->khuyen_mai_active)
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <span class="text-muted text-decoration-line-through fs-5">{{ number_format($product->DonGia, 0, ',', '.') }}₫</span>
+                            <span class="badge bg-danger rounded-pill">-{{ (int)$product->khuyen_mai_active->PhanTramGiam }}%</span>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-between">
+                            <span class="display-5 fw-bold text-danger">{{ number_format($product->gia_hien_tai, 0, ',', '.') }} VNĐ</span>
+                            <span class="text-muted small"><i class="fa-solid fa-fire me-1 text-danger"></i>Đã bán {{ (int)$product->SoLuongDaBan }} bản</span>
+                        </div>
+                    @else
+                        <div class="d-flex align-items-center justify-content-between">
+                            <span class="display-5 fw-bold text-dark">{{ number_format($product->DonGia, 0, ',', '.') }} VNĐ</span>
+                            <span class="text-muted small"><i class="fa-solid fa-fire me-1 text-danger"></i>Đã bán {{ (int)$product->SoLuongDaBan }} bản</span>
+                        </div>
+                    @endif
                 </div>
                 
-                <p class="lh-lg mb-5" style="color: var(--text-muted); font-size: 0.95rem;">
-                    {{ Str::limit($product->MoTa, 200) }}
+                <p class="lh-lg mb-5 text-muted" style="font-size: 0.95rem;">
+                    {{ $product->MoTa }}
                 </p>
                 
                 <div class="d-flex align-items-center gap-3 mb-4">
                     @if($product->SoLuong > 0)
-                        <div class="input-group glass-panel rounded-3 overflow-hidden" style="width: 140px; border-color: rgba(212,175,55,0.3);">
-                            <button class="btn btn-link text-white text-decoration-none px-3" type="button" onclick="updateQty(-1)"><i class="fa-solid fa-minus"></i></button>
-                            <input type="number" id="qty" class="form-control text-center bg-transparent text-white border-0" value="1" min="1" max="{{ $product->SoLuong }}" readonly>
-                            <button class="btn btn-link text-white text-decoration-none px-3" type="button" onclick="updateQty(1)"><i class="fa-solid fa-plus"></i></button>
+                        <div class="input-group rounded-3 overflow-hidden border" style="width: 140px;">
+                            <button class="btn btn-link text-dark text-decoration-none px-3" type="button" onclick="updateQty(-1)"><i class="fa-solid fa-minus"></i></button>
+                            <input type="number" id="qty" class="form-control text-center bg-transparent text-dark border-0 fw-bold" value="1" min="1" max="{{ $product->SoLuong }}" readonly>
+                            <button class="btn btn-link text-dark text-decoration-none px-3" type="button" onclick="updateQty(1)"><i class="fa-solid fa-plus"></i></button>
                         </div>
                         
-                        <button onclick="addToCartDetail({{ $product->MaSP }})" class="btn btn-luxury py-3 flex-grow-1 fs-6">
-                            Thêm vào giỏ hàng
+                        <button onclick="addToCart({{ $product->MaSP }})" class="btn btn-dark py-3 flex-grow-1 fs-6 fw-bold ls-1 rounded-3">
+                            THÊM VÀO GIỎ HÀNG
+                        </button>
+                        
+                        <button onclick="toggleFavorite({{ $product->MaSP }}, this)" class="btn btn-outline-dark py-3 px-4 rounded-3 {{ $product->is_favorite ? 'active' : '' }}">
+                            <i class="{{ $product->is_favorite ? 'fa-solid text-danger' : 'fa-regular' }} fa-heart fs-5"></i>
                         </button>
                     @else
-                        <button class="btn btn-outline-secondary py-3 flex-grow-1 fs-6" disabled style="cursor: not-allowed;">
+                        <button class="btn btn-outline-secondary py-3 flex-grow-1 fs-6" disabled>
                             Tạm hết hàng
                         </button>
                     @endif
                 </div>
 
-                <ul class="list-unstyled small mb-0" style="color: var(--text-muted);">
-                    <li class="mb-2"><i class="fa-solid fa-check me-2" style="color: var(--gold-primary)"></i> Đóng gói cao cấp</li>
-                    <li class="mb-2"><i class="fa-solid fa-check me-2" style="color: var(--gold-primary)"></i> Giao hàng tiêu chuẩn toàn quốc</li>
-                    <li><i class="fa-solid fa-check me-2" style="color: var(--gold-primary)"></i> Đổi trả trong 30 ngày</li>
+                <ul class="list-unstyled small mb-0 text-muted">
+                    <li class="mb-2"><i class="fa-solid fa-check me-2 text-success"></i> Đóng gói cao cấp</li>
+                    <li class="mb-2"><i class="fa-solid fa-check me-2 text-success"></i> Giao hàng tiêu chuẩn toàn quốc</li>
+                    <li><i class="fa-solid fa-check me-2 text-success"></i> Đổi trả trong 30 ngày</li>
                 </ul>
             </div>
         </div>
     </div>
 
     <!-- Description Details -->
-    <div class="row mt-5">
-        <div class="col-12">
-            <h3 class="font-luxury mb-4 text-center">Nội dung chi tiết</h3>
-            <div class="glass-panel p-5 rounded-4 mx-auto" style="max-width: 900px;">
-                <div class="content-text lh-lg text-light" style="font-weight: 300;">
-                    {!! nl2br(e($product->MoTa ?? 'Đang cập nhật...')) !!}
+    <div class="row mt-5 pt-5 border-top">
+        <div class="col-lg-8">
+            <h3 class="font-luxury mb-4 text-dark">Nội dung chi tiết</h3>
+            <div class="p-lg-5 p-4 rounded-4 mb-4 bg-white shadow-sm border">
+                <div class="content-text lh-lg text-dark" style="font-weight: 400;">
+                    {!! $product->chiTiet->NoiDungChiTiet ?? $product->MoTa !!}
                 </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <h3 class="font-luxury mb-4 text-dark">Thông số kỹ thuật</h3>
+            <div class="p-4 rounded-4 bg-white shadow-sm border">
+                <table class="table table-borderless text-dark small mb-0">
+                    <tbody>
+                        @if($product->chiTiet->SoTrang ?? false)
+                        <tr>
+                            <td class="ps-0 text-muted" width="45%">Số trang</td>
+                            <td class="fw-bold text-end text-dark">{{ $product->chiTiet->SoTrang }} trang</td>
+                        </tr>
+                        @endif
+                        @if($product->chiTiet->KichThuoc ?? false)
+                        <tr>
+                            <td class="ps-0 text-muted">Kích thước</td>
+                            <td class="fw-bold text-end text-dark">{{ $product->chiTiet->KichThuoc }}</td>
+                        </tr>
+                        @endif
+                        @if($product->chiTiet->LoaiBia ?? false)
+                        <tr>
+                            <td class="ps-0 text-muted">Loại bìa</td>
+                            <td class="fw-bold text-end text-dark">{{ $product->chiTiet->LoaiBia }}</td>
+                        </tr>
+                        @endif
+                        @if($product->chiTiet->TrongLuong ?? false)
+                        <tr>
+                            <td class="ps-0 text-muted">Trọng lượng</td>
+                            <td class="fw-bold text-end text-dark">{{ $product->chiTiet->TrongLuong }} gr</td>
+                        </tr>
+                        @endif
+                        @if($product->chiTiet->NamXuatBan ?? false)
+                        <tr>
+                            <td class="ps-0 text-muted">Năm xuất bản</td>
+                            <td class="fw-bold text-end text-dark">{{ $product->chiTiet->NamXuatBan }}</td>
+                        </tr>
+                        @endif
+                        <tr>
+                            <td class="ps-0 text-muted">Nhà xuất bản</td>
+                            <td class="fw-bold text-end text-dark">{{ $product->nhaxuatban->TenNXB ?? 'Đang cập nhật' }}</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -171,7 +232,7 @@
         }
     }
 
-    function addToCartDetail(id) {
+    function addToCart(id) {
         let qty = document.getElementById('qty').value;
         const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
@@ -186,9 +247,13 @@
                 if(confirm('Đã thêm sản phẩm vào giỏ hàng! Đến giỏ hàng ngay?')) {
                     if(typeof barba !== 'undefined') barba.go("{{ url('/cart') }}");
                     else window.location.href = "{{ url('/cart') }}";
-                } else {
-                    if(typeof barba !== 'undefined') barba.go(window.location.href);
-                    else location.reload();
+                }
+                
+                // Cập nhật số lượng giỏ hàng trên Header
+                const cartBadge = document.getElementById('cart-count-badge');
+                if (cartBadge) {
+                    cartBadge.innerText = data.cartCount;
+                    cartBadge.classList.remove('d-none');
                 }
             } else if(data.status === 'login_required') {
                 window.location.href = "{{ route('login') }}";
@@ -197,6 +262,35 @@
             }
         })
         .catch(err => console.error(err));
+    }
+
+    function toggleFavorite(maSP, btn) {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        fetch(`{{ route('favorites.toggle') }}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
+            body: JSON.stringify({ maSP: maSP })
+        })
+        .then(res => {
+            if (res.status === 401) {
+                window.location.href = "{{ route('login') }}";
+                return;
+            }
+            return res.json();
+        })
+        .then(data => {
+            if (data.status === 'added') {
+                btn.classList.add('active');
+                btn.querySelector('i').className = 'fa-solid fa-heart text-danger fs-5';
+            } else if (data.status === 'removed') {
+                btn.classList.remove('active');
+                btn.querySelector('i').className = 'fa-regular fa-heart fs-5';
+            }
+        });
+    }
+</script>
+@endpush
+@endsection   });
     }
 </script>
 @endpush

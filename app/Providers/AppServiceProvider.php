@@ -34,7 +34,7 @@ class AppServiceProvider extends ServiceProvider
                     $gioHang = \App\Models\GioHang::where('MaKH', $khachHang->MaKH)->first();
                     $cartCount = 0;
                     if ($gioHang) {
-                        $cartCount = \App\Models\ChiTietGioHang::where('MaGH', $gioHang->MaGH)->count();
+                        $cartCount = \App\Models\ChiTietGioHang::where('MaGH', $gioHang->MaGH)->sum('SoLuong');
                     }
 
                     $view->with('unreadCount', $unreadCount);

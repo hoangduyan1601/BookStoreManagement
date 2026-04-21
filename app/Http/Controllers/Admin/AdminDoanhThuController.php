@@ -7,6 +7,7 @@ use App\Models\DonHang;
 use App\Models\LichSuNhapHang;
 use App\Models\ChiTietDonHang;
 use App\Models\ChiTietNhapHang;
+use App\Models\SanPham;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -84,11 +85,16 @@ class AdminDoanhThuController extends Controller
         $top_ban = $top_ban_query->groupBy('chitietdonhang.MaSP', 'sanpham.TenSP')->orderBy('SoLuongBan', 'desc')->limit(5)->get();
         $top_nhap = $top_nhap_query->groupBy('chitietnhaphang.MaSP', 'sanpham.TenSP')->orderBy('SoLuongNhap', 'desc')->limit(5)->get();
 
+        // THỐNG KÊ YÊU THÍCH
+        $favorite_stats = SanPham::withCount('favorites')
+            ->orderBy('favorites_count', 'desc')
+            ->get();
+
         return view('admin.doanhthu.index', compact(
             'nam', 'yearsWithData', 'doanhthu_thang', 'nhaphang_thang', 
             'tong_doanh_thu', 'tong_nhap', 'loi_nhuan',
             'top_ban', 'top_nhap', 'doanhthu_tuan', 'nhaphang_tuan', 'labels_tuan',
-            'tu_ngay', 'den_ngay'
+            'tu_ngay', 'den_ngay', 'favorite_stats'
         ));
     }
 }

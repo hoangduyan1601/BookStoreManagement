@@ -41,27 +41,70 @@
                 <a href="{{ route('sanpham.index') }}" class="text-dark me-4 text-decoration-none small text-uppercase fw-bold hover-gold">Cửa hàng</a>
                 
                 <div class="d-flex gap-4 align-items-center">
-                    <a href="{{ url('/cart') }}" class="text-dark position-relative hover-gold" title="Giỏ hàng">
-                        <i class="fa-solid fa-cart-shopping fs-5"></i>
-                        @auth
-                            @if(isset($cartCount) && $cartCount > 0)
-                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-dark" style="font-size: 0.6rem;">{{ $cartCount }}</span>
-                            @endif
-                        @endauth
-                    </a>
-
                     @auth
                         @php
                             $customer = \App\Models\KhachHang::where('MaTK', auth()->user()->MaTK)->first();
-                            $unreadCount = $customer ? \App\Models\ThongBao::where('MaKH', $customer->MaKH)->where('TrangThaiDoc', false)->count() : 0;
+                            $favCount = $customer ? $customer->favorites()->count() : 0;
+                            
+                            $notifications = collect();
+                            $unreadCount = 0;
+                            if ($customer) {
+                                $notifications = \App\Models\ThongBao::where('MaKH', $customer->MaKH)->orderBy('NgayGui', 'desc')->take(5)->get();
+                                $unreadCount = \App\Models\ThongBao::where('MaKH', $customer->MaKH)->where('TrangThaiDoc', false)->count();
+                            }
                         @endphp
-                        <a href="{{ route('customer.profile') }}#notifications" class="text-dark position-relative hover-gold" title="Thông báo">
-                            <i class="fa-solid fa-bell fs-5"></i>
-                            @if($unreadCount > 0)
-                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6rem;" id="header-unread-badge">{{ $unreadCount }}</span>
-                            @endif
+                        
+                        <!-- Notification System -->
+                        <div class="position-relative notification-wrapper">
+                            <a href="javascript:void(0)" class="text-dark position-relative hover-gold p-2" id="noti-trigger" title="Thông báo">
+                                <i class="fa-regular fa-bell fs-5"></i>
+                                <span id="noti-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger {{ $unreadCount > 0 ? '' : 'd-none' }}" style="font-size: 0.6rem; margin-top: 5px; margin-left: -5px;">{{ $unreadCount }}</span>
+                            </a>
+
+                            <!-- 3D Notification Panel -->
+                            <div class="noti-3d-panel shadow-2xl" id="noti-panel">
+                                <div class="noti-header d-flex justify-content-between align-items-center p-4 border-bottom">
+                                    <h6 class="fw-bold m-0 text-dark ls-1">THÔNG BÁO</h6>
+                                    @if($unreadCount > 0)
+                                        <button onclick="markAllAsRead()" class="btn btn-link p-0 text-muted extra-small fw-bold text-decoration-none hover-gold">ĐÁNH DẤU ĐÃ ĐỌC</button>
+                                    @endif
+                                </div>
+                                <div class="noti-body custom-scrollbar" style="max-height: 350px; overflow-y: auto;">
+                                    @forelse($notifications as $tb)
+                                        <div class="noti-item p-4 border-bottom {{ $tb->TrangThaiDoc ? 'opacity-75' : 'bg-light-gold border-start border-4 border-dark' }}" 
+                                             onclick="markAsRead({{ $tb->MaTB }}, '{{ $tb->LienKet }}')">
+                                            <div class="d-flex justify-content-between mb-1">
+                                                <span class="fw-bold small text-dark">{{ $tb->TieuDe }}</span>
+                                                <small class="text-muted extra-small">{{ \Carbon\Carbon::parse($tb->NgayGui)->diffForHumans() }}</small>
+                                            </div>
+                                            <p class="mb-0 text-secondary extra-small lh-base">{{ Str::limit($tb->NoiDung, 80) }}</p>
+                                        </div>
+                                    @empty
+                                        <div class="text-center py-5">
+                                            <i class="fa-solid fa-bell-slash fs-1 text-light mb-3"></i>
+                                            <p class="text-muted small mb-0">Bạn chưa có thông báo nào.</p>
+                                        </div>
+                                    @endforelse
+                                </div>
+                                <div class="noti-footer p-3 text-center border-top">
+                                    <a href="{{ url('/profile') }}" class="text-dark fw-bold extra-small ls-2 text-decoration-none hover-gold">XEM TẤT CẢ</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <a href="{{ route('favorites.index') }}" class="text-dark position-relative hover-gold p-2" title="Yêu thích">
+                            <i class="fa-regular fa-heart fs-5"></i>
+                            <span id="fav-count-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-dark {{ $favCount > 0 ? '' : 'd-none' }}" style="font-size: 0.6rem; margin-top: 5px; margin-left: -5px;">{{ $favCount }}</span>
                         </a>
-                        <a href="{{ route('customer.profile') }}" class="text-dark hover-gold" title="Tài khoản">
+                    @endauth
+
+                    <a href="{{ url('/cart') }}" class="text-dark position-relative hover-gold p-2" title="Giỏ hàng">
+                        <i class="fa-solid fa-cart-shopping fs-5"></i>
+                        <span id="cart-count-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-dark {{ (isset($cartCount) && $cartCount > 0) ? '' : 'd-none' }}" style="font-size: 0.6rem; margin-top: 5px; margin-left: -5px;">{{ $cartCount ?? 0 }}</span>
+                    </a>
+
+                    @auth
+                        <a href="{{ route('customer.profile') }}" class="text-dark hover-gold p-2" title="Tài khoản">
                             <i class="fa-regular fa-user fs-5"></i>
                         </a>
                         <a href="{{ route('logout') }}" 
@@ -113,6 +156,60 @@
     <script src="https://unpkg.com/@barba/core"></script>
     <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.1.1/model-viewer.min.js"></script>
     <script src="{{ asset('assets/js/luxury-app.js') }}"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const notiTrigger = document.getElementById('noti-trigger');
+            const notiPanel = document.getElementById('noti-panel');
+            let isNotiOpen = false;
+
+            if (notiTrigger && notiPanel) {
+                notiTrigger.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    isNotiOpen = !isNotiOpen;
+                    if (isNotiOpen) {
+                        notiPanel.classList.add('active');
+                        // Hiệu ứng GSAP bổ trợ để "nhảy" mượt hơn
+                        gsap.from("#noti-panel .noti-item", {
+                            opacity: 0,
+                            y: 10,
+                            stagger: 0.05,
+                            duration: 0.4,
+                            ease: "power2.out"
+                        });
+                    } else {
+                        notiPanel.classList.remove('active');
+                    }
+                });
+
+                document.addEventListener('click', (e) => {
+                    if (!notiPanel.contains(e.target) && !notiTrigger.contains(e.target)) {
+                        notiPanel.classList.remove('active');
+                        isNotiOpen = false;
+                    }
+                });
+            }
+        });
+
+        function markAsRead(id, link) {
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            fetch(`/notifications/mark-as-read/${id}`, {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' }
+            }).then(() => {
+                if(link && link !== '' && link !== 'null') window.location.href = link;
+                else location.reload();
+            });
+        }
+
+        function markAllAsRead() {
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            fetch(`/notifications/mark-all-read`, {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' }
+            }).then(() => location.reload());
+        }
+    </script>
     @stack('scripts')
 </body>
 </html>

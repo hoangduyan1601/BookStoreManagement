@@ -138,3 +138,52 @@ body {
     color: var(--gold-primary);
     margin-bottom: 25px;
 }
+/* Notification 3D Panel */
+.notification-wrapper { z-index: 1050; }
+.noti-3d-panel {
+    position: absolute;
+    top: 150%;
+    right: 0;
+    width: 400px;
+    background: #ffffff;
+    border-radius: 24px;
+    border: 1px solid rgba(175, 146, 69, 0.2); /* Viền màu vàng gold nhạt */
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px) rotateX(-10deg);
+    transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+    transform-origin: top right;
+    pointer-events: none;
+    z-index: 1000;
+    box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.15), 0 18px 36px -18px rgba(0, 0, 0, 0.2); /* Đổ bóng sâu */
+}
+.noti-3d-panel.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) rotateX(0);
+    pointer-events: auto;
+}
+.noti-header {
+    background: #fcfbf7; /* Nền header hơi vàng nhẹ sang trọng */
+    border-radius: 24px 24px 0 0;
+}
+.bg-light-gold { background-color: rgba(175, 146, 69, 0.07); } /* Màu unread rõ hơn */
+.ls-1 { letter-spacing: 1px; }
+.noti-item { 
+    cursor: pointer; 
+    transition: all 0.2s; 
+    border-left: 4px solid transparent;
+}
+.noti-item:hover { 
+    background-color: #f8f9fa; 
+    border-left-color: var(--gold-primary);
+}
+.noti-item.unread {
+    border-left-color: var(--gold-primary);
+    background-color: rgba(175, 146, 69, 0.05);
+}
+.extra-small { font-size: 0.7rem; }
+.custom-scrollbar::-webkit-scrollbar { width: 4px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(175, 146, 69, 0.3); border-radius: 10px; }
+

@@ -22,17 +22,13 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // 2. KHỞI TẠO ANIMATION CƠ BẢN CHO TRANG ĐẦU TIÊN
+    // 2. KHỞI TẠO ANIMATION CƠ BẢN
     function initPageAnimations() {
         if (typeof gsap === 'undefined') return;
-
-        // Reset trạng thái trước khi animate để tránh bị kẹt
         gsap.set('.product-card', { opacity: 1, filter: 'none' });
-
         if(document.querySelector('.hero-content')) {
             gsap.from('.hero-content', { y: 50, opacity: 0, duration: 1.5, ease: "power4.out", delay: 0.2 });
         }
-
         const bentoItems = document.querySelectorAll('.product-card, .bento-item');
         if(bentoItems.length > 0 && typeof ScrollTrigger !== 'undefined') {
             gsap.from(bentoItems, {
@@ -46,12 +42,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 stagger: 0.05,
                 duration: 0.8,
                 ease: "power2.out",
-                clearProps: "opacity,visibility,transform" // Chỉ xóa các thuộc tính GSAP tác động, giữ lại background-image
+                clearProps: "all"
             });
-        }
-        
-        if(document.querySelector('.product-info-panel')) {
-            gsap.from('.product-info-panel', { x: 50, opacity: 0, duration: 1, ease: "power3.out", delay: 0.2 });
         }
     }
 
@@ -61,59 +53,71 @@ document.addEventListener("DOMContentLoaded", () => {
     if (typeof barba !== 'undefined') {
         barba.init({
             sync: true,
+            cacheIgnore: true, // Vô hiệu hóa cache để luôn lấy dữ liệu mới nhất
+            prefetchIgnore: true,
             transitions: [{
                 name: '3d-cube-transition',
                 leave(data) {
                     const done = this.async();
-                    gsap.to('.barba-transition-layer', { opacity: 1, duration: 0.4 });
+                    gsap.to('.barba-transition-layer', { opacity: 1, duration: 0.3 });
                     gsap.to(data.current.container, {
-                        scale: 0.8,
-                        rotationY: -90,
+                        scale: 0.9,
+                        rotationY: -15,
                         opacity: 0,
-                        transformOrigin: "right center",
-                        duration: 0.8,
-                        ease: "power3.inOut",
+                        duration: 0.5,
+                        ease: "power2.inOut",
                         onComplete: done
                     });
                 },
                 enter(data) {
-                    gsap.set(data.next.container, {
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        width: '100%',
-                        scale: 0.8,
-                        rotationY: 90,
-                        transformOrigin: "left center",
-                        opacity: 0
-                    });
-                    gsap.to(data.next.container, {
-                        scale: 1,
-                        rotationY: 0,
-                        opacity: 1,
-                        duration: 0.8,
-                        ease: "power3.inOut",
+                    window.scrollTo(0, 0);
+                    gsap.from(data.next.container, {
+                        scale: 0.9,
+                        rotationY: 15,
+                        opacity: 0,
+                        duration: 0.5,
+                        ease: "power2.out",
                         onComplete: () => {
-                            gsap.set(data.next.container, { clearProps: "all" });
-                            gsap.to('.barba-transition-layer', { opacity: 0, duration: 0.4 });
-                            if (typeof ScrollTrigger !== 'undefined') {
-                                ScrollTrigger.getAll().forEach(t => t.kill());
-                            }
                             initPageAnimations();
-                            
-                            // Re-execute scripts in the new container
-                            const scripts = data.next.container.querySelectorAll('script');
-                            scripts.forEach(script => {
-                                const newScript = document.createElement('script');
-                                Array.from(script.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
-                                newScript.appendChild(document.createTextNode(script.innerHTML));
-                                script.parentNode.replaceChild(newScript, script);
-                            });
+                            updateHeaderBadges(data.next.html);
                         }
+                    });
+
+                    // Re-execute scripts
+                    const scripts = data.next.container.querySelectorAll('script');
+                    scripts.forEach(script => {
+                        const newScript = document.createElement('script');
+                        Array.from(script.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+                        newScript.appendChild(document.createTextNode(script.innerHTML));
+                        script.parentNode.replaceChild(newScript, script);
                     });
                 }
             }]
         });
+
+        // Hàm cập nhật Badge trên Header từ HTML mới nhận được
+        function updateHeaderBadges(html) {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            
+            // Cập nhật Badge Giỏ hàng
+            const newCartBadge = doc.getElementById('cart-count-badge');
+            const currentCartBadge = document.getElementById('cart-count-badge');
+            if (newCartBadge && currentCartBadge) {
+                currentCartBadge.innerText = newCartBadge.innerText;
+                if (newCartBadge.classList.contains('d-none')) currentCartBadge.classList.add('d-none');
+                else currentCartBadge.classList.remove('d-none');
+            }
+
+            // Cập nhật Badge Yêu thích
+            const newFavBadge = doc.getElementById('fav-count-badge');
+            const currentFavBadge = document.getElementById('fav-count-badge');
+            if (newFavBadge && currentFavBadge) {
+                currentFavBadge.innerText = newFavBadge.innerText;
+                if (newFavBadge.classList.contains('d-none')) currentFavBadge.classList.add('d-none');
+                else currentFavBadge.classList.remove('d-none');
+            }
+        }
 
         barba.hooks.after((data) => {
             const nextHtml = data.next.html;

@@ -66,6 +66,19 @@
                                         <img src="{{ $sp->HinhAnh ? asset('assets/images/products/' . $sp->HinhAnh) : 'https://via.placeholder.com/400x600' }}" 
                                              style="max-height:85%; max-width:85%; object-fit:contain; transition: 0.5s ease;" alt="{{ $sp->TenSP }}">
                                     </a>
+                                    
+                                    @if($sp->khuyen_mai_active)
+                                        <div class="position-absolute top-0 start-0 p-2" style="z-index: 5;">
+                                            <span class="badge bg-danger rounded-pill shadow-sm">-{{ (int)$sp->khuyen_mai_active->PhanTramGiam }}%</span>
+                                        </div>
+                                    @endif
+
+                                    <div class="card-actions-overlay position-absolute top-0 end-0 p-2 d-flex flex-column gap-2" style="z-index: 5;">
+                                        <button onclick="toggleFavorite({{ $sp->MaSP }}, this)" class="btn btn-white shadow-sm rounded-circle d-flex align-items-center justify-content-center {{ $sp->is_favorite ? 'active' : '' }}" style="width: 35px; height: 35px; background: white; border: none;">
+                                            <i class="{{ $sp->is_favorite ? 'fa-solid text-danger' : 'fa-regular' }} fa-heart"></i>
+                                        </button>
+                                    </div>
+
                                     @if($sp->SoLuong <= 0) 
                                         <div class="position-absolute top-50 start-50 translate-middle bg-white bg-opacity-75 px-3 py-1 rounded-pill small fw-bold text-muted border">TẠM HẾT</div> 
                                     @endif
@@ -86,7 +99,14 @@
 
                                     <div class="mt-4">
                                         <div class="d-flex justify-content-between align-items-center mb-3">
-                                            <span class="text-dark fw-bold fs-5">{{ number_format($sp->DonGia, 0, ',', '.') }}₫</span>
+                                            <div>
+                                                @if($sp->khuyen_mai_active)
+                                                    <div class="text-muted small text-decoration-line-through" style="font-size: 0.7rem;">{{ number_format($sp->DonGia, 0, ',', '.') }}₫</div>
+                                                    <span class="text-danger fw-bold fs-5">{{ number_format($sp->gia_hien_tai, 0, ',', '.') }}₫</span>
+                                                @else
+                                                    <span class="text-dark fw-bold fs-5">{{ number_format($sp->DonGia, 0, ',', '.') }}₫</span>
+                                                @endif
+                                            </div>
                                             <span class="text-muted extra-small">Đã bán {{ (int)$sp->SoLuongDaBan }}</span>
                                         </div>
                                         @php $outOfStock = (int)$sp->SoLuong <= 0; @endphp
@@ -129,12 +149,49 @@ function addToCart(id) {
     .then(data => {
         if(data.status === 'success') {
             alert('Đã thêm tuyệt tác vào giỏ hàng!');
-            if(typeof barba !== 'undefined') barba.go(window.location.href);
-            else location.reload(); 
+            
+            // Cập nhật số lượng giỏ hàng trên Header
+            const cartBadge = document.getElementById('cart-count-badge');
+            if (cartBadge) {
+                cartBadge.innerText = data.cartCount;
+                cartBadge.classList.remove('d-none');
+            }
         } else if(data.status === 'login_required') {
             window.location.href = "{{ route('login') }}";
         } else {
             alert(data.message);
+        }
+    });
+}
+
+function toggleFavorite(maSP, btn) {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    fetch(`{{ route('favorites.toggle') }}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
+        body: JSON.stringify({ maSP: maSP })
+    })
+    .then(res => {
+        if (res.status === 401) {
+            window.location.href = "{{ route('login') }}";
+            return;
+        }
+        return res.json();
+    })
+    .then(data => {
+        const icon = btn.querySelector('i');
+        if (data.status === 'added') {
+            icon.className = 'fa-solid fa-heart text-danger';
+        } else if (data.status === 'removed') {
+            icon.className = 'fa-regular fa-heart';
+        }
+
+        // Cập nhật số lượng trên Header
+        const badge = document.getElementById('fav-count-badge');
+        if (badge) {
+            badge.innerText = data.favCount;
+            if (data.favCount > 0) badge.classList.remove('d-none');
+            else badge.classList.add('d-none');
         }
     });
 }

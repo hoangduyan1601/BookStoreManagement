@@ -43,7 +43,46 @@
 
                 <div class="mb-3">
                     <label class="admin-form-label">Mô tả sản phẩm</label>
-                    <textarea name="MoTa" class="form-control form-control-luxury" rows="8" placeholder="Viết mô tả chi tiết...">{{ old('MoTa', $product->MoTa) }}</textarea>
+                    <textarea name="MoTa" class="form-control form-control-luxury" rows="8" placeholder="Viết mô tả ngắn gọn...">{{ old('MoTa', $product->MoTa) }}</textarea>
+                </div>
+            </div>
+
+            <div class="admin-card p-4 mb-4">
+                <h5 class="fw-bold mb-4"><i class="fas fa-list me-2 text-primary"></i>Thông số kỹ thuật</h5>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="admin-form-label">Số trang</label>
+                        <input type="number" name="SoTrang" class="form-control form-control-luxury" value="{{ old('SoTrang', $product->chiTiet->SoTrang ?? '') }}" placeholder="Ví dụ: 350">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="admin-form-label">Kích thước</label>
+                        <input type="text" name="KichThuoc" class="form-control form-control-luxury" value="{{ old('KichThuoc', $product->chiTiet->KichThuoc ?? '') }}" placeholder="Ví dụ: 14.5 x 20.5 cm">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="admin-form-label">Loại bìa</label>
+                        <select name="LoaiBia" class="form-select form-control-luxury">
+                            <option value="">-- Chọn loại bìa --</option>
+                            <option value="Bìa mềm" {{ (old('LoaiBia', $product->chiTiet->LoaiBia ?? '') == 'Bìa mềm') ? 'selected' : '' }}>Bìa mềm</option>
+                            <option value="Bìa cứng" {{ (old('LoaiBia', $product->chiTiet->LoaiBia ?? '') == 'Bìa cứng') ? 'selected' : '' }}>Bìa cứng</option>
+                            <option value="Bìa da" {{ (old('LoaiBia', $product->chiTiet->LoaiBia ?? '') == 'Bìa da') ? 'selected' : '' }}>Bìa da</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="admin-form-label">Trọng lượng (gr)</label>
+                        <input type="number" name="TrongLuong" class="form-control form-control-luxury" value="{{ old('TrongLuong', $product->chiTiet->TrongLuong ?? '') }}" placeholder="Ví dụ: 500">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="admin-form-label">Năm xuất bản</label>
+                        <input type="number" name="NamXuatBan" class="form-control form-control-luxury" value="{{ old('NamXuatBan', $product->chiTiet->NamXuatBan ?? '') }}" placeholder="Ví dụ: 2024">
+                    </div>
+                </div>
+            </div>
+
+            <div class="admin-card p-4 mb-4">
+                <h5 class="fw-bold mb-4"><i class="fas fa-file-alt me-2 text-primary"></i>Nội dung chi tiết</h5>
+                <div class="mb-3">
+                    <label class="admin-form-label">Nội dung/Review chi tiết (Dùng cho trang sản phẩm)</label>
+                    <textarea name="NoiDungChiTiet" class="form-control form-control-luxury" rows="12" placeholder="Nhập nội dung review, giới thiệu chi tiết, mục lục...">{{ old('NoiDungChiTiet', $product->chiTiet->NoiDungChiTiet ?? '') }}</textarea>
                 </div>
             </div>
 
@@ -113,6 +152,21 @@
                             <option value="{{ $cat->MaDM }}" {{ old('MaDM', $product->MaDM) == $cat->MaDM ? 'selected' : '' }}>{{ $cat->TenDM }}</option>
                         @endforeach
                     </select>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="admin-form-label">Tồn kho hiện tại</label>
+                        <input type="number" class="form-control form-control-luxury bg-light" value="{{ $product->SoLuong }}" readonly>
+                        <input type="hidden" name="SoLuong" value="{{ $product->SoLuong }}">
+                        <small class="text-muted"><i class="fas fa-info-circle me-1"></i> Quản lý qua <a href="{{ route('admin.nhaphang.index') }}" class="text-decoration-none">Nhập hàng</a></small>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="admin-form-label">Tổng đã bán</label>
+                        <input type="number" class="form-control form-control-luxury bg-light" value="{{ $product->SoLuongDaBan }}" readonly>
+                        <input type="hidden" name="SoLuongDaBan" value="{{ $product->SoLuongDaBan }}">
+                        <small class="text-muted"><i class="fas fa-info-circle me-1"></i> Tự động cập nhật từ <a href="{{ route('admin.donhang.index') }}" class="text-decoration-none">Đơn hàng</a></small>
+                    </div>
                 </div>
 
                 <div class="mb-0">

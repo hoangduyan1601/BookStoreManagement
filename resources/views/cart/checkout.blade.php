@@ -127,8 +127,8 @@
                             <span>Tạm tính</span>
                             <span class="fw-bold">{{ number_format($totalPrice, 0, ',', '.') }}₫</span>
                         </div>
-                        <div class="d-flex justify-content-between mb-2 small text-danger" id="discount-row" style="display: none;">
-                            <span>Giảm giá</span>
+                        <div class="d-flex justify-content-between mb-2 small text-danger" id="discount-row" style="display: none !important;">
+                            <span>Mã giảm giá</span>
                             <span id="discount-amount">-0₫</span>
                         </div>
                         <div class="d-flex justify-content-between mb-3 small text-muted">
@@ -170,6 +170,9 @@ function applyPromotion() {
     const promoCode = document.getElementById('promo-code').value;
     const errorDiv = document.getElementById('promo-error');
     const successDiv = document.getElementById('promo-success');
+    const discountRow = document.getElementById('discount-row');
+    const discountAmountSpan = document.getElementById('discount-amount');
+    const totalPriceSpan = document.getElementById('total-price');
 
     errorDiv.textContent = '';
     successDiv.textContent = '';
@@ -178,18 +181,33 @@ function applyPromotion() {
 
     fetch('{{ route("checkout.applyPromotion") }}', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'X-Requested-With': 'XMLHttpRequest' },
+        headers: { 
+            'Content-Type': 'application/json', 
+            'X-CSRF-TOKEN': '{{ csrf_token() }}', 
+            'X-Requested-With': 'XMLHttpRequest' 
+        },
         body: JSON.stringify({ promo_code: promoCode })
     })
     .then(response => response.json())
     .then(data => {
         if (data.status === 'success') {
             successDiv.textContent = data.message;
-            document.getElementById('discount-row').style.display = 'flex';
-            document.getElementById('discount-amount').textContent = '-' + Number(data.discount_amount).toLocaleString('vi-VN') + '₫';
-            document.getElementById('total-price').textContent = Number(data.new_total).toLocaleString('vi-VN') + '₫';
+            
+            // Cập nhật giao diện
+            if (discountRow) {
+                discountRow.style.setProperty('display', 'flex', 'important');
+            }
+            
+            if (discountAmountSpan) {
+                discountAmountSpan.textContent = '-' + Math.round(data.discount_amount).toLocaleString('vi-VN') + '₫';
+            }
+            
+            if (totalPriceSpan) {
+                totalPriceSpan.textContent = Math.round(data.new_total).toLocaleString('vi-VN') + '₫';
+            }
         } else {
             errorDiv.textContent = data.message;
+            if (discountRow) discountRow.style.display = 'none';
         }
     })
     .catch(error => {

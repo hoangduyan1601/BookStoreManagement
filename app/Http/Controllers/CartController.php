@@ -8,13 +8,14 @@ use App\Models\GioHang;
 use App\Models\ChiTietGioHang;
 use App\Models\KhachHang;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class CartController extends Controller
 {
     public function index()
     {
         $user = Auth::user();
-        $khachHang = KhachHang::where('MaTK', $user->id)->first();
+        $khachHang = KhachHang::where('MaTK', $user->MaTK)->first();
         
         if (!$khachHang) {
             return redirect('/')->with('error', 'Không tìm thấy thông tin khách hàng.');
@@ -55,7 +56,7 @@ class CartController extends Controller
             return response()->json(['status' => 'login_required', 'message' => 'Bạn cần đăng nhập để mua hàng!']);
         }
 
-        $khachHang = KhachHang::where('MaTK', $user->id)->first();
+        $khachHang = KhachHang::where('MaTK', $user->MaTK)->first();
         if (!$khachHang) {
             return response()->json(['status' => 'error', 'message' => 'Không tìm thấy thông tin khách hàng.']);
         }
@@ -67,20 +68,28 @@ class CartController extends Controller
 
         $gioHang = GioHang::firstOrCreate(['MaKH' => $khachHang->MaKH], ['NgayTao' => now()]);
 
-        $item = ChiTietGioHang::where('MaGH', $gioHang->MaGH)->where('MaSP', $id)->first();
+        // Sử dụng DB table trực tiếp để tránh lỗi Eloquent với khóa phức hợp
+        $item = DB::table('chitietgiohang')
+            ->where('MaGH', $gioHang->MaGH)
+            ->where('MaSP', $id)
+            ->first();
 
         if ($item) {
             $newQty = $item->SoLuong + $qty;
             if ($newQty > $product->SoLuong) {
                 return response()->json(['status' => 'error', 'message' => 'Kho không đủ hàng!']);
             }
-            $item->SoLuong = $newQty;
-            $item->save();
+            
+            DB::table('chitietgiohang')
+                ->where('MaGH', $gioHang->MaGH)
+                ->where('MaSP', $id)
+                ->update(['SoLuong' => $newQty]);
         } else {
             if ($qty > $product->SoLuong) {
                 return response()->json(['status' => 'error', 'message' => 'Kho không đủ hàng!']);
             }
-            ChiTietGioHang::create([
+            
+            DB::table('chitietgiohang')->insert([
                 'MaGH' => $gioHang->MaGH,
                 'MaSP' => $id,
                 'SoLuong' => $qty,
@@ -88,14 +97,20 @@ class CartController extends Controller
             ]);
         }
 
-        return response()->json(['status' => 'success', 'message' => 'Đã thêm vào giỏ!']);
+        $cartCount = DB::table('chitietgiohang')->where('MaGH', $gioHang->MaGH)->sum('SoLuong');
+
+        return response()->json([
+            'status' => 'success', 
+            'message' => 'Đã thêm vào giỏ!', 
+            'cartCount' => (int)$cartCount
+        ]);
     }
 
     public function update(Request $request)
     {
         $qtyArray = $request->input('qty', []);
         $user = Auth::user();
-        $khachHang = KhachHang::where('MaTK', $user->id)->first();
+        $khachHang = KhachHang::where('MaTK', $user->MaTK)->first();
         
         if ($khachHang) {
             $gioHang = GioHang::where('MaKH', $khachHang->MaKH)->first();
@@ -104,10 +119,11 @@ class CartController extends Controller
                     $item = ChiTietGioHang::where('MaGH', $gioHang->MaGH)->where('MaSP', $maSP)->first();
                     if ($item) {
                         if ($soLuong <= 0) {
-                            $item->delete();
+                            ChiTietGioHang::where('MaGH', $gioHang->MaGH)->where('MaSP', $maSP)->delete();
                         } else {
-                            $item->SoLuong = $soLuong;
-                            $item->save();
+                            ChiTietGioHang::where('MaGH', $gioHang->MaGH)
+                                ->where('MaSP', $maSP)
+                                ->update(['SoLuong' => $soLuong]);
                         }
                     }
                 }
@@ -120,7 +136,7 @@ class CartController extends Controller
     public function remove($id)
     {
         $user = Auth::user();
-        $khachHang = KhachHang::where('MaTK', $user->id)->first();
+        $khachHang = KhachHang::where('MaTK', $user->MaTK)->first();
         
         if ($khachHang) {
             $gioHang = GioHang::where('MaKH', $khachHang->MaKH)->first();
@@ -132,10 +148,88 @@ class CartController extends Controller
         return redirect()->route('cart.index');
     }
 
+    public function ajaxUpdate(Request $request)
+    {
+        $id = $request->input('id');
+        $qty = $request->input('qty');
+        
+        $user = Auth::user();
+        $khachHang = KhachHang::where('MaTK', $user->MaTK)->first();
+        
+        if ($khachHang) {
+            $gioHang = GioHang::where('MaKH', $khachHang->MaKH)->first();
+            if ($gioHang) {
+                if ($qty <= 0) {
+                    DB::table('chitietgiohang')->where('MaGH', $gioHang->MaGH)->where('MaSP', $id)->delete();
+                } else {
+                    DB::table('chitietgiohang')->where('MaGH', $gioHang->MaGH)->where('MaSP', $id)->update(['SoLuong' => $qty]);
+                }
+
+                $items = DB::table('chitietgiohang')
+                    ->join('sanpham', 'chitietgiohang.MaSP', '=', 'sanpham.MaSP')
+                    ->where('chitietgiohang.MaGH', $gioHang->MaGH)
+                    ->select('chitietgiohang.*', 'sanpham.DonGia')
+                    ->get();
+
+                $totalPrice = 0;
+                $cartCount = 0;
+                foreach ($items as $item) {
+                    $totalPrice += $item->DonGia * $item->SoLuong;
+                    $cartCount += $item->SoLuong;
+                }
+
+                $currentItem = $items->where('MaSP', $id)->first();
+
+                return response()->json([
+                    'status' => 'success',
+                    'totalPrice' => number_format($totalPrice, 0, ',', '.') . '₫',
+                    'cartCount' => (int)$cartCount,
+                    'itemTotal' => $currentItem ? number_format($currentItem->DonGia * $qty, 0, ',', '.') . '₫' : '0₫'
+                ]);
+            }
+        }
+        return response()->json(['status' => 'error']);
+    }
+
+    public function ajaxRemove(Request $request)
+    {
+        $id = $request->input('id');
+        $user = Auth::user();
+        $khachHang = KhachHang::where('MaTK', $user->MaTK)->first();
+        
+        if ($khachHang) {
+            $gioHang = GioHang::where('MaKH', $khachHang->MaKH)->first();
+            if ($gioHang) {
+                DB::table('chitietgiohang')->where('MaGH', $gioHang->MaGH)->where('MaSP', $id)->delete();
+
+                $items = DB::table('chitietgiohang')
+                    ->join('sanpham', 'chitietgiohang.MaSP', '=', 'sanpham.MaSP')
+                    ->where('chitietgiohang.MaGH', $gioHang->MaGH)
+                    ->select('chitietgiohang.*', 'sanpham.DonGia')
+                    ->get();
+
+                $totalPrice = 0;
+                $cartCount = 0;
+                foreach ($items as $item) {
+                    $totalPrice += $item->DonGia * $item->SoLuong;
+                    $cartCount += $item->SoLuong;
+                }
+
+                return response()->json([
+                    'status' => 'success',
+                    'totalPrice' => number_format($totalPrice, 0, ',', '.') . '₫',
+                    'cartCount' => (int)$cartCount,
+                    'isEmpty' => $items->isEmpty()
+                ]);
+            }
+        }
+        return response()->json(['status' => 'error']);
+    }
+
     public function clear()
     {
         $user = Auth::user();
-        $khachHang = KhachHang::where('MaTK', $user->id)->first();
+        $khachHang = KhachHang::where('MaTK', $user->MaTK)->first();
         
         if ($khachHang) {
             $gioHang = GioHang::where('MaKH', $khachHang->MaKH)->first();
