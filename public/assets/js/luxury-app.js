@@ -71,6 +71,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 },
                 enter(data) {
                     window.scrollTo(0, 0);
+
+                    // Update body class for prank mode from the new page
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(data.next.html, 'text/html');
+                    const newBodyClass = doc.body.className;
+                    document.body.className = newBodyClass;
+
                     gsap.from(data.next.container, {
                         scale: 0.9,
                         rotationY: 15,

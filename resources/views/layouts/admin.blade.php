@@ -189,6 +189,35 @@
     </button>
 
     <div class="ms-auto d-flex align-items-center">
+        <!-- Prank Mode Dropdown -->
+        <div class="dropdown me-2">
+            <button class="btn border-0 p-2 text-warning" id="prank-dropdown" data-bs-toggle="dropdown" title="Kích hoạt hiệu ứng trêu chọc">
+                <i class="fas fa-bolt fs-5"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg p-2" style="border-radius: 15px;">
+                <li class="dropdown-header text-uppercase extra-small fw-bold text-primary">Kiệt tác Giao diện</li>
+                <li><a class="dropdown-item rounded-2 py-2" href="javascript:void(0)" onclick="togglePrankMode('elite-dark')"><i class="fas fa-crown me-2 text-warning"></i> Elite Dark Gold (Quý tộc)</a></li>
+                <li><a class="dropdown-item rounded-2 py-2" href="javascript:void(0)" onclick="togglePrankMode('elite-ivory')"><i class="fas fa-gem me-2 text-info"></i> Modern Minimalist (Tinh tế)</a></li>
+                
+                <li><hr class="dropdown-divider opacity-50"></li>
+                <li class="dropdown-header text-uppercase extra-small fw-bold text-secondary">Hiệu ứng Thẩm mỹ</li>
+                <li><a class="dropdown-item rounded-2 py-2" href="javascript:void(0)" onclick="togglePrankMode('gold-dust')"><i class="fas fa-sparkles me-2 text-warning"></i> Bụi vàng lấp lánh</a></li>
+                <li><a class="dropdown-item rounded-2 py-2" href="javascript:void(0)" onclick="togglePrankMode('metallic')"><i class="fas fa-magic me-2 text-info"></i> Ánh kim Metallic</a></li>
+                <li><a class="dropdown-item rounded-2 py-2" href="javascript:void(0)" onclick="togglePrankMode('glass-mode')"><i class="fas fa-clone me-2 text-success"></i> Giao diện mặt kính</a></li>
+                
+                <li><hr class="dropdown-divider opacity-50"></li>
+                <li class="dropdown-header text-uppercase extra-small fw-bold text-danger">Chế độ Trêu chọc</li>
+                <li><a class="dropdown-item rounded-2 py-2" href="javascript:void(0)" onclick="togglePrankMode('none')"><i class="fas fa-ban me-2 text-muted"></i> Tắt hiệu ứng</a></li>
+                <li><a class="dropdown-item rounded-2 py-2" href="javascript:void(0)" onclick="togglePrankMode('flash')"><i class="fas fa-bolt me-2 text-warning"></i> Nhấp nháy chói mắt</a></li>
+                <li><a class="dropdown-item rounded-2 py-2" href="javascript:void(0)" onclick="togglePrankMode('shake')"><i class="fas fa-expand-arrows-alt me-2 text-danger"></i> Rung lắc cực mạnh</a></li>
+                <li><a class="dropdown-item rounded-2 py-2" href="javascript:void(0)" onclick="togglePrankMode('eye-pain')"><i class="fas fa-eye-slash me-2 text-primary"></i> Gây đau mắt</a></li>
+                <li><a class="dropdown-item rounded-2 py-2" href="javascript:void(0)" onclick="togglePrankMode('upside-down')"><i class="fas fa-undo me-2 text-success"></i> Thế giới đảo ngược</a></li>
+                <li><a class="dropdown-item rounded-2 py-2" href="javascript:void(0)" onclick="togglePrankMode('drunken')"><i class="fas fa-wine-glass-alt me-2 text-info"></i> Chế độ say rượu</a></li>
+                <li><a class="dropdown-item rounded-2 py-2" href="javascript:void(0)" onclick="togglePrankMode('glitch')"><i class="fas fa-microchip me-2 text-dark"></i> Lỗi hệ thống (Glitch)</a></li>
+                <li><a class="dropdown-item rounded-2 py-2" href="javascript:void(0)" onclick="togglePrankMode('mirror')"><i class="fas fa-columns me-2 text-secondary"></i> Chế độ soi gương</a></li>
+            </ul>
+        </div>
+
         <!-- Theme Toggle -->
         <button class="theme-toggle me-3" id="theme-toggle" title="Chuyển chế độ Sáng/Tối">
             <i class="fas fa-moon"></i>
@@ -265,6 +294,28 @@
             }
         }
     });
+
+    function togglePrankMode(effect) {
+        fetch('{{ route("admin.toggle_prank_mode") }}', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ effect: effect })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'success') {
+                if (data.prank_mode !== 'none') {
+                    alert('🔥 Hiệu ứng [' + data.prank_mode + '] đã BẬT! Hãy ra trang chủ để thưởng thức.');
+                } else {
+                    alert('✅ Đã tắt mọi hiệu ứng trêu chọc.');
+                }
+            }
+        });
+    }
 </script>
 @stack('scripts')
 </body>

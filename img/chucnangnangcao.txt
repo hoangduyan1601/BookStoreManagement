@@ -1,0 +1,45 @@
+✦ Để đạt điểm A+, bạn không nên làm quá nhiều nhưng dàn trải. Hãy chọn những chức năng "đắt giá" nhất, thể hiện tư duy nghiệp vụ sâu sắc. Theo
+  tôi, đây là 6 chức năng thực tế nhất bạn nên bổ sung:
+
+  1. Dành cho Người mua sách (Tối ưu trải nghiệm mua sắm)
+
+   * Chức năng 1: Tìm kiếm nhanh bằng AJAX & Bộ lọc thông minh (Ajax Live Search)
+       * Lý do: Khách hàng rất lười chuyển trang. Khi gõ tên sách, kết quả hiện ra ngay lập tức dưới thanh tìm kiếm kèm hình ảnh và giá.
+       * Kỹ thuật: Sử dụng AJAX để gọi API và trả về JSON, hiển thị kết quả mà không load lại trang.
+   * Chức năng 2: Tích hợp Thanh toán Online (VNPay hoặc Momo)
+       * Lý do: Đây là "chìa khóa" để dự án thoát khỏi mác "đồ án sinh viên". Việc tích hợp được cổng thanh toán thật (chế độ Sandbox) chứng minh
+         bạn có khả năng làm việc với các hệ thống tài chính phức tạp.
+       * Kỹ thuật: Sử dụng API của VNPay (rất dễ đăng ký tài khoản test).
+   * Chức năng 3: Hệ thống Đánh giá & Phản hồi (Review System)
+       * Lý do: Người mua sách luôn chọn sách dựa trên nhận xét của người khác. Hãy làm chức năng: "Chỉ những người đã mua sản phẩm và trạng thái
+         đơn hàng là 'Giao thành công' mới được đánh giá".
+       * Kỹ thuật: Thêm bảng danhgia liên kết với sanpham và khachhang.
+
+  2. Dành cho Người quản lý (Tối ưu quản trị & Quyết định)
+
+   * Chức năng 4: Dashboard với Biểu đồ trực quan (Visual Analytics)
+       * Lý do: Admin không muốn đọc bảng số liệu dài dằng dặc. Họ muốn nhìn thấy: "Tháng này doanh thu tăng hay giảm?", "Thể loại sách nào đang
+         bán chạy nhất?".
+       * Kỹ thuật: Sử dụng thư viện Chart.js để vẽ biểu đồ đường (doanh thu) và biểu đồ tròn (thị phần danh mục).
+   * Chức năng 5: Tự động hóa hóa đơn & Báo cáo (Export PDF/Excel)
+       * Lý do: Trong thực tế, quản lý cần in hóa đơn cho khách và xuất file Excel cuối tháng để làm kế toán.
+       * Kỹ thuật: Sử dụng thư viện dompdf (xuất hóa đơn PDF chuyên nghiệp) và Maatwebsite/Laravel-Excel (xuất báo cáo doanh thu).
+   * Chức năng 6: Hệ thống cảnh báo kho hàng (Low Stock Alert)
+       * Lý do: Giúp người quản lý chủ động nhập hàng. Khi số lượng sách trong kho < 5 quyển, hệ thống sẽ tự động hiện thông báo màu đỏ ở Admin
+         hoặc gửi thông báo.
+       * Kỹ thuật: Viết một câu query kiểm tra SoLuong trong bảng sanpham và hiển thị Badge thông báo trên thanh Header của Admin.
+
+  ---
+
+  Lời khuyên để "Ghi điểm tuyệt đối" khi thuyết trình:
+  Nếu bạn làm 6 chức năng này, khi cô giáo hỏi: "Tại sao em lại làm chức năng này?", hãy trả lời:
+
+   1. Về phía khách hàng: "Em tập trung vào việc giảm bớt rào cản khi mua hàng, giúp họ tìm sách nhanh hơn và thanh toán an toàn hơn."
+   2. Về phía quản lý: "Em hướng tới việc hỗ trợ nhà quản lý đưa ra quyết định dựa trên dữ liệu (Data-driven) thông qua các biểu đồ và báo cáo tự
+      động."
+
+  Thứ tự ưu tiên thực hiện:
+   1. Biểu đồ Dashboard (Dễ làm, hiệu ứng thị giác mạnh).
+   2. Xuất hóa đơn PDF (Rất thực tế).
+   3. Tìm kiếm AJAX (Tăng tính hiện đại cho UI).
+   4. Thanh toán VNPay (Nếu còn thời gian, đây là đòn quyết định điểm A+).

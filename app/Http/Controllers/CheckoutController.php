@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\DB;
 
 class CheckoutController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
         $khachHang = KhachHang::where('MaTK', $user->MaTK)->first();
@@ -24,9 +24,12 @@ class CheckoutController extends Controller
             return redirect()->route('cart.index')->with('error', 'Không tìm thấy thông tin khách hàng.');
         }
 
+        $selectedIds = $request->query('ids') ? explode(',', $request->query('ids')) : [];
+
         $promotions = KhuyenMai::where('NgayKetThuc', '>=', now())
             ->where('NgayBatDau', '<=', now())
-            ->with('danhMuc')
+            ->whereNull('MaDM') // Không theo danh mục cụ thể
+            ->whereNotNull('MaGiamGia') // Có mã giảm giá để người dùng áp dụng
             ->get();
 
         session()->forget('cart_promotion');
@@ -36,7 +39,12 @@ class CheckoutController extends Controller
         $cart = [];
         $totalPrice = 0;
         if ($gioHang) {
-            $items = ChiTietGioHang::where('MaGH', $gioHang->MaGH)->with('sanPham')->get();
+            $query = ChiTietGioHang::where('MaGH', $gioHang->MaGH)->with('sanPham');
+            if (!empty($selectedIds)) {
+                $query->whereIn('MaSP', $selectedIds);
+            }
+            $items = $query->get();
+            
             foreach ($items as $item) {
                 if ($item->sanPham) {
                     $cart[$item->MaSP] = [
@@ -56,7 +64,7 @@ class CheckoutController extends Controller
             return redirect()->route('cart.index');
         }
 
-        return view('cart.checkout', compact('cart', 'totalPrice', 'promotions', 'khachHang'));
+        return view('cart.checkout', compact('cart', 'totalPrice', 'promotions', 'khachHang', 'selectedIds'));
     }
 
     public function process(Request $request)
@@ -72,6 +80,7 @@ class CheckoutController extends Controller
         $sdt     = $request->input('phone');
         $diaChi  = $request->input('address');
         $pttt    = $request->input('payment_method', 'TienMat');
+        $selectedIds = $request->input('selected_ids') ? explode(',', $request->input('selected_ids')) : [];
 
         if (empty($diaChi) || empty($hoTen) || empty($sdt)) {
             return back()->with('error', 'Vui lòng nhập đầy đủ họ tên, SĐT và địa chỉ!');
@@ -88,15 +97,19 @@ class CheckoutController extends Controller
             return redirect()->route('cart.index');
         }
 
-        $items = ChiTietGioHang::where('MaGH', $gioHang->MaGH)->with('sanPham')->get();
+        $query = ChiTietGioHang::where('MaGH', $gioHang->MaGH)->with('sanPham');
+        if (!empty($selectedIds)) {
+            $query->whereIn('MaSP', $selectedIds);
+        }
+        $items = $query->get();
+
         if ($items->isEmpty()) {
-            return redirect()->route('cart.index')->with('error', 'Giỏ hàng trống!');
+            return redirect()->route('cart.index')->with('error', 'Giỏ hàng hoặc các sản phẩm được chọn trống!');
         }
 
         $tongTien = 0;
         foreach($items as $item) {
             if ($item->sanPham) {
-                // Sử dụng gia_hien_tai để tính toán chính xác (đã bao gồm giảm giá trực tiếp SP/DM)
                 $tongTien += $item->sanPham->gia_hien_tai * $item->SoLuong;
             }
         }
@@ -142,7 +155,13 @@ class CheckoutController extends Controller
                 }
             }
 
-            ChiTietGioHang::where('MaGH', $gioHang->MaGH)->delete();
+            // Chỉ xóa các sản phẩm đã thanh toán khỏi giỏ hàng
+            if (!empty($selectedIds)) {
+                ChiTietGioHang::where('MaGH', $gioHang->MaGH)->whereIn('MaSP', $selectedIds)->delete();
+            } else {
+                ChiTietGioHang::where('MaGH', $gioHang->MaGH)->delete();
+            }
+
             session()->forget('cart_promotion');
             DB::commit();
 

@@ -2,6 +2,20 @@
 
 @section('content')
 <div class="container py-5">
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show rounded-4 border-0 shadow-sm mb-4" role="alert">
+            <i class="fa-solid fa-circle-check me-2"></i> {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="alert alert-danger alert-dismissible fade show rounded-4 border-0 shadow-sm mb-4" role="alert">
+            <i class="fa-solid fa-circle-exclamation me-2"></i> {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
     <div class="row g-5">
         <!-- Cột trái: Hồ sơ cá nhân -->
         <div class="col-lg-4">
@@ -40,7 +54,7 @@
                     </div>
 
                     <div class="mt-5 border-top pt-4">
-                        <button class="btn btn-outline-dark w-100 rounded-pill py-3 fw-bold ls-1 small">
+                        <button class="btn btn-outline-dark w-100 rounded-pill py-3 fw-bold ls-1 small" data-bs-toggle="modal" data-bs-target="#editProfileModal">
                             <i class="fa-solid fa-user-gear me-2"></i> CHỈNH SỬA HỒ SƠ
                         </button>
                         <form action="{{ route('logout') }}" method="POST" class="mt-3">
@@ -116,7 +130,7 @@
                                             <div class="d-flex justify-content-center gap-2">
                                                 <button onclick="viewOrderDetail({{ $order->MaDH }})" class="btn btn-sm btn-dark rounded-pill px-3 py-1 fw-bold extra-small ls-1">CHI TIẾT</button>
                                                 @if($order->TrangThai === 'ChoXacNhan')
-                                                    <form action="{{ route('orders.cancel', $order->MaDH) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này?')">
+                                                    <form action="{{ route('orders.cancel', $order->MaDH) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này?')" class="no-barba">
                                                         @csrf
                                                         <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1 fw-bold extra-small ls-1">HỦY</button>
                                                     </form>
@@ -231,6 +245,38 @@
             <div id="orderContent">
                 <!-- Load bằng AJAX -->
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Chỉnh sửa hồ sơ -->
+<div class="modal fade" id="editProfileModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <form action="{{ route('customer.profile.update') }}" method="POST" class="no-barba">
+                @csrf
+                <div class="p-4 bg-dark text-white">
+                    <h5 class="font-luxury fw-bold mb-0 text-uppercase ls-1">Cập nhật hồ sơ</h5>
+                </div>
+                <div class="modal-body p-4 bg-white">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">HỌ VÀ TÊN</label>
+                        <input type="text" name="HoTen" class="form-control rounded-pill px-4" value="{{ $customer->HoTen }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">SỐ ĐIỆN THOẠI</label>
+                        <input type="text" name="SDT" class="form-control rounded-pill px-4" value="{{ $customer->SDT }}" required>
+                    </div>
+                    <div class="mb-0">
+                        <label class="form-label small fw-bold text-muted">ĐỊA CHỈ GIAO HÀNG</label>
+                        <textarea name="DiaChi" class="form-control rounded-4 px-4 py-3" rows="3" required>{{ $customer->DiaChi }}</textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 p-4 pt-0 bg-white">
+                    <button type="button" class="btn btn-light rounded-pill px-4 fw-bold small ls-1 border" data-bs-dismiss="modal">HỦY BỎ</button>
+                    <button type="submit" class="btn btn-dark rounded-pill px-4 fw-bold small ls-1 shadow-sm">LƯU THAY ĐỔI</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -370,7 +416,7 @@
                     <div class="modal-footer border-0 p-4 pt-2 bg-white">
                         <button class="btn btn-light rounded-pill px-4 fw-bold small ls-1 border" data-bs-dismiss="modal">ĐÓNG</button>
                         ${order.TrangThai === 'ChoXacNhan' ? `
-                            <form action="/orders/cancel/${order.MaDH}" method="POST" onsubmit="return confirm('Hành động này không thể hoàn tác. Bạn chắc chắn muốn hủy đơn hàng?')">
+                            <form action="/orders/cancel/${order.MaDH}" method="POST" onsubmit="return confirm('Hành động này không thể hoàn tác. Bạn chắc chắn muốn hủy đơn hàng?')" class="no-barba">
                                 <input type="hidden" name="_token" value="${document.querySelector('meta[name="csrf-token"]').getAttribute('content')}">
                                 <button type="submit" class="btn btn-outline-danger rounded-pill px-4 fw-bold small ls-1">HỦY ĐƠN HÀNG</button>
                             </form>

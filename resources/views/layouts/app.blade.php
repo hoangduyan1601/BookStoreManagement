@@ -14,12 +14,17 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="{{ asset('assets/css/luxury.css') }}">
+    <!-- Custom CSS with Versioning to bypass cache -->
+    <link rel="stylesheet" href="{{ asset('assets/css/luxury.css') }}?v={{ time() }}">
     
     @stack('styles')
 </head>
-<body data-barba="wrapper">
+<body data-barba="wrapper" class="prank-{{ cache()->get('prank_mode', 'none') }}">
+
+    <!-- Luxury Global Elements -->
+    <div id="luxury-cursor"></div>
+    <div id="luxury-cursor-follower"></div>
+    <div class="luxury-overlay"></div>
 
     <!-- Lớp phủ chuyển cảnh 3D -->
     <div class="barba-transition-layer">
@@ -158,6 +163,47 @@
     <script src="{{ asset('assets/js/luxury-app.js') }}"></script>
     
     <script>
+        // Custom Cursor Follower Logic
+        const cursor = document.getElementById('luxury-cursor');
+        const follower = document.getElementById('luxury-cursor-follower');
+        
+        document.addEventListener('mousemove', (e) => {
+            gsap.to(cursor, { x: e.clientX, y: e.clientY, duration: 0.1 });
+            gsap.to(follower, { x: e.clientX - 17, y: e.clientY - 17, duration: 0.4, ease: "power2.out" });
+        });
+
+        // Click effect on cursor
+        document.addEventListener('mousedown', () => {
+            gsap.to(follower, { scale: 0.8, duration: 0.2 });
+        });
+        document.addEventListener('mouseup', () => {
+            gsap.to(follower, { scale: 1, duration: 0.2 });
+        });
+
+        // Scroll Reveal logic
+        const observerOptions = { threshold: 0.1 };
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                }
+            });
+        }, observerOptions);
+
+        function initReveals() {
+            document.querySelectorAll('.product-card, section, h2, .bento-item').forEach(el => {
+                el.classList.add('reveal-on-scroll');
+                observer.observe(el);
+            });
+        }
+        
+        document.addEventListener('DOMContentLoaded', initReveals);
+
+        // Auto-update effect when switching back to tab
+        window.addEventListener('focus', () => {
+            location.reload(); 
+        });
+
         document.addEventListener('DOMContentLoaded', () => {
             const notiTrigger = document.getElementById('noti-trigger');
             const notiPanel = document.getElementById('noti-panel');
