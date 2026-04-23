@@ -1,208 +1,169 @@
 @extends('layouts.admin')
 
-@section('title', 'Quản Lý Khách Hàng')
+@section('title', 'CRM Hub - Customer Management')
 
 @section('content')
-<div class="d-md-flex align-items-center justify-content-between mb-4">
-    <div>
-        <h3 class="mb-0 fw-bold">Quản Lý Khách Hàng</h3>
-        <p class="text-muted small mb-0">Tổng cộng: <strong>{{ $customers->total() }}</strong> thành viên hệ thống</p>
-    </div>
-    <div class="mt-3 mt-md-0">
-        <button type="button" class="btn btn-luxury-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#modalKhachHang" onclick="openModalThem()">
-            <i class="fas fa-user-plus me-2"></i>Thêm khách hàng mới
+<style>
+    .dashboard-header {
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        padding: 2rem;
+        border-radius: 1.5rem;
+        color: white;
+        margin-bottom: 2rem;
+    }
+    .user-avatar-placeholder {
+        width: 40px;
+        height: 40px;
+        background: #f1f5f9;
+        color: #475569;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        font-weight: bold;
+        font-size: 0.9rem;
+    }
+</style>
+
+<div class="container-fluid p-0">
+    <div class="dashboard-header d-md-flex align-items-center justify-content-between shadow-sm">
+        <div>
+            <h2 class="fw-bold mb-1">Quản Lý Khách Hàng</h2>
+            <p class="mb-0 text-white-50">Trung tâm dữ liệu khách hàng và quan hệ công chúng (CRM)</p>
+        </div>
+        <button type="button" class="btn btn-light rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#modalKhachHang" onclick="openModalThem()">
+            <i class="fas fa-user-plus me-2"></i> Thêm Khách Hàng
         </button>
     </div>
-</div>
 
-<!-- Advanced Search Section -->
-<div class="admin-card p-4 mb-4">
-    <form method="get" action="{{ route('admin.khachhang.index') }}">
-        <div class="row g-3 align-items-end">
-            <div class="col-md-4">
-                <label class="admin-form-label">Tìm kiếm</label>
+    <!-- Filters -->
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+        <form method="get" action="{{ route('admin.khachhang.index') }}" class="row g-3">
+            <div class="col-lg-4 col-md-12">
                 <div class="input-group">
-                    <span class="input-group-text bg-transparent border-end-0 text-muted"><i class="fas fa-search"></i></span>
-                    <input type="text" name="search" class="form-control form-control-luxury border-start-0 ps-0" placeholder="Tên, Email, SĐT..." value="{{ request('search') }}">
+                    <span class="input-group-text bg-light border-0 rounded-start-pill"><i class="fas fa-search"></i></span>
+                    <input type="text" name="search" class="form-control bg-light border-0 rounded-end-pill" placeholder="Họ tên, Email, SĐT..." value="{{ request('search') }}">
                 </div>
             </div>
-            <div class="col-md-3">
-                <label class="admin-form-label">Đăng ký từ ngày</label>
-                <input type="date" name="from_date" class="form-control form-control-luxury" value="{{ request('from_date') }}">
+            <div class="col-lg-3 col-md-6">
+                <input type="date" name="from_date" class="form-control rounded-pill border-light" value="{{ request('from_date') }}">
             </div>
-            <div class="col-md-3">
-                <label class="admin-form-label">Đến ngày</label>
-                <input type="date" name="to_date" class="form-control form-control-luxury" value="{{ request('to_date') }}">
+            <div class="col-lg-3 col-md-6">
+                <input type="date" name="to_date" class="form-control rounded-pill border-light" value="{{ request('to_date') }}">
             </div>
-            <div class="col-md-2">
-                <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-luxury-primary w-100">Lọc</button>
-                    <a href="{{ route('admin.khachhang.index') }}" class="btn btn-luxury-outline w-100"><i class="fas fa-sync-alt"></i></a>
-                </div>
+            <div class="col-lg-2 col-md-12">
+                <button type="submit" class="btn btn-dark w-100 rounded-pill">Truy xuất</button>
             </div>
-        </div>
-    </form>
-</div>
+        </form>
+    </div>
 
-@if ($customers->count() > 0)
-    <div class="table-custom-container">
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
         <div class="table-responsive">
-            <table class="table-custom">
-                <thead>
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
                     <tr>
-                        <th width="5%">#</th>
-                        <th width="20%">Khách hàng</th>
-                        <th width="15%">Liên hệ</th>
-                        <th width="18%">Địa chỉ</th>
-                        <th width="12%">Tài khoản</th>
-                        <th width="10%">Vai trò</th>
-                        <th width="10%">Trạng thái</th>
-                        <th width="10%" class="text-center">Hành động</th>
+                        <th class="ps-4 py-3 text-uppercase small fw-bold">Khách Hàng</th>
+                        <th class="py-3 text-uppercase small fw-bold">Liên Hệ</th>
+                        <th class="py-3 text-uppercase small fw-bold">Tài Khoản</th>
+                        <th class="py-3 text-uppercase small fw-bold text-center">Trạng Thái</th>
+                        <th class="pe-4 py-3 text-uppercase small fw-bold text-end">Xử Lý</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($customers as $index => $row)
+                    @foreach($customers as $row)
                         @php
-                            $roleClass = match($row->taiKhoan->VaiTro ?? 'KhachHang') {
-                                'QuanLy' => 'bg-danger text-danger',
-                                'NhanVien' => 'bg-primary text-primary',
-                                default => 'bg-secondary text-secondary'
-                            };
-                            $roleText = match($row->taiKhoan->VaiTro ?? 'KhachHang') {
-                                'QuanLy' => 'Quản lý',
-                                'NhanVien' => 'Nhân viên',
-                                default => 'Khách hàng'
-                            };
                             $statusActive = $row->taiKhoan && $row->taiKhoan->TrangThai == 1;
                         @endphp
                         <tr>
-                            <td class="text-muted fw-bold">{{ ($customers->currentPage() - 1) * $customers->perPage() + $index + 1 }}</td>
-                            <td>
+                            <td class="ps-4">
                                 <div class="d-flex align-items-center">
-                                    <div class="bg-light rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px; font-weight: bold; color: var(--primary-color);">
+                                    <div class="user-avatar-placeholder me-3">
                                         {{ strtoupper(substr($row->HoTen, 0, 1)) }}
                                     </div>
                                     <div>
-                                        <div class="fw-bold text-main">{{ $row->HoTen }}</div>
+                                        <div class="fw-bold text-dark">{{ $row->HoTen }}</div>
                                         <small class="text-muted">ID: #KH{{ $row->MaKH }}</small>
                                     </div>
                                 </div>
                             </td>
                             <td>
-                                <div class="small"><i class="fas fa-envelope me-1 text-muted"></i>{{ $row->Email ?: 'N/A' }}</div>
-                                <div class="small"><i class="fas fa-phone me-1 text-muted"></i>{{ $row->SDT ?: 'N/A' }}</div>
-                            </td>
-                            <td class="text-muted small">{{ Str::limit($row->DiaChi, 40) }}</td>
-                            <td>
-                                <code class="small">{{ $row->taiKhoan->TenDangNhap ?? '-' }}</code>
-                                <div class="text-muted" style="font-size: 0.7rem;">Ngày tạo: {{ date('d/m/Y', strtotime($row->NgayDangKy)) }}</div>
+                                <div class="small fw-medium text-dark">{{ $row->Email }}</div>
+                                <div class="small text-muted">{{ $row->SDT }}</div>
                             </td>
                             <td>
-                                <span class="badge bg-opacity-10 {{ $roleClass }} badge-luxury">{{ $roleText }}</span>
-                            </td>
-                            <td>
-                                @if($statusActive)
-                                    <span class="badge bg-success bg-opacity-10 text-success badge-luxury">Hoạt động</span>
-                                @else
-                                    <span class="badge bg-danger bg-opacity-10 text-danger badge-luxury">Bị khóa</span>
-                                @endif
+                                <span class="badge bg-light text-primary border rounded-pill">{{ $row->taiKhoan->TenDangNhap ?? 'N/A' }}</span>
+                                <div class="text-muted" style="font-size: 0.65rem;">Ngày tham gia: {{ date('d/m/Y', strtotime($row->NgayDangKy)) }}</div>
                             </td>
                             <td class="text-center">
-                                <div class="dropdown">
-                                    <button class="btn btn-light btn-sm border-0 rounded-circle p-2" data-bs-toggle="dropdown">
-                                        <i class="fas fa-ellipsis-v"></i>
+                                @if($statusActive)
+                                    <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2">Đang hoạt động</span>
+                                @else
+                                    <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3 py-2">Đang bị khóa</span>
+                                @endif
+                            </td>
+                            <td class="pe-4 text-end">
+                                <button class="btn btn-sm btn-light rounded-pill px-3 me-2" onclick="openModalSua({{ $row->MaKH }}, '{{ addslashes($row->HoTen) }}', '{{ $row->Email }}', '{{ $row->SDT }}', '{{ addslashes($row->DiaChi) }}')">
+                                    <i class="fas fa-user-edit text-warning me-1"></i> Sửa
+                                </button>
+                                <form action="{{ route('admin.khachhang.destroy', $row->MaKH) }}" method="POST" class="d-inline">
+                                    @csrf @method('DELETE')
+                                    <button class="btn btn-sm btn-light rounded-pill px-3 text-danger" onclick="return confirm('Xác nhận xóa?')">
+                                        <i class="fas fa-user-minus"></i> Xóa
                                     </button>
-                                    <ul class="dropdown-menu glass-card border-0 shadow-lg p-2">
-                                        <li>
-                                            <button type="button" class="dropdown-item rounded-2 py-2" 
-                                                    onclick="openModalSua({{ $row->MaKH }}, '{{ addslashes($row->HoTen) }}', '{{ $row->Email }}', '{{ $row->SDT }}', '{{ addslashes($row->DiaChi) }}')">
-                                                <i class="fas fa-user-edit me-2 text-warning"></i> Chỉnh sửa
-                                            </button>
-                                        </li>
-                                        <li><hr class="dropdown-divider opacity-50"></li>
-                                        <li>
-                                            <form action="{{ route('admin.khachhang.destroy', $row->MaKH) }}" method="POST" onsubmit="return confirm('Xóa khách hàng này?')">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="dropdown-item rounded-2 py-2 text-danger">
-                                                    <i class="fas fa-user-minus me-2"></i> Xóa tài khoản
-                                                </button>
-                                            </form>
-                                        </li>
-                                    </ul>
-                                </div>
+                                </form>
                             </td>
                         </tr>
                     @endforeach
                 </tbody>
             </table>
         </div>
-        <div class="p-4 border-top">
+        <div class="p-4 bg-light border-top">
             {{ $customers->links() }}
         </div>
     </div>
-@else
-    <div class="admin-card text-center py-5">
-        <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-4" style="width: 80px; height: 80px;">
-            <i class="fas fa-users-slash fs-1 text-muted"></i>
-        </div>
-        <h5 class="fw-bold">Chưa có khách hàng nào</h5>
-        <button type="button" class="btn btn-luxury-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#modalKhachHang" onclick="openModalThem()">
-            <i class="fas fa-user-plus me-2"></i>Thêm khách hàng đầu tiên
-        </button>
-    </div>
-@endif
+</div>
 
-<!-- Modal Thêm/Sửa Khách Hàng -->
-<div class="modal fade" id="modalKhachHang" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+<!-- Modal remains the same but with rounded buttons -->
+<div class="modal fade" id="modalKhachHang" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content glass-card border-0">
-            <div class="modal-header border-bottom border-light p-4">
-                <h5 class="modal-title fw-bold" id="modalTitle">Thêm Khách Hàng Mới</h5>
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-bottom-0 p-4 pb-0">
+                <h5 class="fw-bold" id="modalTitle">Thông Tin Khách Hàng</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4">
                 <form id="formKhachHang" method="POST" action="{{ route('admin.khachhang.store') }}">
                     @csrf
                     <input type="hidden" name="_method" id="formMethod" value="POST">
-                    
                     <div class="mb-3">
-                        <label class="admin-form-label">Họ tên <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control form-control-luxury" name="HoTen" id="inputHoTen" required placeholder="Nhập họ tên khách hàng">
+                        <label class="small fw-bold text-muted mb-2">HỌ TÊN KHÁCH HÀNG</label>
+                        <input type="text" class="form-control rounded-pill" name="HoTen" id="inputHoTen" required>
                     </div>
-                    
-                    <div class="row g-3">
-                        <div class="col-md-6 mb-3">
-                            <label class="admin-form-label">Email</label>
-                            <input type="email" class="form-control form-control-luxury" name="Email" id="inputEmail" placeholder="example@mail.com">
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="small fw-bold text-muted mb-2">EMAIL</label>
+                            <input type="email" class="form-control rounded-pill" name="Email" id="inputEmail">
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="admin-form-label">Số điện thoại</label>
-                            <input type="text" class="form-control form-control-luxury" name="SDT" id="inputSDT" placeholder="09xxxxxxxx">
+                        <div class="col-md-6">
+                            <label class="small fw-bold text-muted mb-2">SỐ ĐIỆN THOẠI</label>
+                            <input type="text" class="form-control rounded-pill" name="SDT" id="inputSDT">
                         </div>
                     </div>
-
                     <div class="mb-3">
-                        <label class="admin-form-label">Địa chỉ</label>
-                        <input type="text" class="form-control form-control-luxury" name="DiaChi" id="inputDiaChi" placeholder="Số nhà, đường, phường/xã...">
+                        <label class="small fw-bold text-muted mb-2">ĐỊA CHỈ</label>
+                        <input type="text" class="form-control rounded-pill" name="DiaChi" id="inputDiaChi">
                     </div>
                     
-                    <div id="taiKhoanFields" class="bg-light p-3 rounded-3 mt-4 border">
-                        <h6 class="fw-bold mb-3"><i class="fas fa-key me-2 text-primary"></i>Tài khoản đăng nhập</h6>
+                    <div id="taiKhoanFields" class="bg-light p-3 rounded-4 mb-4">
+                        <h6 class="fw-bold mb-3 small"><i class="fas fa-lock me-2"></i>TÀI KHOẢN MỚI</h6>
                         <div class="mb-3">
-                            <label class="admin-form-label">Tên đăng nhập <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control form-control-luxury bg-white" name="TenDangNhap" id="inputTenDangNhap">
+                            <input type="text" class="form-control rounded-pill bg-white border-0 shadow-sm" name="TenDangNhap" id="inputTenDangNhap" placeholder="Tên đăng nhập">
                         </div>
                         <div class="mb-0">
-                            <label class="admin-form-label">Mật khẩu <span class="text-danger">*</span></label>
-                            <input type="password" class="form-control form-control-luxury bg-white" name="MatKhau" id="inputMatKhau">
+                            <input type="password" class="form-control rounded-pill bg-white border-0 shadow-sm" name="MatKhau" id="inputMatKhau" placeholder="Mật khẩu">
                         </div>
                     </div>
-
-                    <div class="d-flex justify-content-end gap-2 mt-4 pt-3">
-                        <button type="button" class="btn btn-luxury-outline" data-bs-dismiss="modal">Hủy</button>
-                        <button type="submit" class="btn btn-luxury-primary px-4" id="btnSubmit">Lưu thông tin</button>
-                    </div>
+                    <button type="submit" class="btn btn-dark w-100 rounded-pill py-2 fw-bold shadow-sm" id="btnSubmit">Lưu Thông Tin</button>
                 </form>
             </div>
         </div>
@@ -214,21 +175,17 @@
         document.getElementById('modalTitle').innerText = 'Thêm Khách Hàng Mới';
         document.getElementById('formKhachHang').action = "{{ route('admin.khachhang.store') }}";
         document.getElementById('formMethod').value = 'POST';
-        document.getElementById('btnSubmit').innerText = 'Thêm mới';
-        document.getElementById('taiKhoanFields').classList.remove('d-none');
-        document.getElementById('inputTenDangNhap').required = true;
-        document.getElementById('inputMatKhau').required = true;
+        document.getElementById('btnSubmit').innerText = 'Tạo mới';
+        document.getElementById('taiKhoanFields').style.display = 'block';
         document.getElementById('formKhachHang').reset();
     }
 
     function openModalSua(id, hoTen, email, sdt, diaChi) {
-        document.getElementById('modalTitle').innerText = 'Sửa Thông Tin Khách Hàng';
+        document.getElementById('modalTitle').innerText = 'Sửa Hồ Sơ Khách Hàng';
         document.getElementById('formKhachHang').action = "/admin/khachhang/" + id;
         document.getElementById('formMethod').value = 'PUT';
         document.getElementById('btnSubmit').innerText = 'Cập nhật';
-        document.getElementById('taiKhoanFields').classList.add('d-none');
-        document.getElementById('inputTenDangNhap').required = false;
-        document.getElementById('inputMatKhau').required = false;
+        document.getElementById('taiKhoanFields').style.display = 'none';
         
         document.getElementById('inputHoTen').value = hoTen;
         document.getElementById('inputEmail').value = email;

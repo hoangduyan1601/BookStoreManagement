@@ -1,186 +1,112 @@
 @extends('layouts.admin')
 
-@section('title', 'Quản Lý Nhập Hàng')
+@section('title', 'Supply Chain - Inventory Imports')
 
 @section('content')
 <style>
-    .table-card {
-        background: var(--bg-white);
-        border: 1px solid var(--border-color);
-        border-radius: 12px;
-        overflow: hidden;
+    .dashboard-header {
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        padding: 2rem;
+        border-radius: 1.5rem;
+        color: white;
+        margin-bottom: 2rem;
     }
-
-    .table thead {
-        background: var(--bg-light);
-        border-bottom: 2px solid var(--border-color);
-    }
-
-    .table thead th {
+    .import-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 2rem;
         font-weight: 600;
-        color: var(--text-primary);
-        font-size: 0.875rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        padding: 16px;
-        border: none;
-    }
-
-    .table tbody td {
-        padding: 16px;
-        vertical-align: middle;
-        border-bottom: 1px solid var(--border-color);
-    }
-
-    .table tbody tr:hover {
-        background: var(--bg-light);
-    }
-
-    .btn-action {
-        padding: 6px 12px;
-        border-radius: 6px;
         font-size: 0.8rem;
-        border: 1px solid var(--border-color);
-        transition: all 0.2s;
-    }
-
-    .btn-action:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-
-    .stat-card {
-        background: var(--bg-white);
-        border: 1px solid var(--border-color);
-        border-radius: 12px;
-        padding: 20px;
-        text-align: center;
+        background: #f1f5f9;
+        color: #475569;
     }
 </style>
 
-<div class="container-fluid">
-    <!-- Page Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+<div class="container-fluid p-0">
+    <div class="dashboard-header d-md-flex align-items-center justify-content-between shadow-sm">
         <div>
-            <h2 class="mb-1 fw-semibold" style="color: var(--text-primary); font-size: 1.75rem;">
-                Quản Lý Nhập Hàng
-            </h2>
-            <p class="text-muted mb-0" style="font-size: 0.9rem;">Tổng cộng: <strong>{{ $list->total() }}</strong> phiếu nhập</p>
+            <h2 class="fw-bold mb-1 text-white">Quản Lý Nhập Hàng</h2>
+            <p class="mb-0 text-white-50">Lịch sử nhập kho và quản lý nguồn cung ứng</p>
         </div>
-        <div class="d-flex gap-2">
-            <form action="{{ route('admin.nhaphang.index') }}" method="GET" class="d-flex me-2">
-                <div class="input-group">
-                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="fas fa-search"></i></span>
-                    <input type="text" name="search" class="form-control border-start-0 ps-0" placeholder="Mã phiếu, NCC..." value="{{ request('search') }}">
-                    <button class="btn btn-luxury-primary" type="submit">Tìm</button>
-                </div>
-            </form>
-            <a href="{{ route('admin.nhaphang.create') }}" class="btn btn-luxury-primary shadow-sm px-4 d-flex align-items-center">
-                <i class="fas fa-plus me-2"></i>Tạo phiếu nhập mới
-            </a>
+        <a href="{{ route('admin.nhaphang.create') }}" class="btn btn-warning btn-pill fw-bold shadow-sm px-4">
+            <i class="fas fa-plus-circle me-2"></i> Tạo Phiếu Nhập
+        </a>
+    </div>
+
+    <!-- Stats -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 p-4">
+                <p class="text-muted small fw-bold mb-1">TỔNG VỐN NHẬP HÀNG</p>
+                <h2 class="fw-bold mb-0 text-dark">{{ number_format($tongTienNhap) }}₫</h2>
+                <div class="mt-2 text-primary small"><i class="fas fa-info-circle me-1"></i> Tính trên {{ $totalPhieu }} phiếu nhập</div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 p-4">
+                <p class="text-muted small fw-bold mb-1">GIÁ TRỊ TRUNG BÌNH PHIẾU</p>
+                <h2 class="fw-bold mb-0 text-dark">{{ $totalPhieu > 0 ? number_format(round($tongTienNhap / $totalPhieu)) : 0 }}₫</h2>
+                <div class="mt-2 text-muted small"><i class="fas fa-chart-line me-1"></i> Hiệu suất nhập kho</div>
+            </div>
         </div>
     </div>
 
-    @if(request('search'))
-        <div class="mb-3">
-            <p>Kết quả tìm kiếm cho: <strong>"{{ request('search') }}"</strong> 
-            <a href="{{ route('admin.nhaphang.index') }}" class="ms-2 text-decoration-none small text-danger">
-                <i class="fas fa-times-circle me-1"></i>Xóa tìm kiếm
-            </a></p>
-        </div>
-    @endif
-
-    <!-- Thống kê -->
-    <div class="row g-3 mb-4">
-        <div class="col-md-4">
-            <div class="stat-card">
-                <h3 class="mb-1 fw-semibold" style="color: var(--text-primary); font-size: 1.75rem;">{{ number_format($totalPhieu) }}</h3>
-                <p class="mb-0 text-muted" style="font-size: 0.875rem;">Phiếu nhập</p>
+    <!-- Filter -->
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+        <form action="{{ route('admin.nhaphang.index') }}" method="GET" class="row g-3">
+            <div class="col-md-9">
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-0 rounded-start-pill"><i class="fas fa-search"></i></span>
+                    <input type="text" name="search" class="form-control bg-light border-0 rounded-end-pill" placeholder="Mã phiếu #NH..., Tên nhà cung cấp..." value="{{ request('search') }}">
+                </div>
             </div>
-        </div>
-        <div class="col-md-4">
-            <div class="stat-card">
-                <h3 class="mb-1 fw-semibold" style="color: var(--text-primary); font-size: 1.5rem;">{{ number_format($tongTienNhap) }}₫</h3>
-                <p class="mb-0 text-muted" style="font-size: 0.875rem;">Tổng tiền nhập</p>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-dark w-100 rounded-pill">Tìm kiếm</button>
             </div>
-        </div>
-        <div class="col-md-4">
-            <div class="stat-card">
-                <h3 class="mb-1 fw-semibold" style="color: var(--text-primary); font-size: 1.25rem;">
-                    {{ $totalPhieu > 0 ? number_format(round($tongTienNhap / $totalPhieu)) : 0 }}₫
-                </h3>
-                <p class="mb-0 text-muted" style="font-size: 0.875rem;">Trung bình/phiếu</p>
-            </div>
-        </div>
+        </form>
     </div>
 
     <!-- Table -->
-    @if ($list->count() > 0)
-        <div class="table-card">
-            <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead>
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4 py-3 text-uppercase small fw-bold" width="15%">Mã Phiếu</th>
+                        <th class="py-3 text-uppercase small fw-bold">Ngày Nhập</th>
+                        <th class="py-3 text-uppercase small fw-bold">Nhà Cung Cấp</th>
+                        <th class="py-3 text-uppercase small fw-bold text-center">Tổng Tiền</th>
+                        <th class="pe-4 py-3 text-uppercase small fw-bold text-end">Chi Tiết</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($list as $r)
                         <tr>
-                            <th width="5%">#</th>
-                            <th width="12%">Mã phiếu</th>
-                            <th width="15%">Ngày nhập</th>
-                            <th width="25%">Nhà cung cấp</th>
-                            <th width="18%">Tổng tiền</th>
-                            <th width="25%" class="text-center">Hành động</th>
+                            <td class="ps-4">
+                                <span class="fw-bold text-dark">#NH{{ str_pad($r->MaNhap, 5, '0', STR_PAD_LEFT) }}</span>
+                            </td>
+                            <td>
+                                <div class="fw-medium text-dark">{{ date('d/m/Y', strtotime($r->NgayNhap)) }}</div>
+                                <small class="text-muted">{{ date('H:i', strtotime($r->NgayNhap)) }}</small>
+                            </td>
+                            <td>
+                                <div class="fw-bold text-primary">{{ $r->nhacungcap->TenNCC ?? 'N/A' }}</div>
+                            </td>
+                            <td class="text-center">
+                                <span class="fw-bold text-dark">{{ number_format($r->TongTienNhap) }}₫</span>
+                            </td>
+                            <td class="pe-4 text-end">
+                                <a href="{{ route('admin.nhaphang.show', $r->MaNhap) }}" class="btn btn-sm btn-light rounded-pill px-4">
+                                    Xem <i class="fas fa-arrow-right ms-1"></i>
+                                </a>
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($list as $index => $r)
-                            <tr>
-                                <td class="text-muted fw-semibold">{{ ($list->currentPage()-1) * $list->perPage() + $index + 1 }}</td>
-                                <td><strong style="color: var(--text-primary);">#NH{{ str_pad($r->MaNhap, 5, '0', STR_PAD_LEFT) }}</strong></td>
-                                <td>
-                                    <div style="color: var(--text-primary); font-weight: 500;">{{ date('d/m/Y', strtotime($r->NgayNhap)) }}</div>
-                                    <small class="text-muted">{{ date('H:i', strtotime($r->NgayNhap)) }}</small>
-                                </td>
-                                <td>
-                                    <strong style="color: var(--text-primary);">{{ $r->nhacungcap->TenNCC ?? 'Không xác định' }}</strong>
-                                </td>
-                                <td>
-                                    <strong style="color: var(--text-primary);">
-                                        {{ number_format($r->TongTienNhap ?? 0, 0, ',', '.') }}₫
-                                    </strong>
-                                </td>
-                                <td class="text-center">
-                                    <div class="d-flex justify-content-center gap-2">
-                                        <a href="{{ route('admin.nhaphang.show', $r->MaNhap) }}"
-                                           class="btn btn-action"
-                                           style="background: #e0f2fe; color: #0369a1; border-color: #bae6fd;"
-                                           title="Xem chi tiết">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                        <form action="{{ route('admin.nhaphang.destroy', $r->MaNhap) }}" method="POST" onsubmit="return confirm('Xóa phiếu nhập #NH{{ $r->MaNhap }}?\nTồn kho sẽ được hoàn lại tự động.')">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-action" style="background: #fee2e2; color: #991b1b; border-color: #fecaca;" title="Xóa">
-                                                <i class="fas fa-trash-alt"></i>
-                                            </button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-            <div class="p-4 border-top">
-                {{ $list->links() }}
-            </div>
+                    @endforeach
+                </tbody>
+            </table>
         </div>
-    @else
-        <div class="table-card text-center py-5">
-            <i class="fas fa-file-invoice-dollar" style="font-size: 3rem; color: var(--text-light); margin-bottom: 1rem;"></i>
-            <h5 style="color: var(--text-secondary); margin-bottom: 0.5rem;">Chưa có phiếu nhập nào</h5>
-            <p class="text-muted mb-3">Hãy tạo phiếu nhập đầu tiên để bổ sung hàng hóa!</p>
-            <a href="{{ route('admin.nhaphang.create') }}" class="btn btn-luxury-primary shadow-sm px-4">
-                <i class="fas fa-plus me-2"></i>Tạo phiếu nhập
-            </a>
+        <div class="p-4 bg-light border-top">
+            {{ $list->links() }}
         </div>
-    @endif
+    </div>
 </div>
 @endsection

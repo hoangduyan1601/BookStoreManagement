@@ -88,28 +88,35 @@ class AdminKhuyenMaiController extends Controller
 
         $km = KhuyenMai::create($data);
 
-        // --- GỬI THÔNG BÁO CHO TẤT CẢ KHÁCH HÀNG ---
-        $customers = KhachHang::all();
+        // --- GỬI THÔNG BÁO CHO TẤT CẢ KHÁCH HÀNG (TỐI ƯU HÓA BATCH INSERT) ---
+        $customers = KhachHang::select('MaKH')->get();
         $message = "🎉 Ưu đãi mới: " . $km->TenKM . " giảm ngay " . $km->PhanTramGiam . "%! ";
         if ($km->MaGiamGia) {
             $message .= "Nhập mã: " . $km->MaGiamGia . " khi thanh toán.";
         }
 
-        foreach ($customers as $customer) {
-            $link = route('sanpham.index');
-            if ($km->LoaiKM == 'DanhMuc' && $km->MaDM) {
-                $link = route('danhmuc.show', $km->MaDM);
-            }
+        $notifications = [];
+        $now = now();
+        $link = route('sanpham.index');
+        if ($km->LoaiKM == 'DanhMuc' && $km->MaDM) {
+            $link = route('danhmuc.show', $km->MaDM);
+        }
 
-            ThongBao::create([
+        foreach ($customers as $customer) {
+            $notifications[] = [
                 'MaKH' => $customer->MaKH,
                 'TieuDe' => '🎁 Khuyến mãi mới hấp dẫn!',
                 'NoiDung' => $message,
-                'NgayGui' => now(),
+                'NgayGui' => $now,
                 'TrangThaiDoc' => false,
                 'LoaiTB' => 'KhuyenMai',
                 'LienKet' => $link
-            ]);
+            ];
+        }
+
+        // Chèn hàng loạt để tối ưu hiệu suất (chia nhỏ 500 bản ghi mỗi lần)
+        foreach (array_chunk($notifications, 500) as $chunk) {
+            ThongBao::insert($chunk);
         }
 
         return redirect()->route('admin.khuyenmai.index')->with('success', 'Thêm khuyến mãi và gửi thông báo thành công!');

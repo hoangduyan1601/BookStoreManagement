@@ -9,10 +9,23 @@ use Illuminate\Support\Facades\Hash;
 
 class AdminTaiKhoanController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $list = TaiKhoan::paginate(10);
-        return view('admin.taikhoan.index', compact('list'));
+        $search = $request->get('search');
+        $role = $request->get('role');
+        
+        $query = TaiKhoan::query();
+
+        if ($search) {
+            $query->where('TenDangNhap', 'LIKE', "%{$search}%");
+        }
+
+        if ($role && $role !== 'all') {
+            $query->where('VaiTro', $role);
+        }
+
+        $list = $query->paginate(10)->withQueryString();
+        return view('admin.taikhoan.index', compact('list', 'search', 'role'));
     }
 
     public function create()

@@ -223,15 +223,27 @@ class AdminSanPhamController extends Controller
 
     public function destroy($id)
     {
-        $product = SanPham::findOrFail($id);
-        $images = HinhAnhSanPham::where('MaSP', $id)->get();
-        foreach ($images as $img) {
-            $path = public_path('assets/images/products/' . $img->DuongDan);
-            if (File::exists($path)) File::delete($path);
-            $img->delete();
+        try {
+            $product = SanPham::findOrFail($id);
+            
+            // Kiểm tra xem sản phẩm có trong đơn hàng nào không
+            if ($product->chiTietDonHangs()->exists()) {
+                return redirect()->route('admin.sanpham.index')->with('error', 'Không thể xóa sản phẩm này vì đã có trong lịch sử đơn hàng!');
+            }
+
+            // Xóa ảnh liên quan
+            $images = HinhAnhSanPham::where('MaSP', $id)->get();
+            foreach ($images as $img) {
+                $path = public_path('assets/images/products/' . $img->DuongDan);
+                if (file_exists($path)) @unlink($path);
+                $img->delete();
+            }
+
+            $product->delete();
+            return redirect()->route('admin.sanpham.index')->with('success', 'Xóa sản phẩm thành công!');
+        } catch (\Exception $e) {
+            return redirect()->route('admin.sanpham.index')->with('error', 'Lỗi hệ thống: ' . $e->getMessage());
         }
-        $product->delete();
-        return redirect()->route('admin.sanpham.index')->with('success', 'Xóa sản phẩm thành công!');
     }
 
     public function assignAuthor($id)

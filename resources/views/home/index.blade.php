@@ -85,9 +85,16 @@
                     <div class="text-muted extra-small mb-3 text-truncate">
                         <i class="fa-solid fa-pen-nib me-1 opacity-50"></i> {{ $sp->tac_gia_string ?: 'Đang cập nhật' }}
                     </div>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div class="fw-bold fs-5 text-dark">{{ number_format($sp->DonGia, 0, ',', '.') }}₫</div>
-                        <span class="text-muted extra-small">Đã bán {{ (int)$sp->SoLuongDaBan }}</span>
+                    <div class="d-flex justify-content-between align-items-end">
+                        <div class="pe-2">
+                            @if($sp->khuyen_mai_active)
+                                <div class="text-muted extra-small text-decoration-line-through">{{ number_format($sp->DonGia, 0, ',', '.') }}₫</div>
+                                <div class="text-danger fw-bold fs-5" style="line-height: 1;">{{ number_format($sp->gia_hien_tai, 0, ',', '.') }}₫</div>
+                            @else
+                                <div class="text-dark fw-bold fs-5" style="line-height: 1;">{{ number_format($sp->DonGia, 0, ',', '.') }}₫</div>
+                            @endif
+                        </div>
+                        <span class="text-muted extra-small pb-1">Đã bán {{ (int)$sp->SoLuongDaBan }}</span>
                     </div>
                 </div>
             </div>

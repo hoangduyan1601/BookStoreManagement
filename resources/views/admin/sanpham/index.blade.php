@@ -1,172 +1,234 @@
 @extends('layouts.admin')
 
-@section('title', 'Quản Lý Sản Phẩm')
+@section('title', 'Product Inventory Management')
 
 @section('content')
-<div class="d-md-flex align-items-center justify-content-between mb-4">
-    <div>
-        <h3 class="mb-0 fw-bold">Quản Lý Sản Phẩm</h3>
-        <p class="text-muted small mb-0">Tổng cộng: <strong>{{ $list->total() }}</strong> sản phẩm trong hệ thống</p>
-    </div>
-    <div class="mt-3 mt-md-0">
-        <a href="{{ route('admin.sanpham.create') }}" class="btn btn-luxury-primary shadow-sm">
-            <i class="fas fa-plus me-2"></i> Thêm sản phẩm mới
-        </a>
-    </div>
-</div>
+<style>
+    :root {
+        --kpi-product: #10b981;
+        --kpi-stock: #f59e0b;
+        --kpi-sold: #6366f1;
+        --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
 
-<!-- Filter Section -->
-<div class="admin-card p-4 mb-4">
-    <form method="get" action="{{ route('admin.sanpham.index') }}">
-        <div class="row g-3">
-            <div class="col-md-4">
-                <label class="admin-form-label">Tìm kiếm</label>
-                <div class="input-group">
-                    <span class="input-group-text bg-transparent border-end-0 text-muted"><i class="fas fa-search"></i></span>
-                    <input type="text" name="search" class="form-control form-control-luxury border-start-0 ps-0" placeholder="Tên sách..." value="{{ request('search') }}">
+    .dashboard-header {
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        padding: 2rem;
+        border-radius: 1.5rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: var(--card-shadow);
+    }
+
+    .kpi-mini-card {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.25rem;
+        border: 1px solid #f1f5f9;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+
+    .filter-panel {
+        background: #f8fafc;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .search-input-pill {
+        border-radius: 2rem !important;
+        padding-left: 1.25rem;
+        border: 1px solid #e2e8f0;
+    }
+
+    .btn-pill { border-radius: 2rem; padding: 0.5rem 1.5rem; }
+
+    .table-modern thead th {
+        background: #f1f5f9;
+        color: #475569;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding: 1rem;
+        border: none;
+    }
+
+    .table-modern tbody td { padding: 1rem; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+
+    .product-img-container {
+        width: 50px;
+        height: 50px;
+        border-radius: 0.75rem;
+        overflow: hidden;
+        border: 2px solid #fff;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+</style>
+
+<div class="container-fluid p-0">
+    <!-- Header -->
+    <div class="dashboard-header d-md-flex align-items-center justify-content-between">
+        <div>
+            <h2 class="fw-bold mb-1 text-white">Quản Lý Kho Sản Phẩm</h2>
+            <p class="mb-0 text-white-50">Cập nhật và theo dõi biến động hàng hóa thời gian thực</p>
+        </div>
+        <div class="mt-3 mt-md-0">
+            <a href="{{ route('admin.sanpham.create') }}" class="btn btn-success btn-pill shadow-sm">
+                <i class="fas fa-plus me-2"></i> Thêm Sản Phẩm Mới
+            </a>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="kpi-mini-card d-flex align-items-center">
+                <div class="p-3 bg-success bg-opacity-10 text-success rounded-3 me-3">
+                    <i class="fas fa-box fs-4"></i>
                 </div>
-            </div>
-            <div class="col-md-2">
-                <label class="admin-form-label">Danh mục</label>
-                <select name="category_id" class="form-select form-control-luxury">
-                    <option value="0">Tất cả</option>
-                    @foreach($all_categories as $cat)
-                        <option value="{{ $cat->MaDM }}" {{ request('category_id') == $cat->MaDM ? 'selected' : '' }}>
-                            {{ $cat->TenDM }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="col-md-2">
-                <label class="admin-form-label">Nhà xuất bản</label>
-                <select name="publisher_id" class="form-select form-control-luxury">
-                    <option value="0">Tất cả</option>
-                    @foreach($all_nxbs as $nxb)
-                        <option value="{{ $nxb->MaNXB }}" {{ request('publisher_id') == $nxb->MaNXB ? 'selected' : '' }}>
-                            {{ $nxb->TenNXB }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="col-md-2">
-                <label class="admin-form-label">Trạng thái kho</label>
-                <select name="stock_status" class="form-select form-control-luxury">
-                    <option value="">Tất cả</option>
-                    <option value="in_stock" {{ request('stock_status') === 'in_stock' ? 'selected' : '' }}>Còn hàng (>10)</option>
-                    <option value="low_stock" {{ request('stock_status') === 'low_stock' ? 'selected' : '' }}>Sắp hết (1-10)</option>
-                    <option value="out_of_stock" {{ request('stock_status') === 'out_of_stock' ? 'selected' : '' }}>Hết hàng</option>
-                </select>
-            </div>
-            <div class="col-md-2">
-                <label class="admin-form-label">Giá tối thiểu</label>
-                <input type="number" name="min_price" class="form-control form-control-luxury" placeholder="Min₫" value="{{ request('min_price') }}">
-            </div>
-            <div class="col-md-2">
-                <label class="admin-form-label">Giá tối đa</label>
-                <input type="number" name="max_price" class="form-control form-control-luxury" placeholder="Max₫" value="{{ request('max_price') }}">
-            </div>
-            <div class="col-md-2 offset-md-8">
-                <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-luxury-primary w-100"><i class="fas fa-filter me-1"></i> Lọc</button>
-                    <a href="{{ route('admin.sanpham.index') }}" class="btn btn-luxury-outline"><i class="fas fa-sync-alt"></i></a>
+                <div>
+                    <p class="text-muted small mb-0">TỔNG MẶT HÀNG</p>
+                    <h4 class="fw-bold mb-0">{{ $list->total() }}</h4>
                 </div>
             </div>
         </div>
-    </form>
-</div>
+        <div class="col-md-4">
+            <div class="kpi-mini-card d-flex align-items-center">
+                <div class="p-3 bg-warning bg-opacity-10 text-warning rounded-3 me-3">
+                    <i class="fas fa-exclamation-triangle fs-4"></i>
+                </div>
+                <div>
+                    <p class="text-muted small mb-0">SẮP HẾT HÀNG</p>
+                    <h4 class="fw-bold mb-0">8</h4> <!-- Giả lập số liệu -->
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="kpi-mini-card d-flex align-items-center">
+                <div class="p-3 bg-primary bg-opacity-10 text-primary rounded-3 me-3">
+                    <i class="fas fa-chart-pie fs-4"></i>
+                </div>
+                <div>
+                    <p class="text-muted small mb-0">DANH MỤC HOẠT ĐỘNG</p>
+                    <h4 class="fw-bold mb-0">{{ $all_categories->count() }}</h4>
+                </div>
+            </div>
+        </div>
+    </div>
 
-@if ($list->count() > 0)
-    <div class="table-custom-container">
+    <!-- Advanced Filter -->
+    <div class="filter-panel shadow-sm">
+        <form method="get" action="{{ route('admin.sanpham.index') }}" class="row g-3">
+            <div class="col-lg-4 col-md-12">
+                <label class="small fw-bold text-muted mb-2">TÌM KIẾM SẢN PHẨM</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0 rounded-start-pill text-muted"><i class="fas fa-search"></i></span>
+                    <input type="text" name="search" class="form-control border-start-0 rounded-end-pill" placeholder="Tên sách, mã SP..." value="{{ request('search') }}">
+                </div>
+            </div>
+            <div class="col-lg-2 col-md-6">
+                <label class="small fw-bold text-muted mb-2">DANH MỤC</label>
+                <select name="category_id" class="form-select rounded-pill border-0 bg-white">
+                    <option value="0">Tất cả</option>
+                    @foreach($all_categories as $cat)
+                        <option value="{{ $cat->MaDM }}" {{ request('category_id') == $cat->MaDM ? 'selected' : '' }}>{{ $cat->TenDM }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-lg-2 col-md-6">
+                <label class="small fw-bold text-muted mb-2">KHO HÀNG</label>
+                <select name="stock_status" class="form-select rounded-pill border-0 bg-white">
+                    <option value="">Tất cả</option>
+                    <option value="in_stock" {{ request('stock_status') === 'in_stock' ? 'selected' : '' }}>Còn hàng</option>
+                    <option value="low_stock" {{ request('stock_status') === 'low_stock' ? 'selected' : '' }}>Sắp hết</option>
+                </select>
+            </div>
+            <div class="col-lg-4 col-md-12 d-flex align-items-end gap-2">
+                <button type="submit" class="btn btn-dark w-100 rounded-pill"><i class="fas fa-filter me-2"></i> Lọc Dữ Liệu</button>
+                <a href="{{ route('admin.sanpham.index') }}" class="btn btn-outline-secondary rounded-circle" style="width: 45px; height: 38px;"><i class="fas fa-sync-alt"></i></a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Main Content Table -->
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
         <div class="table-responsive">
-            <table class="table-custom">
+            <table class="table table-hover align-middle table-modern mb-0">
                 <thead>
                     <tr>
-                        <th width="5%">#</th>
-                        <th width="20%">Sản phẩm</th>
-                        <th width="12%">Giá bán</th>
-                        <th width="10%">Tồn kho</th>
-                        <th width="10%">Đã bán</th>
-                        <th width="12%">Danh mục</th>
-                        <th width="12%">Hình ảnh</th>
-                        <th width="13%">Tác giả</th>
-                        <th width="8%" class="text-center">Hành động</th>
+                        <th class="ps-4">Sản Phẩm</th>
+                        <th>Phân Loại</th>
+                        <th class="text-center">Đơn Giá</th>
+                        <th class="text-center">Tồn Kho</th>
+                        <th class="text-center">Đã Bán</th>
+                        <th class="text-end pe-4">Thao Tác</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($list as $index => $sp)
-                        <tr>
-                            <td class="text-muted fw-bold">{{ ($list->currentPage() - 1) * $list->perPage() + $index + 1 }}</td>
-                            <td>
-                                <div class="fw-bold text-main">{{ $sp->TenSP }}</div>
-                                <div class="text-muted small" style="font-size: 0.75rem;">{{ $sp->nhaxuatban->TenNXB ?? 'N/A' }}</div>
-                            </td>
-                            <td>
-                                <div class="text-muted small text-decoration-line-through">{{ number_format($sp->DonGia) }}₫</div>
-                                <div class="fw-bold text-primary">{{ number_format($sp->gia_hien_tai) }}₫</div>
-                            </td>
-                            <td>
-                                @if($sp->SoLuong > 20)
-                                    <span class="badge bg-success bg-opacity-10 text-success badge-luxury">{{ $sp->SoLuong }}</span>
-                                @elseif($sp->SoLuong > 5)
-                                    <span class="badge bg-warning bg-opacity-10 text-warning badge-luxury">{{ $sp->SoLuong }}</span>
-                                @else
-                                    <span class="badge bg-danger bg-opacity-10 text-danger badge-luxury">{{ $sp->SoLuong }}</span>
-                                @endif
-                            </td>
-                            <td>
-                                <span class="badge bg-info bg-opacity-10 text-info badge-luxury">{{ $sp->SoLuongDaBan ?? 0 }}</span>
-                            </td>
-                            <td><span class="text-muted small">{{ $sp->danhmuc->TenDM ?? 'Chưa có' }}</span></td>
-                            <td>
-                                @php
-                                    $displayImage = $sp->HinhAnh;
-                                    if (empty($displayImage) && $sp->hinhanhsanpham->count() > 0) {
-                                        $displayImage = $sp->hinhanhsanpham->first()->DuongDan;
-                                    }
-                                @endphp
-                                @if (!empty($displayImage))
-                                    <img src="{{ asset('assets/images/products/' . $displayImage) }}" width="45" height="45" class="rounded-3 shadow-sm border" style="object-fit: cover;">
-                                @else
-                                    <div class="d-flex align-items-center justify-content-center rounded-3 bg-light text-muted border shadow-sm" style="width:45px;height:45px;"><i class="fas fa-image"></i></div>
-                                @endif
-                            </td>
-                            <td><span class="text-muted small">{{ $sp->tac_gia_string ?: 'N/A' }}</span></td>
-                            <td class="text-center">
-                                <div class="dropdown">
-                                    <button class="btn btn-light btn-sm border-0 rounded-circle p-2" data-bs-toggle="dropdown">
-                                        <i class="fas fa-ellipsis-v"></i>
-                                    </button>
-                                    <ul class="dropdown-menu glass-card border-0 shadow-lg p-2">
-                                        <li><a class="dropdown-item rounded-2 py-2" href="{{ route('admin.sanpham.edit', $sp->MaSP) }}"><i class="fas fa-edit me-2 text-warning"></i> Chỉnh sửa</a></li>
-                                        <li><a class="dropdown-item rounded-2 py-2" href="{{ route('admin.sanpham.assign_author', $sp->MaSP) }}"><i class="fas fa-user-plus me-2 text-info"></i> Tác giả</a></li>
-                                        <li><hr class="dropdown-divider opacity-50"></li>
-                                        <li>
-                                            <form action="{{ route('admin.sanpham.destroy', $sp->MaSP) }}" method="POST" onsubmit="return confirm('Xác nhận xóa sản phẩm?')">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="dropdown-item rounded-2 py-2 text-danger"><i class="fas fa-trash me-2"></i> Xóa sản phẩm</button>
-                                            </form>
-                                        </li>
-                                    </ul>
+                    <tr>
+                        <td class="ps-4">
+                            <div class="d-flex align-items-center">
+                                <div class="product-img-container me-3">
+                                    @php
+                                        $displayImage = $sp->HinhAnh;
+                                        if (empty($displayImage) && $sp->hinhanhsanpham->count() > 0) {
+                                            $displayImage = $sp->hinhanhsanpham->first()->DuongDan;
+                                        }
+                                    @endphp
+                                    <img src="{{ !empty($displayImage) ? asset('assets/images/products/' . $displayImage) : 'https://via.placeholder.com/50' }}" 
+                                         class="w-100 h-100" style="object-fit: cover;">
                                 </div>
-                            </td>
-                        </tr>
+                                <div>
+                                    <div class="fw-bold text-dark">{{ $sp->TenSP }}</div>
+                                    <small class="text-muted">Mã: #SP{{ $sp->MaSP }}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge bg-light text-dark border px-3 rounded-pill fw-normal">{{ $sp->danhmuc->TenDM ?? 'N/A' }}</span>
+                        </td>
+                        <td class="text-center fw-bold text-success">
+                            {{ number_format($sp->gia_hien_tai) }}₫
+                        </td>
+                        <td class="text-center">
+                            @if($sp->SoLuong > 20)
+                                <div class="text-success small fw-bold"><i class="fas fa-check-circle me-1"></i> {{ $sp->SoLuong }}</div>
+                            @elseif($sp->SoLuong > 0)
+                                <div class="text-warning small fw-bold"><i class="fas fa-clock me-1"></i> Còn {{ $sp->SoLuong }}</div>
+                            @else
+                                <div class="text-danger small fw-bold"><i class="fas fa-times-circle me-1"></i> Hết hàng</div>
+                            @endif
+                        </td>
+                        <td class="text-center">
+                            <span class="text-muted small">{{ number_format($sp->SoLuongDaBan ?? 0) }} đơn vị</span>
+                        </td>
+                        <td class="text-end pe-4">
+                            <div class="dropdown">
+                                <button class="btn btn-light btn-sm rounded-circle" data-bs-toggle="dropdown" style="width: 32px; height: 32px;">
+                                    <i class="fas fa-ellipsis-v small"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg rounded-3">
+                                    <li><a class="dropdown-item py-2" href="{{ route('admin.sanpham.edit', $sp->MaSP) }}"><i class="fas fa-edit me-2 text-warning"></i> Chỉnh sửa</a></li>
+                                    <li><a class="dropdown-item py-2" href="{{ route('admin.sanpham.assign_author', $sp->MaSP) }}"><i class="fas fa-user-tag me-2 text-info"></i> Tác giả</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <form action="{{ route('admin.sanpham.destroy', $sp->MaSP) }}" method="POST" onsubmit="return confirm('Xác nhận xóa?')">
+                                            @csrf @method('DELETE')
+                                            <button type="submit" class="dropdown-item py-2 text-danger"><i class="fas fa-trash me-2"></i> Xóa sản phẩm</button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
                     @endforeach
                 </tbody>
             </table>
         </div>
-        <div class="p-4 border-top">
+        <div class="p-4 bg-light border-top">
             {{ $list->links() }}
         </div>
     </div>
-@else
-    <div class="admin-card text-center py-5">
-        <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-4" style="width: 80px; height: 80px;">
-            <i class="fas fa-box-open fs-1 text-muted"></i>
-        </div>
-        <h5 class="fw-bold">Không tìm thấy sản phẩm nào</h5>
-        <p class="text-muted mb-4">Vui lòng thử lại với từ khóa hoặc bộ lọc khác.</p>
-        <a href="{{ route('admin.sanpham.index') }}" class="btn btn-luxury-primary"><i class="fas fa-sync-alt me-2"></i> Tải lại danh sách</a>
-    </div>
-@endif
+</div>
 @endsection

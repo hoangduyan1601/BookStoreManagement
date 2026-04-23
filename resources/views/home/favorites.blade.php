@@ -33,7 +33,14 @@
                         <div class="text-muted extra-small mb-2 text-truncate">
                             <i class="fa-solid fa-pen-nib me-1 opacity-50"></i> {{ $sp->tac_gia_string ?: 'Đang cập nhật' }}
                         </div>
-                        <div class="fw-bold fs-5 text-dark">{{ number_format($sp->DonGia, 0, ',', '.') }}₫</div>
+                        <div class="mt-3">
+                            @if($sp->khuyen_mai_active)
+                                <div class="text-muted extra-small text-decoration-line-through">{{ number_format($sp->DonGia, 0, ',', '.') }}₫</div>
+                                <div class="text-danger fw-bold fs-5" style="line-height: 1;">{{ number_format($sp->gia_hien_tai, 0, ',', '.') }}₫</div>
+                            @else
+                                <div class="text-dark fw-bold fs-5" style="line-height: 1;">{{ number_format($sp->DonGia, 0, ',', '.') }}₫</div>
+                            @endif
+                        </div>
                     </div>
                 </div>
             </div>

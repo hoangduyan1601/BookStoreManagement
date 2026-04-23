@@ -1,155 +1,181 @@
 @extends('layouts.admin')
 
-@section('title', 'Gửi Thông Báo')
+@section('title', 'Communication Hub - Notifications')
 
 @section('content')
-<div class="d-md-flex align-items-center justify-content-between mb-4">
-    <div>
-        <h3 class="mb-0 fw-bold">Gửi Thông Báo</h3>
-        <p class="text-muted small mb-0">Soạn và gửi thông báo hệ thống đến khách hàng</p>
+<style>
+    .dashboard-header {
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        padding: 2rem;
+        border-radius: 1.5rem;
+        color: white;
+        margin-bottom: 2rem;
+    }
+    .msg-bubble {
+        padding: 1rem;
+        border-radius: 1rem;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        font-size: 0.85rem;
+    }
+</style>
+
+<div class="container-fluid p-0">
+    <!-- Header -->
+    <div class="dashboard-header d-md-flex align-items-center justify-content-between shadow-sm">
+        <div>
+            <h2 class="fw-bold mb-1">Hệ Thống Thông Báo</h2>
+            <p class="mb-0 text-white-50">Gửi cập nhật và ưu đãi đến cộng đồng khách hàng</p>
+        </div>
+        <button type="button" class="btn btn-light rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#modalThongBao">
+            <i class="fas fa-paper-plane me-2 text-primary"></i> Gửi Thông Báo Mới
+        </button>
+    </div>
+
+    <div class="row g-4 mb-5">
+        <!-- History Section -->
+        <div class="col-lg-12">
+            <!-- Filter -->
+            <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+                <form action="{{ route('admin.thongbao.index') }}" method="GET" class="row g-3">
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-0 rounded-start-pill"><i class="fas fa-search"></i></span>
+                            <input type="text" name="search" class="form-control bg-light border-0 rounded-end-pill" placeholder="Tìm tiêu đề, nội dung, khách hàng..." value="{{ request('search') }}">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <select name="type" class="form-select rounded-pill border-light" onchange="this.form.submit()">
+                            <option value="all">Tất cả loại</option>
+                            <option value="KhuyenMai" {{ request('type') == 'KhuyenMai' ? 'selected' : '' }}>Khuyến mãi</option>
+                            <option value="DonHang" {{ request('type') == 'DonHang' ? 'selected' : '' }}>Đơn hàng</option>
+                            <option value="HeThong" {{ request('type') == 'HeThong' ? 'selected' : '' }}>Hệ thống</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-dark w-100 rounded-pill">Truy xuất lịch sử</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Table -->
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="ps-4 py-3 text-uppercase small fw-bold">Thời Gian</th>
+                                <th class="py-3 text-uppercase small fw-bold">Người Nhận</th>
+                                <th class="py-3 text-uppercase small fw-bold">Nội Dung</th>
+                                <th class="pe-4 py-3 text-uppercase small fw-bold text-end">Thao Tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($recent as $tb)
+                                @php
+                                    $typeBadge = match($tb->LoaiTB) {
+                                        'KhuyenMai' => 'bg-danger text-danger',
+                                        'DonHang' => 'bg-success text-success',
+                                        default => 'bg-primary text-primary'
+                                    };
+                                @endphp
+                                <tr>
+                                    <td class="ps-4">
+                                        <div class="fw-bold text-dark small">{{ date('d/m/Y', strtotime($tb->NgayGui)) }}</div>
+                                        <div class="text-muted" style="font-size: 0.7rem;">{{ date('H:i', strtotime($tb->NgayGui)) }}</div>
+                                    </td>
+                                    <td>
+                                        <div class="fw-medium text-dark">{{ $tb->khachHang->HoTen ?? 'Tất cả khách hàng' }}</div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex flex-column gap-1">
+                                            <div class="small fw-bold text-dark">{{ $tb->TieuDe }}</div>
+                                            <div class="msg-bubble text-muted small py-1 px-2 border-0 bg-light rounded-3">{{ $tb->NoiDung }}</div>
+                                            <div><span class="badge {{ $typeBadge }} bg-opacity-10 rounded-pill" style="font-size: 0.65rem;">{{ $tb->LoaiTB }}</span></div>
+                                        </div>
+                                    </td>
+                                    <td class="pe-4 text-end">
+                                        <form action="{{ route('admin.thongbao.destroy', $tb->MaTB) }}" method="POST">
+                                            @csrf @method('DELETE')
+                                            <button type="submit" class="btn btn-sm btn-light rounded-pill px-3 text-danger" onclick="return confirm('Xóa lịch sử thông báo này?')">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                <div class="p-4 bg-light border-top">
+                    {{ $recent->links() }}
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
-@if(session('success'))
-    <div class="alert alert-success border-0 shadow-sm rounded-3 mb-4 d-flex align-items-center" role="alert">
-        <i class="fas fa-check-circle me-2"></i>
-        <div>{{ session('success') }}</div>
-        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
-    </div>
-@endif
-
-<div class="row g-4">
-    <!-- Form Gửi Thông Báo -->
-    <div class="col-lg-5">
-        <div class="admin-card p-4 h-100">
-            <h5 class="fw-bold mb-4"><i class="fas fa-paper-plane me-2 text-primary"></i>Soạn thông báo mới</h5>
-            
-            <form action="{{ route('admin.thongbao.store') }}" method="POST">
-                @csrf
-                <div class="mb-3">
-                    <label class="admin-form-label">Tiêu đề thông báo <span class="text-danger">*</span></label>
-                    <input type="text" name="TieuDe" class="form-control form-control-luxury" placeholder="VD: Khuyến mãi Black Friday" required>
-                </div>
-
-                <div class="row g-3 mb-3">
-                    <div class="col-md-6">
-                        <label class="admin-form-label">Loại thông báo</label>
-                        <select name="LoaiTB" class="form-select form-control-luxury" required>
-                            <option value="KhuyenMai">Khuyến mãi mới</option>
-                            <option value="DonHang">Cập nhật đơn hàng</option>
-                            <option value="SanPhamMoi">Sản phẩm mới</option>
-                            <option value="HeThong">Hệ thống</option>
-                        </select>
+<!-- Modal Gửi Thông Báo -->
+<div class="modal fade" id="modalThongBao" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header p-4 border-bottom-0">
+                <h5 class="fw-bold">Khởi Tạo Thông Điệp Mới</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4 pt-0">
+                <form method="post" action="{{ route('admin.thongbao.store') }}">
+                    @csrf
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="small fw-bold text-muted mb-2">ĐỐI TƯỢNG NHẬN</label>
+                            <select name="gui_cho" class="form-select rounded-pill" onchange="toggleKhachHang(this.value)">
+                                <option value="all">Gửi cho tất cả khách hàng</option>
+                                <option value="mot">Chỉ gửi cho một khách hàng</option>
+                            </select>
+                        </div>
+                        <div class="col-12" id="khachhang_select" style="display:none">
+                            <label class="small fw-bold text-muted mb-2">CHỌN KHÁCH HÀNG</label>
+                            <select name="MaKH" class="form-select rounded-pill">
+                                <option value="">-- Tìm chọn khách hàng --</option>
+                                @foreach($ds_khach as $kh)
+                                    <option value="{{ $kh->MaKH }}">{{ $kh->HoTen }} ({{ $kh->SDT }})</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-8">
+                            <label class="small fw-bold text-muted mb-2">TIÊU ĐỀ THÔNG BÁO</label>
+                            <input type="text" name="TieuDe" class="form-control rounded-pill" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="small fw-bold text-muted mb-2">PHÂN LOẠI</label>
+                            <select name="LoaiTB" class="form-select rounded-pill">
+                                <option value="HeThong">Hệ thống</option>
+                                <option value="KhuyenMai">Khuyến mãi</option>
+                                <option value="DonHang">Đơn hàng</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="small fw-bold text-muted mb-2">NỘI DUNG THÔNG ĐIỆP</label>
+                            <textarea name="NoiDung" class="form-control rounded-4" rows="4" required></textarea>
+                        </div>
+                        <div class="col-12">
+                            <label class="small fw-bold text-muted mb-2">LIÊN KẾT ĐÍNH KÈM (URL)</label>
+                            <input type="text" name="LienKet" class="form-control rounded-pill" placeholder="https://...">
+                        </div>
                     </div>
-                    <div class="col-md-6">
-                        <label class="admin-form-label">Đối tượng nhận</label>
-                        <select id="gui_cho" name="gui_cho" class="form-select form-control-luxury" onchange="toggleKhachHang(this.value)">
-                            <option value="all">Tất cả khách hàng</option>
-                            <option value="mot">Chỉ một người</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="mb-3" id="khachhang_select" style="display:none;">
-                    <label class="admin-form-label">Chọn khách hàng <span class="text-danger">*</span></label>
-                    <select name="MaKH" class="form-select form-control-luxury">
-                        <option value="">-- Tìm khách hàng --</option>
-                        @foreach ($ds_khach as $kh)
-                            <option value="{{ $kh->MaKH }}">{{ $kh->HoTen }} ({{ $kh->SDT }})</option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <div class="mb-3">
-                    <label class="admin-form-label">Nội dung chi tiết <span class="text-danger">*</span></label>
-                    <textarea name="NoiDung" class="form-control form-control-luxury" rows="6" placeholder="Nhập nội dung thông báo..." required></textarea>
-                </div>
-
-                <div class="mb-4">
-                    <label class="admin-form-label">Liên kết đính kèm</label>
-                    <div class="input-group">
-                        <span class="input-group-text bg-light border-end-0 text-muted"><i class="fas fa-link"></i></span>
-                        <input type="text" name="LienKet" class="form-control form-control-luxury border-start-0 ps-0" placeholder="/san-pham/...">
-                    </div>
-                </div>
-
-                <div class="d-grid">
-                    <button type="submit" class="btn btn-luxury-primary py-3">
-                        <i class="fas fa-paper-plane me-2"></i> Gửi thông báo ngay
+                    <button type="submit" class="btn btn-dark w-100 rounded-pill py-2 mt-4 fw-bold shadow-sm">
+                        <i class="fas fa-paper-plane me-2"></i> Phát Hành Thông Báo
                     </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- History -->
-    <div class="col-lg-7">
-        <div class="table-custom-container h-100">
-            <div class="p-4 border-bottom bg-light d-flex align-items-center justify-content-between">
-                <h6 class="mb-0 fw-bold"><i class="fas fa-history me-2 text-primary"></i>Lịch sử gửi gần đây</h6>
-            </div>
-            <div class="table-responsive">
-                <table class="table-custom">
-                    <thead>
-                        <tr>
-                            <th width="20%">Thời gian</th>
-                            <th width="15%">Loại</th>
-                            <th>Tiêu đề & Nội dung</th>
-                            <th width="20%">Người nhận</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse ($recent as $tb)
-                            @php
-                                $loaiBadge = match($tb->LoaiTB) {
-                                    'KhuyenMai' => 'bg-danger text-danger',
-                                    'DonHang' => 'bg-success text-success', 
-                                    'SanPhamMoi' => 'bg-primary text-primary',
-                                    default => 'bg-secondary text-secondary'
-                                };
-                                $loaiText = match($tb->LoaiTB) {
-                                    'KhuyenMai' => 'Khuyến mãi',
-                                    'DonHang' => 'Đơn hàng',
-                                    'SanPhamMoi' => 'Sản phẩm',
-                                    default => 'Hệ thống'
-                                };
-                            @endphp
-                            <tr>
-                                <td>
-                                    <div class="small fw-bold text-main">{{ date('d/m/Y', strtotime($tb->NgayGui)) }}</div>
-                                    <div class="small text-muted">{{ date('H:i', strtotime($tb->NgayGui)) }}</div>
-                                </td>
-                                <td>
-                                    <span class="badge bg-opacity-10 {{ $loaiBadge }} badge-luxury">{{ $loaiText }}</span>
-                                </td>
-                                <td>
-                                    <div class="fw-bold text-main small">{{ $tb->TieuDe }}</div>
-                                    <div class="text-muted small text-truncate" style="max-width: 250px;">{{ $tb->NoiDung }}</div>
-                                </td>
-                                <td>
-                                    <span class="text-muted small">{{ $tb->khachHang->HoTen ?? 'Tất cả khách' }}</span>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="4" class="text-center text-muted py-5">
-                                    <i class="fas fa-inbox fs-2 d-block mb-3 opacity-25"></i>
-                                    Chưa có lịch sử thông báo
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+                </form>
             </div>
         </div>
     </div>
 </div>
 
-@push('scripts')
 <script>
 function toggleKhachHang(val) {
     document.getElementById('khachhang_select').style.display = val === 'mot' ? 'block' : 'none';
 }
 </script>
-@endpush
 @endsection

@@ -83,7 +83,9 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(fun
     Route::resource('danhmuc', AdminDanhMucController::class);
     
     // Tac Gia
-    Route::resource('tacgia', AdminTacGiaController::class);
+    Route::resource('tacgia', AdminTacGiaController::class)->parameters([
+        'tacgia' => 'id'
+    ]);
     
     // San Pham
     Route::resource('sanpham', AdminSanPhamController::class);

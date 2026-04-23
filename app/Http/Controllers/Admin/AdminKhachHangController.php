@@ -90,12 +90,25 @@ class AdminKhachHangController extends Controller
 
     public function destroy($id)
     {
-        $customer = KhachHang::findOrFail($id);
-        if ($customer->MaTK) {
-            TaiKhoan::where('MaTK', $customer->MaTK)->delete();
-        }
-        $customer->delete();
+        try {
+            $customer = KhachHang::findOrFail($id);
+            
+            // Kiểm tra lịch sử mua hàng
+            if ($customer->donHangs()->exists()) {
+                return redirect()->route('admin.khachhang.index')->with('error', 'Không thể xóa khách hàng này vì đã có dữ liệu lịch sử đơn hàng!');
+            }
 
-        return redirect()->route('admin.khachhang.index')->with('success', 'Xóa khách hàng thành công!');
+            \Illuminate\Support\Facades\DB::beginTransaction();
+            if ($customer->MaTK) {
+                TaiKhoan::where('MaTK', $customer->MaTK)->delete();
+            }
+            $customer->delete();
+            \Illuminate\Support\Facades\DB::commit();
+
+            return redirect()->route('admin.khachhang.index')->with('success', 'Xóa khách hàng thành công!');
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\DB::rollBack();
+            return redirect()->route('admin.khachhang.index')->with('error', 'Lỗi hệ thống: ' . $e->getMessage());
+        }
     }
 }
