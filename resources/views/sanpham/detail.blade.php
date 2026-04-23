@@ -1,184 +1,200 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container py-5">
-    <nav aria-label="breadcrumb" class="mb-5">
-        <ol class="breadcrumb small text-uppercase" style="letter-spacing: 1px;">
-            <li class="breadcrumb-item"><a href="{{ route('home') }}" class="text-muted text-decoration-none hover-gold">Trang chủ</a></li>
-            <li class="breadcrumb-item"><a href="{{ route('sanpham.index') }}" class="text-muted text-decoration-none hover-gold">Sách</a></li>
-            <li class="breadcrumb-item active" style="color: var(--gold-primary)">{{ $product->TenSP }}</li>
+<div class="container py-24">
+    <!-- Breadcrumb - Minimalist -->
+    <nav aria-label="breadcrumb" class="mb-12 reveal-on-scroll">
+        <ol class="breadcrumb extra-small text-uppercase ls-2">
+            <li class="breadcrumb-item"><a href="{{ route('home') }}" class="text-muted">Trang chủ</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('sanpham.index') }}" class="text-muted">Bộ Sưu Tập</a></li>
+            <li class="breadcrumb-item active text-dark fw-bold" aria-current="page">{{ $product->TenSP }}</li>
         </ol>
     </nav>
 
-    <div class="row align-items-center min-vh-75 mb-5">
-        <div class="col-lg-6 position-relative mb-4 mb-lg-0 text-center">
-            <!-- Hiệu ứng ánh sáng phía sau -->
-            <div class="position-absolute top-50 start-50 translate-middle" style="width: 300px; height: 300px; background: var(--gold-primary); filter: blur(150px); opacity: 0.15; z-index: -1;"></div>
-            
-            <!-- Giả lập model 3D, nếu có file .glb thật thì thay src ở đây -->
-            <model-viewer 
-                src="{{ asset('assets/3d_models/default_book.glb') }}" 
-                alt="{{ $product->TenSP }}"
-                auto-rotate 
-                camera-controls
-                shadow-intensity="1"
-                environment-image="neutral"
-                exposure="1"
-                style="width: 100%; height: 500px; background-color: transparent; display: none;"
-                id="modelViewer">
-            </model-viewer>
+    <div class="row g-5 align-items-start mb-24">
+        <!-- Product Images - Impeccable Presentation -->
+        <div class="col-lg-6 reveal-on-scroll">
+            <div class="product-gallery sticky-top" style="top: 180px;">
+                <div class="main-image-wrapper bg-soft rounded-4 p-5 mb-4 position-relative overflow-hidden shadow-sm border border-light">
+                    <div class="position-absolute top-50 start-50 translate-middle" style="width: 300px; height: 300px; background: var(--gold-soft); filter: blur(100px); opacity: 0.3; z-index: 0;"></div>
+                    
+                    <img id="mainImage" src="{{ $product->HinhAnh ? (Str::startsWith($product->HinhAnh, 'http') ? $product->HinhAnh : asset('assets/images/products/' . $product->HinhAnh)) : 'https://via.placeholder.com/500x700' }}" 
+                         class="img-fluid position-relative z-1 trans-slow" style="max-height: 550px; object-fit: contain; filter: drop-shadow(0 15px 30px rgba(0,0,0,0.08));">
+                </div>
 
-            <!-- Fallback Image -->
-            <img id="mainImage" src="{{ $product->HinhAnh ? asset('assets/images/products/' . $product->HinhAnh) : 'https://via.placeholder.com/500x700' }}" 
-                 class="img-fluid rounded" style="max-height: 500px; object-fit: contain; filter: drop-shadow(0 20px 30px rgba(0,0,0,0.5));">
-                 
-            @if ($product->hinhanhsanpham->isNotEmpty())
-            <div class="d-flex gap-3 justify-content-center mt-4">
-                <img src="{{ asset('assets/images/products/' . $product->HinhAnh) }}" 
-                      class="img-thumbnail rounded-3 border-0" width="60" style="cursor:pointer; background: rgba(255,255,255,0.1); opacity: 0.6; transition: 0.3s;" onclick="changeImage(this, this.src)" onload="this.style.opacity=1; this.style.boxShadow='0 0 10px var(--gold-primary)';">
-                @foreach($product->hinhanhsanpham as $img)
-                    <img src="{{ asset('assets/images/products/' . $img->DuongDan) }}" 
-                         class="img-thumbnail rounded-3 border-0" width="60" style="cursor:pointer; background: rgba(255,255,255,0.1); opacity: 0.6; transition: 0.3s;" onclick="changeImage(this, this.src)">
-                @endforeach
+                @if ($product->hinhanhsanpham->isNotEmpty())
+                <div class="d-flex gap-3 justify-content-center overflow-x-auto no-scrollbar py-2">
+                    <div class="thumb-item active" onclick="changeImage(this, '{{ $product->HinhAnh ? (Str::startsWith($product->HinhAnh, 'http') ? $product->HinhAnh : asset('assets/images/products/' . $product->HinhAnh)) : 'https://via.placeholder.com/500x700' }}')">
+                        <img src="{{ $product->HinhAnh ? (Str::startsWith($product->HinhAnh, 'http') ? $product->HinhAnh : asset('assets/images/products/' . $product->HinhAnh)) : 'https://via.placeholder.com/500x700' }}" class="img-fluid rounded-3">
+                    </div>
+                    @foreach($product->hinhanhsanpham as $img)
+                        <div class="thumb-item" onclick="changeImage(this, '{{ asset('assets/images/products/' . $img->DuongDan) }}')">
+                            <img src="{{ asset('assets/images/products/' . $img->DuongDan) }}" class="img-fluid rounded-3">
+                        </div>
+                    @endforeach
+                </div>
+                @endif
             </div>
-            @endif
         </div>
 
-        <div class="col-lg-6">
-            <div class="product-info-panel p-lg-5 p-4 rounded-4 shadow-sm bg-white border">
-                <h1 class="font-luxury display-5 mb-3 text-dark">{{ $product->TenSP }}</h1>
+        <!-- Product Info - Typography Focused -->
+        <div class="col-lg-6 reveal-on-scroll" style="transition-delay: 0.1s;">
+            <div class="ps-lg-5">
+                <span class="section-tag">{{ $product->danhmuc->TenDM ?? 'Premium Edition' }}</span>
+                <h1 class="font-luxury display-4 mb-4 text-dark lh-sm">{{ $product->TenSP }}</h1>
                 
-                <div class="d-flex align-items-center gap-3 mb-4 small text-muted text-uppercase" style="letter-spacing: 1px;">
-                    <span><i class="fa-solid fa-pen-nib me-2" style="color: var(--gold-primary)"></i>{{ $product->tac_gia_string ?? 'Tác giả ẩn danh' }}</span>
-                    <span>|</span>
-                    <span><i class="fa-solid fa-building me-2" style="color: var(--gold-primary)"></i>{{ $product->nhaxuatban->TenNXB ?? 'NXB Đang cập nhật' }}</span>
+                <div class="d-flex align-items-center gap-4 mb-8 text-muted extra-small fw-bold ls-1 text-uppercase border-bottom pb-4">
+                    <span class="d-flex align-items-center"><i class="fa-solid fa-feather-pointed me-2 color-gold"></i> {{ $product->tac_gia_string ?? 'Sưu tầm' }}</span>
+                    <span class="d-flex align-items-center"><i class="fa-solid fa-landmark me-2 color-gold"></i> {{ $product->nhaxuatban->TenNXB ?? 'Classic Press' }}</span>
                 </div>
 
-                <div class="mb-4">
+                <div class="price-section mb-12">
                     @if($product->khuyen_mai_active)
-                        <div class="d-flex align-items-center gap-2 mb-1">
-                            <span class="text-muted text-decoration-line-through fs-5">{{ number_format($product->DonGia, 0, ',', '.') }}₫</span>
-                            <span class="badge bg-danger rounded-pill">-{{ (int)$product->khuyen_mai_active->PhanTramGiam }}%</span>
+                        <div class="d-flex align-items-center gap-3 mb-2">
+                            <span class="text-muted text-decoration-line-through fs-5 fw-light">{{ number_format($product->DonGia, 0, ',', '.') }}₫</span>
+                            <span class="badge bg-danger rounded-pill px-3 py-2 small fw-bold shadow-sm">-{{ (int)$product->khuyen_mai_active->PhanTramGiam }}%</span>
                         </div>
-                        <div class="d-flex align-items-center justify-content-between">
-                            <span class="display-5 fw-bold text-danger">{{ number_format($product->gia_hien_tai, 0, ',', '.') }} VNĐ</span>
-                            <span class="text-muted small"><i class="fa-solid fa-fire me-1 text-danger"></i>Đã bán {{ (int)$product->SoLuongDaBan }} bản</span>
+                        <div class="d-flex align-items-baseline justify-content-between">
+                            <span class="display-4 fw-bold text-danger">{{ number_format($product->gia_hien_tai, 0, ',', '.') }}<span class="fs-4 ms-1">₫</span></span>
+                            <span class="extra-small fw-bold text-muted ls-1"><i class="fa-solid fa-bolt me-2 text-warning"></i>ĐÃ BÁN {{ (int)$product->SoLuongDaBan }}</span>
                         </div>
                     @else
-                        <div class="d-flex align-items-center justify-content-between">
-                            <span class="display-5 fw-bold text-dark">{{ number_format($product->DonGia, 0, ',', '.') }} VNĐ</span>
-                            <span class="text-muted small"><i class="fa-solid fa-fire me-1 text-danger"></i>Đã bán {{ (int)$product->SoLuongDaBan }} bản</span>
+                        <div class="d-flex align-items-baseline justify-content-between">
+                            <span class="display-4 fw-bold text-dark">{{ number_format($product->DonGia, 0, ',', '.') }}<span class="fs-4 ms-1">₫</span></span>
+                            <span class="extra-small fw-bold text-muted ls-1">ĐÃ BÁN {{ (int)$product->SoLuongDaBan }} BẢN</span>
                         </div>
                     @endif
                 </div>
                 
-                <p class="lh-lg mb-5 text-muted" style="font-size: 0.95rem;">
-                    {{ $product->MoTa }}
-                </p>
+                <div class="description-preview mb-12">
+                    <p class="text-muted lh-lg" style="font-size: 1.05rem;">
+                        {{ Str::limit($product->MoTa, 350) }}
+                    </p>
+                </div>
                 
-                <div class="d-flex align-items-center gap-3 mb-4">
-                    @if($product->SoLuong > 0)
-                        <div class="input-group rounded-3 overflow-hidden border" style="width: 140px;">
-                            <button class="btn btn-link text-dark text-decoration-none px-3" type="button" onclick="updateQty(-1)"><i class="fa-solid fa-minus"></i></button>
-                            <input type="number" id="qty" class="form-control text-center bg-transparent text-dark border-0 fw-bold" value="1" min="1" max="{{ $product->SoLuong }}" readonly>
-                            <button class="btn btn-link text-dark text-decoration-none px-3" type="button" onclick="updateQty(1)"><i class="fa-solid fa-plus"></i></button>
-                        </div>
-                        
-                        <button onclick="addToCart({{ $product->MaSP }})" class="btn btn-dark py-3 flex-grow-1 fs-6 fw-bold ls-1 rounded-3">
-                            THÊM VÀO GIỎ HÀNG
-                        </button>
-                        
-                        <button onclick="toggleFavorite({{ $product->MaSP }}, this)" class="btn btn-outline-dark py-3 px-4 rounded-3 {{ $product->is_favorite ? 'active' : '' }}">
-                            <i class="{{ $product->is_favorite ? 'fa-solid text-danger' : 'fa-regular' }} fa-heart fs-5"></i>
-                        </button>
-                    @else
-                        <button class="btn btn-outline-secondary py-3 flex-grow-1 fs-6" disabled>
-                            Tạm hết hàng
-                        </button>
-                    @endif
+                <div class="action-panel p-6 bg-soft rounded-4 border border-light mb-8">
+                    <div class="d-flex align-items-center gap-4">
+                        @if($product->SoLuong > 0)
+                            <div class="qty-selector d-flex align-items-center bg-white rounded-pill border px-2 shadow-sm" style="height: 56px;">
+                                <button class="btn btn-link text-dark p-0 w-10 text-center" onclick="updateQty(-1)"><i class="fa-solid fa-minus fs-xs"></i></button>
+                                <input type="number" id="qty" class="form-control text-center border-0 fw-bold bg-transparent" value="1" min="1" max="{{ $product->SoLuong }}" readonly style="width: 60px;">
+                                <button class="btn btn-link text-dark p-0 w-10 text-center" onclick="updateQty(1)"><i class="fa-solid fa-plus fs-xs"></i></button>
+                            </div>
+                            
+                            <button onclick="addToCart({{ $product->MaSP }})" class="btn btn-dark rounded-pill px-5 flex-grow-1 fw-bold ls-1 shadow-lg" style="height: 56px;">
+                                THÊM VÀO GIỎ HÀNG
+                            </button>
+                            
+                            <button onclick="toggleFavorite({{ $product->MaSP }}, this)" class="btn btn-white rounded-circle border shadow-sm d-flex align-items-center justify-content-center {{ $product->is_favorite ? 'active' : '' }}" style="width: 56px; height: 56px;">
+                                <i class="{{ $product->is_favorite ? 'fa-solid text-danger' : 'fa-regular' }} fa-heart fs-5"></i>
+                            </button>
+                        @else
+                            <button class="btn btn-outline-secondary rounded-pill w-100 fw-bold ls-1" style="height: 56px;" disabled>
+                                HIỆN ĐANG TẠM HẾT HÀNG
+                            </button>
+                        @endif
+                    </div>
                 </div>
 
-                <ul class="list-unstyled small mb-0 text-muted">
-                    <li class="mb-2"><i class="fa-solid fa-check me-2 text-success"></i> Đóng gói cao cấp</li>
-                    <li class="mb-2"><i class="fa-solid fa-check me-2 text-success"></i> Giao hàng tiêu chuẩn toàn quốc</li>
-                    <li><i class="fa-solid fa-check me-2 text-success"></i> Đổi trả trong 30 ngày</li>
-                </ul>
+                <div class="perks-list row g-4">
+                    <div class="col-sm-6">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="icon-box-sm bg-white shadow-sm rounded-circle d-flex align-items-center justify-content-center border" style="width: 40px; height: 40px;">
+                                <i class="fa-solid fa-shield-heart fs-xs color-gold"></i>
+                            </div>
+                            <span class="extra-small fw-bold text-dark ls-1">BẢO QUẢN CAO CẤP</span>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="icon-box-sm bg-white shadow-sm rounded-circle d-flex align-items-center justify-content-center border" style="width: 40px; height: 40px;">
+                                <i class="fa-solid fa-truck-fast fs-xs color-gold"></i>
+                            </div>
+                            <span class="extra-small fw-bold text-dark ls-1">GIAO HÀNG SIÊU TỐC</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Description Details -->
-    <div class="row mt-5 pt-5 border-top">
+    <!-- Secondary Info - Minimalist Tabs -->
+    <div class="row pt-24 border-top border-light g-5 reveal-on-scroll">
         <div class="col-lg-8">
-            <h3 class="font-luxury mb-4 text-dark">Nội dung chi tiết</h3>
-            <div class="p-lg-5 p-4 rounded-4 mb-4 bg-white shadow-sm border">
-                <div class="content-text lh-lg text-dark" style="font-weight: 400;">
-                    {!! $product->chiTiet->NoiDungChiTiet ?? $product->MoTa !!}
-                </div>
+            <h3 class="font-luxury mb-8 fs-2">Về Tác Phẩm</h3>
+            <div class="content-body text-dark lh-lg" style="font-size: 1.1rem; font-weight: 400;">
+                {!! $product->chiTiet->NoiDungChiTiet ?? $product->MoTa !!}
             </div>
         </div>
         <div class="col-lg-4">
-            <h3 class="font-luxury mb-4 text-dark">Thông số kỹ thuật</h3>
-            <div class="p-4 rounded-4 bg-white shadow-sm border">
-                <table class="table table-borderless text-dark small mb-0">
-                    <tbody>
-                        @if($product->chiTiet->SoTrang ?? false)
-                        <tr>
-                            <td class="ps-0 text-muted" width="45%">Số trang</td>
-                            <td class="fw-bold text-end text-dark">{{ $product->chiTiet->SoTrang }} trang</td>
-                        </tr>
-                        @endif
-                        @if($product->chiTiet->KichThuoc ?? false)
-                        <tr>
-                            <td class="ps-0 text-muted">Kích thước</td>
-                            <td class="fw-bold text-end text-dark">{{ $product->chiTiet->KichThuoc }}</td>
-                        </tr>
-                        @endif
-                        @if($product->chiTiet->LoaiBia ?? false)
-                        <tr>
-                            <td class="ps-0 text-muted">Loại bìa</td>
-                            <td class="fw-bold text-end text-dark">{{ $product->chiTiet->LoaiBia }}</td>
-                        </tr>
-                        @endif
-                        @if($product->chiTiet->TrongLuong ?? false)
-                        <tr>
-                            <td class="ps-0 text-muted">Trọng lượng</td>
-                            <td class="fw-bold text-end text-dark">{{ $product->chiTiet->TrongLuong }} gr</td>
-                        </tr>
-                        @endif
-                        @if($product->chiTiet->NamXuatBan ?? false)
-                        <tr>
-                            <td class="ps-0 text-muted">Năm xuất bản</td>
-                            <td class="fw-bold text-end text-dark">{{ $product->chiTiet->NamXuatBan }}</td>
-                        </tr>
-                        @endif
-                        <tr>
-                            <td class="ps-0 text-muted">Nhà xuất bản</td>
-                            <td class="fw-bold text-end text-dark">{{ $product->nhaxuatban->TenNXB ?? 'Đang cập nhật' }}</td>
-                        </tr>
-                    </tbody>
-                </table>
+            <div class="spec-panel sticky-top" style="top: 180px;">
+                <h3 class="font-luxury mb-8 fs-2">Chi Tiết Ấn Bản</h3>
+                <div class="p-8 bg-white rounded-4 border border-light shadow-sm">
+                    <table class="table table-borderless small mb-0">
+                        <tbody class="text-dark">
+                            @if($product->chiTiet->SoTrang ?? false)
+                            <tr class="border-bottom border-light">
+                                <td class="ps-0 py-3 text-muted fw-medium" width="45%">Số trang</td>
+                                <td class="py-3 fw-bold text-end">{{ $product->chiTiet->SoTrang }}</td>
+                            </tr>
+                            @endif
+                            @if($product->chiTiet->KichThuoc ?? false)
+                            <tr class="border-bottom border-light">
+                                <td class="ps-0 py-3 text-muted fw-medium">Kích thước</td>
+                                <td class="py-3 fw-bold text-end">{{ $product->chiTiet->KichThuoc }}</td>
+                            </tr>
+                            @endif
+                            @if($product->chiTiet->LoaiBia ?? false)
+                            <tr class="border-bottom border-light">
+                                <td class="ps-0 py-3 text-muted fw-medium">Loại bìa</td>
+                                <td class="py-3 fw-bold text-end">{{ $product->chiTiet->LoaiBia }}</td>
+                            </tr>
+                            @endif
+                            @if($product->chiTiet->TrongLuong ?? false)
+                            <tr class="border-bottom border-light">
+                                <td class="ps-0 py-3 text-muted fw-medium">Trọng lượng</td>
+                                <td class="py-3 fw-bold text-end">{{ $product->chiTiet->TrongLuong }} gr</td>
+                            </tr>
+                            @endif
+                            @if($product->chiTiet->NamXuatBan ?? false)
+                            <tr class="border-bottom border-light">
+                                <td class="ps-0 py-3 text-muted fw-medium">Năm xuất bản</td>
+                                <td class="py-3 fw-bold text-end">{{ $product->chiTiet->NamXuatBan }}</td>
+                            </tr>
+                            @endif
+                            <tr>
+                                <td class="ps-0 py-3 text-muted fw-medium">Nhà xuất bản</td>
+                                <td class="py-3 fw-bold text-end">{{ $product->nhaxuatban->TenNXB ?? 'Đang cập nhật' }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Related Products -->
+    <!-- Related - Elegant Carousel Style -->
     @if($relatedProducts->isNotEmpty())
-    <div class="mt-5 pt-5 border-top" style="border-color: rgba(212,175,55,0.1)!important;">
-        <h3 class="font-luxury text-center mb-5">Khám Phá Thêm</h3>
-        <div class="row g-4 row-cols-2 row-cols-md-4 bento-grid">
-            @foreach($relatedProducts as $sp)
-            <div class="col">
-                <div class="product-card">
-                    <a href="{{ route('sanpham.detail', $sp->MaSP) }}" class="img-box">
-                        <img src="{{ $sp->HinhAnh ? asset('assets/images/products/' . $sp->HinhAnh) : 'https://via.placeholder.com/400x600' }}" style="max-height: 100%; max-width: 100%; object-fit: contain; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.5));">
-                    </a>
-                    <div class="p-3 d-flex flex-column flex-grow-1">
-                        <a href="{{ route('sanpham.detail', $sp->MaSP) }}" class="product-name text-decoration-none fw-bold mb-2" style="font-size: 14px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 40px;">{{ $sp->TenSP }}</a>
-                        <div class="mt-auto">
-                            <div class="fw-bold fs-5 mb-3" style="color: var(--gold-light);">{{ number_format($sp->DonGia,0,',','.') }}₫</div>
-                            <a href="{{ route('sanpham.detail', $sp->MaSP) }}" class="btn btn-outline-light w-100 py-2 fs-6" style="border-color: rgba(255,255,255,0.2);">Xem ngay</a>
-                        </div>
+    <div class="mt-24 pt-24 border-top border-light reveal-on-scroll">
+        <div class="text-center mb-16">
+            <span class="section-tag">Recommendations</span>
+            <h2 class="font-luxury display-4">Có Thể Bạn Sẽ <span style="font-style: italic">Yêu Thích</span></h2>
+        </div>
+        <div class="row g-5">
+            @foreach($relatedProducts->take(4) as $sp)
+            <div class="col-sm-6 col-md-3">
+                <div class="product-item">
+                    <div class="product-thumb mb-4">
+                        <a href="{{ route('sanpham.detail', $sp->MaSP) }}" class="no-barba" data-barba-prevent>
+                            <div class="d-flex align-items-center justify-content-center p-4" style="height: 280px;">
+                                <img src="{{ $sp->HinhAnh ? (Str::startsWith($sp->HinhAnh, 'http') ? $sp->HinhAnh : asset('assets/images/products/' . $sp->HinhAnh)) : 'https://via.placeholder.com/400x600' }}" 
+                                     class="img-fluid" style="max-height: 100%; object-fit: contain;">
+                            </div>
+                        </a>
+                    </div>
+                    <div class="text-center">
+                        <h6 class="fw-bold text-dark mb-2 text-truncate px-2">{{ $sp->TenSP }}</h6>
+                        <div class="fw-bold color-gold fs-5">{{ number_format($sp->DonGia, 0, ',', '.') }}₫</div>
                     </div>
                 </div>
             </div>
@@ -188,54 +204,36 @@
     @endif
 </div>
 
+<style>
+    .color-gold { color: var(--gold-primary); }
+    .thumb-item { width: 70px; height: 90px; padding: 10px; background: var(--bg-soft); border-radius: 8px; cursor: pointer; border: 1px solid transparent; transition: var(--trans-fast); opacity: 0.6; flex-shrink: 0; }
+    .thumb-item:hover, .thumb-item.active { opacity: 1; border-color: var(--gold-primary); background: white; shadow: var(--shadow-sm); }
+    .thumb-item img { width: 100%; height: 100%; object-fit: contain; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .qty-selector input::-webkit-outer-spin-button, .qty-selector input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    .btn-white:hover { background: var(--bg-soft); color: var(--gold-primary); border-color: var(--gold-primary); }
+    .content-body p { margin-bottom: 1.5rem; }
+</style>
+
 @push('scripts')
 <script>
-    // Kiểm tra xem mô hình 3D có load thành công không
-    const modelViewer = document.getElementById('modelViewer');
-    const mainImage = document.getElementById('mainImage');
-    
-    if (modelViewer) {
-        modelViewer.addEventListener('error', () => {
-            modelViewer.style.display = 'none';
-            mainImage.style.display = 'block';
-        });
-        
-        // Nếu file .glb có tồn tại, modelViewer sẽ tự hiện và ta có thể ẩn ảnh
-        modelViewer.addEventListener('load', () => {
-            modelViewer.style.display = 'block';
-            mainImage.style.display = 'none';
-        });
-    }
-
     function changeImage(element, src) {
         document.getElementById('mainImage').src = src;
-        // Reset styles for all thumbs
-        document.querySelectorAll('.img-thumbnail').forEach(img => {
-            img.style.opacity = '0.6';
-            img.style.boxShadow = 'none';
-        });
-        element.style.opacity = '1';
-        element.style.boxShadow = '0 0 10px var(--gold-primary)';
+        document.querySelectorAll('.thumb-item').forEach(item => item.classList.remove('active'));
+        element.classList.add('active');
     }
 
     function updateQty(change) {
         let qtyInput = document.getElementById('qty');
         let currentQty = parseInt(qtyInput.value);
         let maxQty = parseInt(qtyInput.getAttribute('max')); 
-        
         let newQty = currentQty + change;
-        
-        if (newQty >= 1 && newQty <= maxQty) {
-            qtyInput.value = newQty;
-        } else if (newQty > maxQty) {
-            alert("Chỉ còn " + maxQty + " sản phẩm!");
-        }
+        if (newQty >= 1 && newQty <= maxQty) qtyInput.value = newQty;
     }
 
     function addToCart(id) {
         let qty = document.getElementById('qty').value;
         const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-
         fetch(`{{ url('/cart/add') }}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
@@ -244,12 +242,7 @@
         .then(res => res.json())
         .then(data => {
             if(data.status === 'success') {
-                if(confirm('Đã thêm sản phẩm vào giỏ hàng! Đến giỏ hàng ngay?')) {
-                    if(typeof barba !== 'undefined') barba.go("{{ url('/cart') }}");
-                    else window.location.href = "{{ url('/cart') }}";
-                }
-                
-                // Cập nhật số lượng giỏ hàng trên Header
+                alert('Đã thêm sản phẩm vào giỏ hàng!');
                 const cartBadge = document.getElementById('cart-count-badge');
                 if (cartBadge) {
                     cartBadge.innerText = data.cartCount;
@@ -260,8 +253,7 @@
             } else {
                 alert(data.message);
             }
-        })
-        .catch(err => console.error(err));
+        });
     }
 
     function toggleFavorite(maSP, btn) {
@@ -271,20 +263,15 @@
             headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
             body: JSON.stringify({ maSP: maSP })
         })
-        .then(res => {
-            if (res.status === 401) {
-                window.location.href = "{{ route('login') }}";
-                return;
-            }
-            return res.json();
-        })
+        .then(res => res.json())
         .then(data => {
+            const icon = btn.querySelector('i');
             if (data.status === 'added') {
+                icon.className = 'fa-solid fa-heart text-danger fs-5';
                 btn.classList.add('active');
-                btn.querySelector('i').className = 'fa-solid fa-heart text-danger fs-5';
-            } else if (data.status === 'removed') {
+            } else {
+                icon.className = 'fa-regular fa-heart fs-5';
                 btn.classList.remove('active');
-                btn.querySelector('i').className = 'fa-regular fa-heart fs-5';
             }
         });
     }

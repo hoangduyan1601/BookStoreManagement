@@ -127,20 +127,20 @@
                 <div class="col-lg-4 col-md-4">
                     <div class="d-flex align-items-center justify-content-end gap-2">
                         @auth
-                            <div class="position-relative notification-wrapper">
+                            <div class="position-relative notification-wrapper" style="z-index: 1060;">
                                 <a href="javascript:void(0)" class="nav-icon-link" id="noti-trigger">
                                     <i class="fa-regular fa-bell"></i>
                                     <span id="noti-badge" class="badge-luxury {{ ($unreadCount ?? 0) > 0 ? '' : 'd-none' }}">{{ $unreadCount ?? 0 }}</span>
                                 </a>
-                                <!-- Notification Panel -->
-                                <div class="noti-3d-panel shadow-2xl" id="noti-panel">
+                                <!-- Notification Panel - Strictly Absolute -->
+                                <div class="noti-3d-panel shadow-lg" id="noti-panel" style="position: absolute; top: 50px; right: 0; width: 350px; display: none; background: white; border-radius: 16px; border: 1px solid var(--border-color); overflow: hidden;">
                                     <div class="noti-header d-flex justify-content-between align-items-center p-4 border-bottom">
                                         <h6 class="fw-bold m-0 text-dark ls-1">THÔNG BÁO</h6>
                                         @if(($unreadCount ?? 0) > 0)
                                             <button onclick="markAllAsRead()" class="btn btn-link p-0 text-muted extra-small fw-bold text-decoration-none hover-gold">ĐÁNH DẤU ĐÃ ĐỌC</button>
                                         @endif
                                     </div>
-                                    <div class="noti-body custom-scrollbar" style="max-height: 350px; overflow-y: auto;">
+                                    <div class="noti-body custom-scrollbar" style="max-height: 380px; overflow-y: auto; background: white;">
                                         @auth
                                             @php
                                                 $customer = \App\Models\KhachHang::where('MaTK', auth()->user()->MaTK)->first();
@@ -148,7 +148,7 @@
                                             @endphp
                                             @forelse($notifications as $tb)
                                                 <div class="noti-item p-4 border-bottom {{ $tb->TrangThaiDoc ? 'opacity-75' : 'bg-light-gold border-start border-4 border-dark' }}" 
-                                                     onclick="markAsRead({{ $tb->MaTB }}, '{{ $tb->LienKet }}')">
+                                                     onclick="markAsRead({{ $tb->MaTB }}, '{{ $tb->LienKet }}')" style="cursor: pointer;">
                                                     <div class="d-flex justify-content-between mb-1">
                                                         <span class="fw-bold small text-dark">{{ $tb->TieuDe }}</span>
                                                         <small class="text-muted extra-small">{{ \Carbon\Carbon::parse($tb->NgayGui)->diffForHumans() }}</small>
@@ -162,6 +162,9 @@
                                                 </div>
                                             @endforelse
                                         @endauth
+                                    </div>
+                                    <div class="noti-footer p-3 text-center border-top">
+                                        <a href="{{ route('customer.profile') }}" class="text-dark fw-bold extra-small ls-2 text-decoration-none hover-gold no-barba" data-barba-prevent>XEM TẤT CẢ</a>
                                     </div>
                                 </div>
                             </div>
@@ -222,7 +225,7 @@
     </header>
 
     <main data-barba="container" data-barba-namespace="{{ Route::currentRouteName() ?? 'home' }}" class="barba-container">
-        <div class="page-content" style="padding-top: 75px;">
+        <div class="page-content" style="padding-top: 160px;">
             @yield('content')
         </div>
         
@@ -257,8 +260,10 @@
         }, observerOptions);
 
         function initReveals() {
-            document.querySelectorAll('.product-item, .product-card, .promo-card, section, h2, .bento-item').forEach(el => {
-                el.classList.add('reveal-on-scroll');
+            // Hiển thị nội dung ngay lập tức để tránh lỗi ẩn sản phẩm
+            document.querySelectorAll('.product-item, .product-card, .promo-card, section, h2, .bento-item, .reveal-on-scroll').forEach(el => {
+                el.style.opacity = '1';
+                el.style.transform = 'none';
                 observer.observe(el);
             });
         }

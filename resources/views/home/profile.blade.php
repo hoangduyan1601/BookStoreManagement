@@ -1,89 +1,95 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container py-5">
+<div class="container py-24">
+    <div class="header-section mb-16 reveal-on-scroll">
+        <span class="section-tag">Account Dashboard</span>
+        <h1 class="font-luxury display-4 text-dark border-bottom border-light pb-4">Hồ Sơ Của Bạn</h1>
+    </div>
+
     @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show rounded-4 border-0 shadow-sm mb-4" role="alert">
+        <div class="alert alert-success alert-dismissible fade show rounded-4 border-0 shadow-sm mb-8 p-4" role="alert">
             <i class="fa-solid fa-circle-check me-2"></i> {{ session('success') }}
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     @endif
 
-    @if(session('error'))
-        <div class="alert alert-danger alert-dismissible fade show rounded-4 border-0 shadow-sm mb-4" role="alert">
-            <i class="fa-solid fa-circle-exclamation me-2"></i> {{ session('error') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
-
     <div class="row g-5">
-        <!-- Cột trái: Hồ sơ cá nhân -->
-        <div class="col-lg-4">
-            <div class="sticky-top" style="top: 100px;">
-                <div class="profile-sidebar p-5 rounded-4 shadow-sm border-0 bg-white">
-                    <div class="text-center mb-5">
-                        <div class="avatar-box mx-auto mb-4 d-flex align-items-center justify-content-center bg-dark text-white rounded-circle shadow-lg" style="width: 100px; height: 100px;">
+        <!-- Sidebar: Personal Info -->
+        <div class="col-lg-4 reveal-on-scroll">
+            <div class="sticky-top" style="top: 180px;">
+                <div class="p-8 rounded-4 bg-white shadow-sm border border-light">
+                    <div class="text-center mb-8">
+                        <div class="avatar-box mx-auto mb-6 d-flex align-items-center justify-content-center bg-dark text-white rounded-circle shadow-lg" style="width: 120px; height: 120px; border: 5px solid var(--bg-soft);">
                             <i class="fa-solid fa-user-tie fs-1"></i>
                         </div>
-                        <h4 class="fw-bold text-dark mb-1">{{ $customer->HoTen }}</h4>
-                        <p class="text-muted small text-uppercase ls-1">Thành viên Luxury Bookstore</p>
+                        <h3 class="font-luxury fw-bold text-dark mb-1">{{ $customer->HoTen }}</h3>
+                        <p class="text-muted extra-small fw-bold ls-2 text-uppercase">Elite Member</p>
                     </div>
 
-                    <div class="profile-info-list d-flex flex-column gap-4">
-                        <div class="d-flex align-items-start gap-3">
-                            <div class="info-icon text-primary mt-1"><i class="fa-solid fa-envelope"></i></div>
-                            <div>
-                                <small class="text-muted d-block text-uppercase fw-bold ls-1" style="font-size: 0.6rem;">Email</small>
-                                <span class="fw-bold text-dark">{{ $customer->Email }}</span>
+                    <div class="profile-info-list d-flex flex-column gap-6 mb-12">
+                        <div class="d-flex align-items-center gap-4">
+                            <div class="icon-box-sm bg-soft rounded-circle d-flex align-items-center justify-content-center border" style="width: 44px; height: 44px; flex-shrink: 0;">
+                                <i class="fa-solid fa-envelope fs-xs color-gold"></i>
+                            </div>
+                            <div class="overflow-hidden">
+                                <small class="text-muted d-block text-uppercase fw-bold ls-1" style="font-size: 0.6rem;">Địa chỉ Email</small>
+                                <span class="fw-bold text-dark text-truncate d-block">{{ $customer->Email }}</span>
                             </div>
                         </div>
-                        <div class="d-flex align-items-start gap-3">
-                            <div class="info-icon text-success mt-1"><i class="fa-solid fa-phone"></i></div>
+                        <div class="d-flex align-items-center gap-4">
+                            <div class="icon-box-sm bg-soft rounded-circle d-flex align-items-center justify-content-center border" style="width: 44px; height: 44px; flex-shrink: 0;">
+                                <i class="fa-solid fa-phone fs-xs color-gold"></i>
+                            </div>
                             <div>
                                 <small class="text-muted d-block text-uppercase fw-bold ls-1" style="font-size: 0.6rem;">Số điện thoại</small>
                                 <span class="fw-bold text-dark">{{ $customer->SDT }}</span>
                             </div>
                         </div>
-                        <div class="d-flex align-items-start gap-3">
-                            <div class="info-icon text-warning mt-1"><i class="fa-solid fa-location-dot"></i></div>
+                        <div class="d-flex align-items-start gap-4">
+                            <div class="icon-box-sm bg-soft rounded-circle d-flex align-items-center justify-content-center border mt-1" style="width: 44px; height: 44px; flex-shrink: 0;">
+                                <i class="fa-solid fa-location-dot fs-xs color-gold"></i>
+                            </div>
                             <div>
                                 <small class="text-muted d-block text-uppercase fw-bold ls-1" style="font-size: 0.6rem;">Địa chỉ mặc định</small>
-                                <span class="fw-bold text-dark">{{ $customer->DiaChi }}</span>
+                                <span class="fw-bold text-dark lh-base">{{ $customer->DiaChi }}</span>
                             </div>
                         </div>
                     </div>
 
-                    <div class="mt-5 border-top pt-4">
-                        <button class="btn btn-outline-dark w-100 rounded-pill py-3 fw-bold ls-1 small" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                    <div class="pt-8 border-top border-light">
+                        <button class="btn btn-dark w-100 rounded-pill py-3 fw-bold ls-1 shadow-sm mb-4" data-bs-toggle="modal" data-bs-target="#editProfileModal">
                             <i class="fa-solid fa-user-gear me-2"></i> CHỈNH SỬA HỒ SƠ
                         </button>
-                        <form action="{{ route('logout') }}" method="POST" class="mt-3">
+                        <form action="{{ route('logout') }}" method="POST" class="no-barba">
                             @csrf
-                            <button type="submit" class="btn btn-link w-100 text-danger text-decoration-none small fw-bold">ĐĂNG XUẤT</button>
+                            <button type="submit" class="btn btn-link w-100 text-danger text-decoration-none extra-small fw-bold ls-2">
+                                <i class="fa-solid fa-power-off me-2"></i> ĐĂNG XUẤT TÀI KHOẢN
+                            </button>
                         </form>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Cột phải: Nội dung chính -->
-        <div class="col-lg-8">
-            <!-- Bộ lọc Tab khoa học -->
-            <div class="glass-panel p-2 rounded-4 mb-5 d-inline-flex bg-white shadow-sm border-0">
+        <!-- Main Content: Orders & Notifications -->
+        <div class="col-lg-8 reveal-on-scroll" style="transition-delay: 0.1s;">
+            <!-- Custom Tabs -->
+            <div class="p-2 rounded-pill mb-12 d-inline-flex bg-soft border border-light shadow-sm">
                 <ul class="nav nav-pills" id="profile-tabs" role="tablist">
                     <li class="nav-item">
-                        <button class="nav-link active rounded-pill px-4 py-2 fw-bold small ls-1" id="current-orders-tab" data-bs-toggle="pill" data-bs-target="#tab-current-orders" type="button">
-                            <i class="fa-solid fa-truck-fast me-2"></i> ĐƠN HÀNG ĐANG MUA
+                        <button class="nav-link active rounded-pill px-6 py-3 fw-bold extra-small ls-1" id="current-orders-tab" data-bs-toggle="pill" data-bs-target="#tab-current-orders" type="button">
+                            ĐƠN HÀNG MỚI
                         </button>
                     </li>
                     <li class="nav-item">
-                        <button class="nav-link rounded-pill px-4 py-2 fw-bold small ls-1" id="history-orders-tab" data-bs-toggle="pill" data-bs-target="#tab-history-orders" type="button">
-                            <i class="fa-solid fa-clock-rotate-left me-2"></i> LỊCH SỬ ĐÃ MUA
+                        <button class="nav-link rounded-pill px-6 py-3 fw-bold extra-small ls-1" id="history-orders-tab" data-bs-toggle="pill" data-bs-target="#tab-history-orders" type="button">
+                            LỊCH SỬ MUA
                         </button>
                     </li>
                     <li class="nav-item">
-                        <button class="nav-link rounded-pill px-4 py-2 fw-bold small ls-1" id="notis-tab" data-bs-toggle="pill" data-bs-target="#tab-notis" type="button">
-                            <i class="fa-solid fa-bell me-2"></i> THÔNG BÁO 
+                        <button class="nav-link rounded-pill px-6 py-3 fw-bold extra-small ls-1" id="notis-tab" data-bs-toggle="pill" data-bs-target="#tab-notis" type="button">
+                            THÔNG BÁO 
                             @if($unreadCount > 0) <span class="badge bg-danger ms-2" style="font-size: 0.6rem;">{{ $unreadCount }}</span> @endif
                         </button>
                     </li>
@@ -91,59 +97,50 @@
             </div>
 
             <div class="tab-content" id="profile-tabs-content">
-                <!-- Tab: Đơn hàng đang mua -->
+                <!-- Tab: Current Orders -->
                 <div class="tab-pane fade show active" id="tab-current-orders">
-                    <div class="card border-0 rounded-4 shadow-sm bg-white overflow-hidden">
-                        <div class="card-header bg-white p-4 border-0">
-                            <h5 class="fw-bold mb-0 text-dark">Hành trình đơn hàng</h5>
-                            <p class="text-muted small mb-0">Danh sách các tác phẩm đang trong quá trình vận chuyển tới bạn.</p>
+                    <div class="rounded-4 bg-white shadow-sm border border-light overflow-hidden">
+                        <div class="p-6 bg-ivory border-bottom border-light">
+                            <h5 class="fw-bold mb-1 text-dark">Hành trình đơn hàng</h5>
+                            <p class="text-muted extra-small mb-0 ls-1">Danh sách các tác phẩm đang trong quá trình vận chuyển tới bạn.</p>
                         </div>
                         <div class="table-responsive">
                             <table class="table table-hover align-middle mb-0">
-                                <thead class="bg-light">
-                                    <tr class="text-uppercase small fw-bold text-muted ls-1">
-                                        <th class="ps-4 py-3">Mã đơn</th>
-                                        <th class="py-3">Ngày đặt</th>
-                                        <th class="py-3">Giá trị</th>
-                                        <th class="py-3">Trạng thái</th>
-                                        <th class="text-center py-3">Thao tác</th>
+                                <thead class="bg-soft">
+                                    <tr class="text-uppercase extra-small fw-bold text-muted ls-2">
+                                        <th class="ps-6 py-4">Mã đơn</th>
+                                        <th class="py-4">Ngày đặt</th>
+                                        <th class="py-4 text-center">Trạng thái</th>
+                                        <th class="py-4 text-end pe-6">Tổng tiền</th>
+                                        <th class="py-4 text-center"></th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @forelse($ordersInProgress as $order)
-                                    <tr>
-                                        <td class="ps-4 py-4 fw-bold">#{{ $order->MaDH }}</td>
-                                        <td class="small text-muted">{{ date('d/m/Y H:i', strtotime($order->NgayDat)) }}</td>
-                                        <td class="fw-bold text-dark">{{ number_format($order->TongTien, 0, ',', '.') }}₫</td>
-                                        <td>
+                                    <tr class="cursor-pointer" onclick="viewOrderDetail({{ $order->MaDH }})">
+                                        <td class="ps-6 py-5 fw-bold text-dark">#{{ $order->MaDH }}</td>
+                                        <td class="small text-muted">{{ date('d/m/Y', strtotime($order->NgayDat)) }}</td>
+                                        <td class="text-center">
                                             @php
                                                 $s = match($order->TrangThai) {
-                                                    'ChoXacNhan' => ['#fffbeb', '#92400e', 'Chờ xác nhận'],
-                                                    'DaXacNhan'  => ['#eff6ff', '#1e40af', 'Đã xác nhận'],
-                                                    'DangGiao'   => ['#f0f9ff', '#0369a1', 'Đang giao'],
-                                                    default      => ['#f9fafb', '#374151', $order->TrangThai]
+                                                    'ChoXacNhan' => ['bg-warning-subtle', 'text-warning-emphasis', 'Chờ xác nhận'],
+                                                    'DaXacNhan'  => ['bg-info-subtle', 'text-info-emphasis', 'Đã xác nhận'],
+                                                    'DangGiao'   => ['bg-primary-subtle', 'text-primary-emphasis', 'Đang giao'],
+                                                    default      => ['bg-light', 'text-dark', $order->TrangThai]
                                                 };
                                             @endphp
-                                            <span class="badge px-3 py-2 rounded-pill" style="background: {{ $s[0] }}; color: {{ $s[1] }}; font-size: 0.65rem;">{{ $s[2] }}</span>
+                                            <span class="badge {{ $s[0] }} {{ $s[1] }} px-3 py-2 rounded-pill extra-small fw-bold ls-1">{{ $s[2] }}</span>
                                         </td>
-                                        <td class="text-center">
-                                            <div class="d-flex justify-content-center gap-2">
-                                                <button onclick="viewOrderDetail({{ $order->MaDH }})" class="btn btn-sm btn-dark rounded-pill px-3 py-1 fw-bold extra-small ls-1">CHI TIẾT</button>
-                                                @if($order->TrangThai === 'ChoXacNhan')
-                                                    <form action="{{ route('orders.cancel', $order->MaDH) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này?')" class="no-barba">
-                                                        @csrf
-                                                        <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1 fw-bold extra-small ls-1">HỦY</button>
-                                                    </form>
-                                                @endif
-                                            </div>
+                                        <td class="text-end fw-bold text-dark">{{ number_format($order->TongTien, 0, ',', '.') }}₫</td>
+                                        <td class="text-center pe-6">
+                                            <i class="fa-solid fa-chevron-right extra-small text-muted opacity-50"></i>
                                         </td>
                                     </tr>
                                     @empty
                                     <tr>
-                                        <td colspan="5" class="text-center py-100">
-                                            <i class="fa-solid fa-box-open fs-1 text-light mb-3"></i>
-                                            <p class="text-muted">Không có đơn hàng nào đang xử lý.</p>
-                                            <a href="{{ route('sanpham.index') }}" class="btn btn-link text-dark fw-bold text-decoration-none">KHÁM PHÁ CỬA HÀNG NGAY</a>
+                                        <td colspan="5" class="text-center py-24">
+                                            <div class="opacity-25 mb-4"><i class="fa-solid fa-box-open" style="font-size: 3rem;"></i></div>
+                                            <p class="text-muted small ls-1 mb-0">Không có đơn hàng nào đang xử lý.</p>
                                         </td>
                                     </tr>
                                     @endforelse
@@ -153,48 +150,48 @@
                     </div>
                 </div>
 
-                <!-- Tab: Lịch sử đã mua -->
+                <!-- Tab: Purchase History -->
                 <div class="tab-pane fade" id="tab-history-orders">
-                    <div class="card border-0 rounded-4 shadow-sm bg-white overflow-hidden">
-                        <div class="card-header bg-white p-4 border-0">
-                            <h5 class="fw-bold mb-0 text-dark">Thư viện đã sở hữu</h5>
-                            <p class="text-muted small mb-0">Những tác phẩm đã tìm thấy chủ nhân hoặc các giao dịch đã đóng.</p>
+                    <div class="rounded-4 bg-white shadow-sm border border-light overflow-hidden">
+                        <div class="p-6 bg-ivory border-bottom border-light">
+                            <h5 class="fw-bold mb-1 text-dark">Thư viện đã sở hữu</h5>
+                            <p class="text-muted extra-small mb-0 ls-1">Những tác phẩm đã tìm thấy chủ nhân hoặc các giao dịch đã hoàn tất.</p>
                         </div>
                         <div class="table-responsive">
                             <table class="table table-hover align-middle mb-0">
-                                <thead class="bg-light">
-                                    <tr class="text-uppercase small fw-bold text-muted ls-1">
-                                        <th class="ps-4 py-3">Mã đơn</th>
-                                        <th class="py-3">Ngày đặt</th>
-                                        <th class="py-3">Giá trị</th>
-                                        <th class="py-3">Trạng thái</th>
-                                        <th class="text-center py-3">Thao tác</th>
+                                <thead class="bg-soft">
+                                    <tr class="text-uppercase extra-small fw-bold text-muted ls-2">
+                                        <th class="ps-6 py-4">Mã đơn</th>
+                                        <th class="py-4">Ngày đặt</th>
+                                        <th class="py-4 text-center">Kết quả</th>
+                                        <th class="py-4 text-end pe-6">Giá trị</th>
+                                        <th class="py-4 text-center"></th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @forelse($ordersCompleted as $order)
-                                    <tr>
-                                        <td class="ps-4 py-4 fw-bold">#{{ $order->MaDH }}</td>
-                                        <td class="small text-muted">{{ date('d/m/Y H:i', strtotime($order->NgayDat)) }}</td>
-                                        <td class="fw-bold text-dark">{{ number_format($order->TongTien, 0, ',', '.') }}₫</td>
-                                        <td>
+                                    <tr class="cursor-pointer" onclick="viewOrderDetail({{ $order->MaDH }})">
+                                        <td class="ps-6 py-5 fw-bold text-dark">#{{ $order->MaDH }}</td>
+                                        <td class="small text-muted">{{ date('d/m/Y', strtotime($order->NgayDat)) }}</td>
+                                        <td class="text-center">
                                             @php
                                                 $s = match($order->TrangThai) {
-                                                    'DaGiao' => ['#f0fdf4', '#166534', 'Thành công'],
-                                                    'DaHuy'  => ['#fef2f2', '#991b1b', 'Đã hủy'],
-                                                    default  => ['#f9fafb', '#374151', $order->TrangThai]
+                                                    'DaGiao' => ['bg-success-subtle', 'text-success-emphasis', 'Thành công'],
+                                                    'DaHuy'  => ['bg-danger-subtle', 'text-danger-emphasis', 'Đã hủy'],
+                                                    default  => ['bg-light', 'text-dark', $order->TrangThai]
                                                 };
                                             @endphp
-                                            <span class="badge px-3 py-2 rounded-pill" style="background: {{ $s[0] }}; color: {{ $s[1] }}; font-size: 0.65rem;">{{ $s[2] }}</span>
+                                            <span class="badge {{ $s[0] }} {{ $s[1] }} px-3 py-2 rounded-pill extra-small fw-bold ls-1">{{ $s[2] }}</span>
                                         </td>
-                                        <td class="text-center">
-                                            <button onclick="viewOrderDetail({{ $order->MaDH }})" class="btn btn-sm btn-outline-dark rounded-pill px-3 py-1 fw-bold extra-small ls-1">XEM LẠI</button>
+                                        <td class="text-end fw-bold text-dark">{{ number_format($order->TongTien, 0, ',', '.') }}₫</td>
+                                        <td class="text-center pe-6">
+                                            <i class="fa-solid fa-chevron-right extra-small text-muted opacity-50"></i>
                                         </td>
                                     </tr>
                                     @empty
                                     <tr>
-                                        <td colspan="5" class="text-center py-100">
-                                            <p class="text-muted">Lịch sử của bạn đang được bắt đầu viết nên...</p>
+                                        <td colspan="5" class="text-center py-24">
+                                            <p class="text-muted small ls-1 mb-0">Lịch sử giao dịch của bạn đang trống.</p>
                                         </td>
                                     </tr>
                                     @endforelse
@@ -204,30 +201,33 @@
                     </div>
                 </div>
 
-                <!-- Tab: Thông báo -->
+                <!-- Tab: Notifications -->
                 <div class="tab-pane fade" id="tab-notis">
-                    <div class="card border-0 rounded-4 shadow-sm bg-white overflow-hidden">
-                        <div class="card-header bg-white p-4 border-0 d-flex justify-content-between align-items-center">
-                            <h5 class="fw-bold mb-0 text-dark">Thông báo hệ thống</h5>
+                    <div class="rounded-4 bg-white shadow-sm border border-light overflow-hidden">
+                        <div class="p-6 bg-ivory border-bottom border-light d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="fw-bold mb-1 text-dark">Thông báo hệ thống</h5>
+                                <p class="text-muted extra-small mb-0 ls-1">Cập nhật mới nhất từ nhà sách dành cho bạn.</p>
+                            </div>
                             @if($unreadCount > 0)
-                                <button onclick="markAllAsRead()" class="btn btn-link text-dark fw-bold text-decoration-none small ls-1">Đánh dấu tất cả đã đọc</button>
+                                <button onclick="markAllAsRead()" class="btn btn-link text-dark fw-bold extra-small ls-1 text-decoration-none hover-gold">ĐÁNH DẤU TẤT CẢ ĐÃ ĐỌC</button>
                             @endif
                         </div>
-                        <div class="list-group list-group-flush px-3 pb-3">
+                        <div class="p-4">
                             @php $user_notifications = \App\Models\ThongBao::where('MaKH', $customer->MaKH)->orderBy('NgayGui', 'desc')->get(); @endphp
                             @forelse($user_notifications as $tb)
-                                <div id="noti-{{ $tb->MaTB }}" class="list-group-item p-4 border-0 mb-2 rounded-4 {{ $tb->TrangThaiDoc ? 'bg-light opacity-75' : 'bg-white shadow-sm border-start border-4 border-dark' }}" 
-                                     style="cursor: pointer; transition: 0.3s;" onclick="markAsRead({{ $tb->MaTB }}, '{{ $tb->LienKet }}')">
-                                    <div class="d-flex justify-content-between mb-1">
-                                        <h6 class="fw-bold mb-0">{{ $tb->TieuDe }}</h6>
-                                        <small class="text-muted small">{{ date('d/m/Y', strtotime($tb->NgayGui)) }}</small>
+                                <div id="noti-{{ $tb->MaTB }}" class="p-6 rounded-4 border-light mb-3 trans-fast {{ $tb->TrangThaiDoc ? 'bg-light opacity-60' : 'bg-white border shadow-sm border-start border-4 border-dark' }}" 
+                                     style="cursor: pointer;" onclick="markAsRead({{ $tb->MaTB }}, '{{ $tb->LienKet }}')">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <h6 class="fw-bold mb-0 text-dark">{{ $tb->TieuDe }}</h6>
+                                        <small class="text-muted extra-small fw-bold">{{ \Carbon\Carbon::parse($tb->NgayGui)->diffForHumans() }}</small>
                                     </div>
-                                    <p class="mb-0 text-secondary small">{{ $tb->NoiDung }}</p>
+                                    <p class="mb-0 text-muted small lh-base">{{ $tb->NoiDung }}</p>
                                 </div>
                             @empty
-                                <div class="text-center py-100">
-                                    <i class="fa-solid fa-bell-slash fs-1 text-light mb-3"></i>
-                                    <p class="text-muted">Bạn không có thông báo nào.</p>
+                                <div class="text-center py-24">
+                                    <div class="opacity-25 mb-4"><i class="fa-solid fa-bell-slash" style="font-size: 3rem;"></i></div>
+                                    <p class="text-muted small ls-1 mb-0">Bạn chưa nhận được thông báo nào.</p>
                                 </div>
                             @endforelse
                         </div>
@@ -238,12 +238,12 @@
     </div>
 </div>
 
-<!-- Modal Chi tiết đơn hàng chuyên nghiệp (Giữ nguyên logic cũ nhưng làm đẹp giao diện) -->
+<!-- Modal Chi tiết đơn hàng chuyên nghiệp -->
 <div class="modal fade" id="orderModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
             <div id="orderContent">
-                <!-- Load bằng AJAX -->
+                <!-- Loaded via AJAX -->
             </div>
         </div>
     </div>
@@ -255,26 +255,26 @@
         <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
             <form action="{{ route('customer.profile.update') }}" method="POST" class="no-barba">
                 @csrf
-                <div class="p-4 bg-dark text-white">
-                    <h5 class="font-luxury fw-bold mb-0 text-uppercase ls-1">Cập nhật hồ sơ</h5>
+                <div class="p-6 bg-dark text-white text-center">
+                    <h5 class="font-luxury fw-bold mb-0 text-uppercase ls-2">Cập nhật hồ sơ</h5>
                 </div>
-                <div class="modal-body p-4 bg-white">
-                    <div class="mb-3">
-                        <label class="form-label small fw-bold text-muted">HỌ VÀ TÊN</label>
-                        <input type="text" name="HoTen" class="form-control rounded-pill px-4" value="{{ $customer->HoTen }}" required>
+                <div class="modal-body p-8 bg-white">
+                    <div class="mb-6">
+                        <label class="form-label extra-small fw-bold text-muted ls-1">HỌ VÀ TÊN</label>
+                        <input type="text" name="HoTen" class="form-control rounded-pill px-4 py-3 border-light bg-soft" value="{{ $customer->HoTen }}" required>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label small fw-bold text-muted">SỐ ĐIỆN THOẠI</label>
-                        <input type="text" name="SDT" class="form-control rounded-pill px-4" value="{{ $customer->SDT }}" required>
+                    <div class="mb-6">
+                        <label class="form-label extra-small fw-bold text-muted ls-1">SỐ ĐIỆN THOẠI</label>
+                        <input type="text" name="SDT" class="form-control rounded-pill px-4 py-3 border-light bg-soft" value="{{ $customer->SDT }}" required>
                     </div>
                     <div class="mb-0">
-                        <label class="form-label small fw-bold text-muted">ĐỊA CHỈ GIAO HÀNG</label>
-                        <textarea name="DiaChi" class="form-control rounded-4 px-4 py-3" rows="3" required>{{ $customer->DiaChi }}</textarea>
+                        <label class="form-label extra-small fw-bold text-muted ls-1">ĐỊA CHỈ MẶC ĐỊNH</label>
+                        <textarea name="DiaChi" class="form-control rounded-4 px-4 py-4 border-light bg-soft" rows="3" required>{{ $customer->DiaChi }}</textarea>
                     </div>
                 </div>
-                <div class="modal-footer border-0 p-4 pt-0 bg-white">
-                    <button type="button" class="btn btn-light rounded-pill px-4 fw-bold small ls-1 border" data-bs-dismiss="modal">HỦY BỎ</button>
-                    <button type="submit" class="btn btn-dark rounded-pill px-4 fw-bold small ls-1 shadow-sm">LƯU THAY ĐỔI</button>
+                <div class="modal-footer border-0 p-8 pt-0 bg-white">
+                    <button type="button" class="btn btn-link text-muted extra-small fw-bold ls-1 text-decoration-none" data-bs-dismiss="modal">HỦY BỎ</button>
+                    <button type="submit" class="btn btn-dark rounded-pill px-8 py-3 fw-bold extra-small ls-1 shadow-sm">LƯU THAY ĐỔI</button>
                 </div>
             </form>
         </div>
@@ -282,19 +282,19 @@
 </div>
 
 <style>
-    .ls-1 { letter-spacing: 1px; }
-    .extra-small { font-size: 0.65rem; }
-    .nav-pills .nav-link { color: #64748b; background: transparent; }
-    .nav-pills .nav-link.active { background: var(--text-main) !important; color: white !important; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-    .profile-sidebar { border: 1px solid rgba(0,0,0,0.03); }
-    .avatar-box { border: 4px solid #f8f9fa; }
-    .info-icon { width: 32px; text-align: center; }
-    .table tbody tr { transition: all 0.2s; }
-    .table tbody tr:hover { background: #fbfbfb !important; }
-    .receipt-header { background: #1a1a1a; color: white; padding: 2.5rem; }
-    .order-item-img { width: 50px; height: 75px; object-fit: cover; border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .cursor-pointer { cursor: pointer; }
+    .color-gold { color: var(--gold-primary); }
+    .nav-pills .nav-link { color: #64748b; background: transparent; transition: var(--trans-fast); }
+    .nav-pills .nav-link.active { background: var(--text-main) !important; color: white !important; box-shadow: var(--shadow-md); }
+    .avatar-box { transition: var(--trans-fast); }
+    .avatar-box:hover { transform: scale(1.05); shadow: var(--shadow-gold); }
+    .receipt-header { background: #1a1a1a; color: white; padding: 4rem 3rem; }
+    .order-item-img { width: 60px; height: 90px; object-fit: contain; border-radius: 8px; background: white; padding: 5px; }
+    .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
 </style>
 
+@push('scripts')
 <script>
     function markAsRead(id, link) {
         fetch(`/notifications/mark-as-read/${id}`, {
@@ -315,7 +315,7 @@
 
     function viewOrderDetail(id) {
         const modal = new bootstrap.Modal(document.getElementById('orderModal'));
-        document.getElementById('orderContent').innerHTML = '<div class="p-5 text-center"><div class="spinner-border text-dark" role="status"></div><p class="mt-3 small text-muted">Đang mở ngăn kho tri thức...</p></div>';
+        document.getElementById('orderContent').innerHTML = '<div class="p-24 text-center"><div class="spinner-border text-dark" role="status"></div><p class="mt-4 extra-small fw-bold ls-2 text-muted">MỞ NGĂN KHO TRI THỨC...</p></div>';
         modal.show();
 
         fetch(`/orders/detail/${id}`)
@@ -327,64 +327,59 @@
                 };
                 
                 let html = `
-                    <div class="receipt-header">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <h3 class="font-luxury fw-bold mb-1 text-uppercase ls-1">Hóa Đơn Chi Tiết</h3>
-                                <p class="mb-0 opacity-75 small">Mã định danh đơn hàng: #ORD-${order.MaDH}</p>
+                    <div class="receipt-header position-relative">
+                        <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-4" data-bs-dismiss="modal"></button>
+                        <div class="row align-items-center">
+                            <div class="col-md-7">
+                                <span class="section-tag mb-3" style="color:var(--gold-light); border-left:1px solid; padding-left:15px; margin-left:0;">Official Receipt</span>
+                                <h2 class="font-luxury fw-bold mb-1 text-uppercase ls-2">Chi Tiết Giao Dịch</h2>
+                                <p class="mb-0 opacity-50 extra-small ls-1">MÃ ĐƠN HÀNG: #ORD-${order.MaDH}</p>
                             </div>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="row mt-5">
-                            <div class="col-6">
-                                <small class="d-block opacity-50 text-uppercase fw-bold ls-1 mb-1" style="font-size:0.6rem;">Ngày giao dịch</small>
-                                <span class="fw-bold">${date}</span>
-                            </div>
-                            <div class="col-6 text-end">
-                                <small class="d-block opacity-50 text-uppercase fw-bold ls-1 mb-1" style="font-size:0.6rem;">Trạng thái hiện tại</small>
-                                <span class="badge bg-white text-dark fw-bold px-3 py-2 rounded-pill shadow-sm">${statusMap[order.TrangThai] || order.TrangThai}</span>
+                            <div class="col-md-5 text-md-end mt-4 mt-md-0">
+                                <div class="badge bg-white text-dark fw-bold px-4 py-3 rounded-pill shadow-sm ls-1 mb-2 d-inline-block">${statusMap[order.TrangThai] || order.TrangThai}</div>
+                                <div class="small fw-bold opacity-75 d-block">${date}</div>
                             </div>
                         </div>
                     </div>
-                    <div class="modal-body p-4 bg-white">
-                        <div class="row mb-5 g-4">
+                    <div class="modal-body p-8 bg-white">
+                        <div class="row mb-12 g-4">
                             <div class="col-md-6">
-                                <div class="p-4 bg-light rounded-4 h-100 border-0 shadow-sm">
-                                    <h6 class="fw-bold mb-3 text-dark small text-uppercase ls-1">Địa chỉ nhận hàng</h6>
-                                    <div class="fw-bold text-dark mb-1">${order.khach_hang?.HoTen || 'Khách hàng'}</div>
-                                    <div class="text-secondary small mb-2"><i class="fa-solid fa-phone me-1"></i> ${order.khach_hang?.SDT || 'N/A'}</div>
-                                    <div class="text-secondary small lh-base"><i class="fa-solid fa-location-dot me-1"></i> ${order.DiaChiGiaoHang}</div>
+                                <div class="p-6 bg-soft rounded-4 h-100 border-0">
+                                    <h6 class="fw-bold mb-4 text-dark extra-small text-uppercase ls-2 border-bottom border-light pb-2">Người Nhận</h6>
+                                    <div class="fw-bold text-dark mb-1 fs-6">${order.khach_hang?.HoTen || 'Quý khách'}</div>
+                                    <div class="text-muted small mb-3"><i class="fa-solid fa-phone me-2 color-gold"></i> ${order.khach_hang?.SDT || 'N/A'}</div>
+                                    <div class="text-muted small lh-base"><i class="fa-solid fa-location-dot me-2 color-gold"></i> ${order.DiaChiGiaoHang}</div>
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <div class="p-4 bg-light rounded-4 h-100 border-0 shadow-sm">
-                                    <h6 class="fw-bold mb-3 text-dark small text-uppercase ls-1">Thanh toán & Vận chuyển</h6>
-                                    <div class="fw-bold text-dark mb-1">${order.PhuongThucThanhToan === 'TienMat' ? 'Thanh toán tiền mặt (COD)' : 'Chuyển khoản ngân hàng'}</div>
-                                    <div class="text-secondary small">Hình thức: Giao hàng tiêu chuẩn</div>
-                                    <div class="text-success small fw-bold mt-2">Phí vận chuyển: Miễn phí</div>
+                                <div class="p-6 bg-soft rounded-4 h-100 border-0">
+                                    <h6 class="fw-bold mb-4 text-dark extra-small text-uppercase ls-2 border-bottom border-light pb-2">Vận Chuyển & Thanh Toán</h6>
+                                    <div class="fw-bold text-dark mb-1 small">${order.PhuongThucThanhToan === 'TienMat' ? 'Thanh toán tiền mặt (COD)' : 'Chuyển khoản ngân hàng'}</div>
+                                    <div class="text-muted small">Phương thức: Giao hàng tiêu chuẩn</div>
+                                    <div class="text-success small fw-bold mt-3 d-flex align-items-center"><i class="fa-solid fa-circle-check me-2"></i> PHÍ VẬN CHUYỂN MIỄN PHÍ</div>
                                 </div>
                             </div>
                         </div>
 
-                        <h6 class="fw-bold mb-3 text-dark small text-uppercase ls-1 px-2">Danh mục sản phẩm</h6>
-                        <div class="table-responsive px-2">
+                        <h6 class="fw-bold mb-4 text-dark extra-small text-uppercase ls-2 border-bottom border-light pb-2 mx-2">Tác Phẩm Được Chọn</h6>
+                        <div class="table-responsive px-2 mb-8">
                             <table class="table align-middle">
                                 <thead>
-                                    <tr class="text-muted small border-bottom">
-                                        <th class="py-3">Tác phẩm</th>
-                                        <th class="text-center py-3">Số lượng</th>
+                                    <tr class="text-muted extra-small fw-bold border-bottom">
+                                        <th class="py-3">Sản phẩm</th>
+                                        <th class="text-center py-3">SL</th>
                                         <th class="text-end py-3">Thành tiền</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     ${(order.chi_tiet_don_hangs).map(item => `
                                         <tr>
-                                            <td class="py-3">
+                                            <td class="py-4">
                                                 <div class="d-flex align-items-center">
-                                                    <img src="/assets/images/products/${item.san_pham?.HinhAnh || ''}" class="order-item-img me-3" onerror="this.src='https://via.placeholder.com/100x150'">
+                                                    <div class="bg-soft rounded-2 p-1 me-3"><img src="/assets/images/products/${item.san_pham?.HinhAnh || ''}" class="order-item-img" onerror="this.src='https://via.placeholder.com/100x150'"></div>
                                                     <div>
-                                                        <div class="fw-bold text-dark small">${item.san_pham?.TenSP || 'Sản phẩm'}</div>
-                                                        <div class="text-muted extra-small">Đơn giá: ${Number(item.DonGia).toLocaleString('vi-VN')}₫</div>
+                                                        <div class="fw-bold text-dark small">${item.san_pham?.TenSP || 'Tác phẩm tri thức'}</div>
+                                                        <div class="text-muted extra-small fw-bold">${Number(item.DonGia).toLocaleString('vi-VN')}₫</div>
                                                     </div>
                                                 </div>
                                             </td>
@@ -396,32 +391,32 @@
                             </table>
                         </div>
 
-                        <div class="p-4 bg-dark text-white rounded-4 mt-4 shadow-lg">
-                            <div class="d-flex justify-content-between mb-2 opacity-75 small">
-                                <span>Tạm tính</span>
+                        <div class="p-6 bg-dark text-white rounded-4 shadow-lg">
+                            <div class="d-flex justify-content-between mb-3 opacity-60 small fw-bold ls-1">
+                                <span>TẠM TÍNH</span>
                                 <span>${(Number(order.TongTien) + Number(order.SoTienGiam || 0)).toLocaleString('vi-VN')}₫</span>
                             </div>
                             ${order.SoTienGiam > 0 ? `
-                                <div class="d-flex justify-content-between mb-2 text-warning small">
-                                    <span>Ưu đãi đã áp dụng</span>
+                                <div class="d-flex justify-content-between mb-3 text-warning small fw-bold ls-1">
+                                    <span>ƯU ĐÃI ĐÃ ÁP DỤNG</span>
                                     <span>-${Number(order.SoTienGiam).toLocaleString('vi-VN')}₫</span>
                                 </div>
                             ` : ''}
-                            <div class="d-flex justify-content-between pt-3 border-top border-secondary mt-2">
-                                <span class="fw-bold text-uppercase ls-1">Tổng cộng cuối cùng</span>
+                            <div class="d-flex justify-content-between pt-4 border-top border-secondary mt-3">
+                                <span class="fw-bold text-uppercase ls-2">Tổng giá trị đơn hàng</span>
                                 <span class="fw-bold fs-3 text-warning">${Number(order.TongTien).toLocaleString('vi-VN')}₫</span>
                             </div>
                         </div>
                     </div>
-                    <div class="modal-footer border-0 p-4 pt-2 bg-white">
-                        <button class="btn btn-light rounded-pill px-4 fw-bold small ls-1 border" data-bs-dismiss="modal">ĐÓNG</button>
+                    <div class="modal-footer border-0 p-8 pt-2 bg-white">
+                        <button class="btn btn-link text-muted extra-small fw-bold ls-1 text-decoration-none" data-bs-dismiss="modal">ĐÓNG LẠI</button>
                         ${order.TrangThai === 'ChoXacNhan' ? `
-                            <form action="/orders/cancel/${order.MaDH}" method="POST" onsubmit="return confirm('Hành động này không thể hoàn tác. Bạn chắc chắn muốn hủy đơn hàng?')" class="no-barba">
+                            <form action="/orders/cancel/${order.MaDH}" method="POST" onsubmit="return confirm('Xác nhận hủy đơn hàng này?')" class="no-barba">
                                 <input type="hidden" name="_token" value="${document.querySelector('meta[name="csrf-token"]').getAttribute('content')}">
-                                <button type="submit" class="btn btn-outline-danger rounded-pill px-4 fw-bold small ls-1">HỦY ĐƠN HÀNG</button>
+                                <button type="submit" class="btn btn-outline-danger rounded-pill px-6 py-2 fw-bold extra-small ls-1">HỦY ĐƠN</button>
                             </form>
                         ` : ''}
-                        <button class="btn btn-dark rounded-pill px-4 fw-bold small ls-1 shadow-sm" onclick="window.print()">
+                        <button class="btn btn-dark rounded-pill px-8 py-2 fw-bold extra-small ls-1 shadow-sm" onclick="window.print()">
                             <i class="fa-solid fa-print me-2"></i> IN HÓA ĐƠN
                         </button>
                     </div>
@@ -430,4 +425,5 @@
             });
     }
 </script>
+@endpush
 @endsection

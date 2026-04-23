@@ -1,179 +1,200 @@
 @extends('layouts.admin')
 
 @section('content')
-<!-- Page Header -->
-<div class="d-md-flex align-items-center justify-content-between mb-4">
+<!-- Page Header - Pure Elegance -->
+<div class="d-md-flex align-items-end justify-content-between mb-12 reveal-on-scroll">
     <div>
-        <h3 class="mb-0 fw-bold">Tổng quan hệ thống</h3>
-        <p class="text-muted small mb-0">Chào mừng bạn quay trở lại, đây là những gì đang diễn ra hôm nay.</p>
+        <span class="section-tag mb-3">Management Center</span>
+        <h2 class="font-luxury display-5 mb-0 text-dark">Tổng quan hệ thống</h2>
+        <p class="text-muted extra-small fw-bold ls-1 mt-2">CHÀO MỪNG QUAY TRỞ LẠI. ĐÂY LÀ PHÂN TÍCH TÌNH HÌNH KINH DOANH HÔM NAY.</p>
     </div>
-    <div class="mt-3 mt-md-0">
-        <button class="btn btn-luxury-primary shadow-sm">
-            <i class="fas fa-download me-2"></i> Xuất báo cáo
+    <div class="mt-4 mt-md-0">
+        <button class="btn btn-luxury-primary shadow-lg px-8">
+            <i class="fas fa-file-export me-2"></i> XUẤT BÁO CÁO
         </button>
     </div>
 </div>
 
-<!-- Stats Grid -->
-<div class="row g-4 mb-4">
+<!-- Stats Grid - Impeccable Cards -->
+<div class="row g-5 mb-12">
     <!-- Sản phẩm -->
-    <div class="col-xl-3 col-sm-6">
-        <div class="admin-card p-4 h-100">
-            <div class="d-flex justify-content-between align-items-start mb-3">
-                <div class="p-3 rounded-3 bg-primary bg-opacity-10 text-primary">
-                    <i class="fas fa-book fs-4"></i>
+    <div class="col-xl-3 col-sm-6 reveal-on-scroll">
+        <div class="admin-card border-0 shadow-sm h-100 p-6">
+            <div class="d-flex justify-content-between align-items-center mb-6">
+                <div class="icon-box bg-soft text-dark rounded-3 d-flex align-items-center justify-content-center border" style="width: 50px; height: 50px;">
+                    <i class="fas fa-book fs-5 color-gold"></i>
                 </div>
-                <span class="badge bg-success bg-opacity-10 text-success border-0">+12%</span>
+                <div class="text-end">
+                    <span class="badge bg-success-subtle text-success border-0 extra-small fw-bold">+12%</span>
+                </div>
             </div>
-            <h2 class="mb-1 fw-bold">{{ number_format($tongSP) }}</h2>
-            <p class="text-muted small mb-0">Tổng sản phẩm trong kho</p>
+            <h2 class="font-luxury display-6 mb-1">{{ number_format($tongSP) }}</h2>
+            <p class="text-muted extra-small fw-bold ls-1 text-uppercase">Sản phẩm lưu kho</p>
         </div>
     </div>
 
     <!-- Doanh thu -->
-    <div class="col-xl-3 col-sm-6">
-        <div class="admin-card p-4 h-100">
-            <div class="d-flex justify-content-between align-items-start mb-3">
-                <div class="p-3 rounded-3 bg-warning bg-opacity-10 text-warning">
-                    <i class="fas fa-coins fs-4"></i>
+    <div class="col-xl-3 col-sm-6 reveal-on-scroll" style="transition-delay: 0.1s;">
+        <div class="admin-card border-0 shadow-sm h-100 p-6">
+            <div class="d-flex justify-content-between align-items-center mb-6">
+                <div class="icon-box bg-soft text-dark rounded-3 d-flex align-items-center justify-content-center border" style="width: 50px; height: 50px;">
+                    <i class="fas fa-sack-dollar fs-5 color-gold"></i>
                 </div>
-                <span class="badge bg-success bg-opacity-10 text-success border-0">+8.4%</span>
+                <div class="text-end">
+                    <span class="badge bg-success-subtle text-success border-0 extra-small fw-bold">+8.4%</span>
+                </div>
             </div>
-            <h2 class="mb-1 fw-bold">{{ number_format($doanhThuThang) }}₫</h2>
-            <p class="text-muted small mb-0">Doanh thu tháng này</p>
+            <h2 class="font-luxury display-6 mb-1">{{ number_format($doanhThuThang) }}₫</h2>
+            <p class="text-muted extra-small fw-bold ls-1 text-uppercase">Doanh thu tháng này</p>
         </div>
     </div>
 
     <!-- Đơn hàng -->
-    <div class="col-xl-3 col-sm-6">
-        <div class="admin-card p-4 h-100">
-            <div class="d-flex justify-content-between align-items-start mb-3">
-                <div class="p-3 rounded-3 bg-info bg-opacity-10 text-info">
-                    <i class="fas fa-shopping-bag fs-4"></i>
+    <div class="col-xl-3 col-sm-6 reveal-on-scroll" style="transition-delay: 0.2s;">
+        <div class="admin-card border-0 shadow-sm h-100 p-6">
+            <div class="d-flex justify-content-between align-items-center mb-6">
+                <div class="icon-box bg-soft text-dark rounded-3 d-flex align-items-center justify-content-center border" style="width: 50px; height: 50px;">
+                    <i class="fas fa-shopping-bag fs-5 color-gold"></i>
                 </div>
-                <span class="badge bg-danger bg-opacity-10 text-danger border-0">{{ $donChoXacNhan }} chờ</span>
+                <div class="text-end">
+                    <span class="badge bg-danger-subtle text-danger border-0 extra-small fw-bold">{{ $donChoXacNhan }} CHỜ</span>
+                </div>
             </div>
-            <h2 class="mb-1 fw-bold">{{ number_format($tongDon) }}</h2>
-            <p class="text-muted small mb-0">Tổng đơn hàng đã nhận</p>
+            <h2 class="font-luxury display-6 mb-1">{{ number_format($tongDon) }}</h2>
+            <p class="text-muted extra-small fw-bold ls-1 text-uppercase">Đơn hàng tích lũy</p>
         </div>
     </div>
 
     <!-- Khách hàng -->
-    <div class="col-xl-3 col-sm-6">
-        <div class="admin-card p-4 h-100">
-            <div class="d-flex justify-content-between align-items-start mb-3">
-                <div class="p-3 rounded-3 bg-success bg-opacity-10 text-success">
-                    <i class="fas fa-users fs-4"></i>
+    <div class="col-xl-3 col-sm-6 reveal-on-scroll" style="transition-delay: 0.3s;">
+        <div class="admin-card border-0 shadow-sm h-100 p-6">
+            <div class="d-flex justify-content-between align-items-center mb-6">
+                <div class="icon-box bg-soft text-dark rounded-3 d-flex align-items-center justify-content-center border" style="width: 50px; height: 50px;">
+                    <i class="fas fa-user-tie fs-5 color-gold"></i>
                 </div>
-                <span class="badge bg-primary bg-opacity-10 text-primary border-0">Ổn định</span>
+                <div class="text-end">
+                    <span class="badge bg-primary-subtle text-primary border-0 extra-small fw-bold">VIP</span>
+                </div>
             </div>
-            <h2 class="mb-1 fw-bold">{{ number_format($khachHang) }}</h2>
-            <p class="text-muted small mb-0">Tổng khách hàng đăng ký</p>
+            <h2 class="font-luxury display-6 mb-1">{{ number_format($khachHang) }}</h2>
+            <p class="text-muted extra-small fw-bold ls-1 text-uppercase">Khách hàng đặc quyền</p>
         </div>
     </div>
 </div>
 
-<div class="row g-4">
-    <!-- Chart -->
-    <div class="col-lg-8">
-        <div class="admin-card p-4 h-100">
-            <div class="d-flex align-items-center justify-content-between mb-4">
-                <h5 class="mb-0 fw-bold">Phân tích doanh thu</h5>
-                <select class="form-select form-select-sm w-auto border-0 bg-light">
-                    <option>12 tháng qua</option>
-                    <option>6 tháng qua</option>
-                </select>
+<div class="row g-5">
+    <!-- Revenue Analysis Chart -->
+    <div class="col-lg-8 reveal-on-scroll">
+        <div class="admin-card p-8 h-100 border-0 shadow-sm">
+            <div class="d-flex align-items-center justify-content-between mb-8">
+                <h4 class="font-luxury mb-0">Biểu đồ doanh thu</h4>
+                <div class="dropdown">
+                    <button class="btn btn-link p-0 text-muted text-decoration-none extra-small fw-bold ls-1 dropdown-toggle" data-bs-toggle="dropdown">
+                        12 THÁNG QUA
+                    </button>
+                    <ul class="dropdown-menu border-0 shadow-lg p-2 rounded-3 mt-2">
+                        <li><a class="dropdown-item extra-small fw-bold" href="#">6 THÁNG QUA</a></li>
+                        <li><a class="dropdown-item extra-small fw-bold" href="#">3 THÁNG QUA</a></li>
+                    </ul>
+                </div>
             </div>
-            <div style="height: 350px;">
+            <div style="height: 380px;">
                 <canvas id="doanhThuChart"></canvas>
             </div>
         </div>
     </div>
 
-    <!-- Recent Alerts / Info -->
-    <div class="col-lg-4">
-        <div class="admin-card p-4 h-100">
-            <h5 class="mb-4 fw-bold">Trạng thái kho hàng</h5>
+    <!-- Inventory Alerts & Quick Actions -->
+    <div class="col-lg-4 reveal-on-scroll" style="transition-delay: 0.1s;">
+        <div class="admin-card p-8 h-100 border-0 shadow-sm bg-ivory">
+            <h4 class="font-luxury mb-8">Cảnh báo hệ thống</h4>
             
-            <div class="d-flex align-items-center mb-4">
-                <div class="flex-shrink-0 p-3 rounded-3 bg-danger bg-opacity-10 text-danger me-3">
-                    <i class="fas fa-exclamation-triangle"></i>
+            <div class="alert-item d-flex align-items-center mb-6 p-4 rounded-4 bg-white border border-light trans-fast">
+                <div class="flex-shrink-0 icon-box-sm bg-danger-subtle text-danger rounded-circle d-flex align-items-center justify-content-center me-4" style="width: 44px; height: 44px;">
+                    <i class="fas fa-triangle-exclamation"></i>
                 </div>
                 <div class="flex-grow-1">
-                    <h6 class="mb-1 fw-bold">Sản phẩm hết hàng</h6>
-                    <p class="text-muted small mb-0">{{ $hetHang }} sản phẩm cần nhập thêm ngay.</p>
+                    <h6 class="fw-bold mb-0 text-dark small">Hết hàng kho</h6>
+                    <p class="text-muted extra-small mb-0 ls-1">{{ $hetHang }} sản phẩm cần nhập mới.</p>
                 </div>
-                <a href="{{ route('admin.sanpham.index') }}" class="btn btn-sm btn-light rounded-pill"><i class="fas fa-arrow-right"></i></a>
+                <a href="{{ route('admin.sanpham.index') }}" class="text-muted"><i class="fas fa-chevron-right fs-xs"></i></a>
             </div>
 
-            <div class="d-flex align-items-center mb-4">
-                <div class="flex-shrink-0 p-3 rounded-3 bg-info bg-opacity-10 text-info me-3">
+            <div class="alert-item d-flex align-items-center mb-8 p-4 rounded-4 bg-white border border-light trans-fast">
+                <div class="flex-shrink-0 icon-box-sm bg-info-subtle text-info rounded-circle d-flex align-items-center justify-content-center me-4" style="width: 44px; height: 44px;">
                     <i class="fas fa-bell"></i>
                 </div>
                 <div class="flex-grow-1">
-                    <h6 class="mb-1 fw-bold">Đơn hàng mới</h6>
-                    <p class="text-muted small mb-0">Có {{ $donChoXacNhan }} đơn hàng đang chờ bạn phê duyệt.</p>
+                    <h6 class="fw-bold mb-0 text-dark small">Phê duyệt đơn</h6>
+                    <p class="text-muted extra-small mb-0 ls-1">{{ $donChoXacNhan }} đơn hàng mới chờ xử lý.</p>
                 </div>
-                <a href="{{ route('admin.donhang.index') }}" class="btn btn-sm btn-light rounded-pill"><i class="fas fa-arrow-right"></i></a>
+                <a href="{{ route('admin.donhang.index') }}" class="text-muted"><i class="fas fa-chevron-right fs-xs"></i></a>
             </div>
 
-            <hr class="opacity-50 my-4">
+            <hr class="opacity-10 my-8">
 
-            <h6 class="fw-bold mb-3">Hành động nhanh</h6>
-            <div class="d-grid gap-2">
-                <a href="{{ route('admin.sanpham.index') }}" class="btn btn-light text-start border-0 py-2 px-3">
-                    <i class="fas fa-plus-circle me-2 text-primary"></i> Thêm sản phẩm mới
+            <h6 class="extra-small fw-bold text-muted ls-2 mb-4 text-uppercase">Lối tắt tác vụ</h6>
+            <div class="d-grid gap-3">
+                <a href="{{ route('admin.sanpham.index') }}" class="btn btn-white text-start border-light py-3 px-4 rounded-3 shadow-sm trans-fast hover-gold">
+                    <i class="fas fa-plus-circle me-3 color-gold"></i> <span class="small fw-bold">THÊM SẢN PHẨM</span>
                 </a>
-                <a href="{{ route('admin.khuyenmai.index') }}" class="btn btn-light text-start border-0 py-2 px-3">
-                    <i class="fas fa-percentage me-2 text-warning"></i> Tạo mã giảm giá
+                <a href="{{ route('admin.khuyenmai.index') }}" class="btn btn-white text-start border-light py-3 px-4 rounded-3 shadow-sm trans-fast hover-gold">
+                    <i class="fas fa-percentage me-3 color-gold"></i> <span class="small fw-bold">TẠO ƯU ĐÃI</span>
                 </a>
-                <a href="{{ route('admin.nhaphang.index') }}" class="btn btn-light text-start border-0 py-2 px-3">
-                    <i class="fas fa-file-import me-2 text-success"></i> Lập phiếu nhập hàng
+                <a href="{{ route('admin.nhaphang.index') }}" class="btn btn-white text-start border-light py-3 px-4 rounded-3 shadow-sm trans-fast hover-gold">
+                    <i class="fas fa-truck-loading me-3 color-gold"></i> <span class="small fw-bold">NHẬP HÀNG KHO</span>
                 </a>
             </div>
         </div>
     </div>
 </div>
 
-<div class="row g-4 mt-1">
-    <!-- Top Favorites -->
-    <div class="col-lg-12">
-        <div class="admin-card p-4">
-            <h5 class="mb-4 fw-bold"><i class="fas fa-heart text-danger me-2"></i>Sản phẩm được yêu thích nhất</h5>
+<div class="row mt-12 g-5">
+    <!-- Top Favorites Table -->
+    <div class="col-lg-12 reveal-on-scroll">
+        <div class="table-custom-container border-0 shadow-sm">
+            <div class="p-8 bg-white border-bottom border-light">
+                <h4 class="font-luxury mb-1">Kiệt tác được yêu thích</h4>
+                <p class="text-muted extra-small fw-bold ls-1 mb-0 text-uppercase">DANH SÁCH TÁC PHẨM CÓ LƯỢT QUAN TÂM CAO NHẤT TỪ ĐỘC GIẢ</p>
+            </div>
             <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="bg-light">
-                        <tr class="text-uppercase small fw-bold text-muted">
-                            <th width="10%" class="ps-4">Mã SP</th>
-                            <th>Tên sản phẩm</th>
-                            <th>Giá hiện tại</th>
-                            <th class="text-center">Lượt yêu thích</th>
-                            <th width="15%" class="text-end pe-4">Hành động</th>
+                <table class="table-custom">
+                    <thead>
+                        <tr>
+                            <th width="12%">MÃ TÁC PHẨM</th>
+                            <th>TÊN SẢN PHẨM / THÔNG TIN</th>
+                            <th>GIÁ NIÊM YẾT</th>
+                            <th class="text-center">TƯƠNG TÁC</th>
+                            <th width="15%" class="text-end">QUẢN TRỊ</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($topFavorites as $sp)
                         <tr>
-                            <td class="ps-4">#SP{{ $sp->MaSP }}</td>
+                            <td class="fw-bold text-muted">#ART-{{ $sp->MaSP }}</td>
                             <td>
                                 <div class="d-flex align-items-center">
-                                    <img src="{{ $sp->HinhAnh ? asset('assets/images/products/'.$sp->HinhAnh) : 'https://via.placeholder.com/40' }}" class="rounded-2 me-3" style="width: 40px; height: 50px; object-fit: cover;">
-                                    <div class="fw-bold">{{ $sp->TenSP }}</div>
+                                    <div class="bg-soft rounded-2 p-1 me-4 border border-light"><img src="{{ $sp->HinhAnh ? (Str::startsWith($sp->HinhAnh, 'http') ? $sp->HinhAnh : asset('assets/images/products/'.$sp->HinhAnh)) : 'https://via.placeholder.com/40' }}" style="width: 45px; height: 60px; object-fit: contain;"></div>
+                                    <div>
+                                        <div class="fw-bold text-dark mb-1">{{ $sp->TenSP }}</div>
+                                        <div class="extra-small text-muted fw-medium">{{ $sp->danhmuc->TenDM ?? 'Premium' }} Edition</div>
+                                    </div>
                                 </div>
                             </td>
-                            <td><span class="text-primary fw-bold">{{ number_format($sp->gia_hien_tai) }}₫</span></td>
+                            <td><span class="fw-bold text-dark">{{ number_format($sp->DonGia) }}₫</span></td>
                             <td class="text-center">
-                                <div class="d-inline-flex align-items-center bg-danger bg-opacity-10 text-danger px-3 py-1 rounded-pill fw-bold">
-                                    <i class="fas fa-heart me-2"></i> {{ $sp->favorites_count }}
+                                <div class="d-inline-flex align-items-center bg-danger-subtle text-danger px-4 py-2 rounded-pill fw-bold extra-small ls-1">
+                                    <i class="fas fa-heart me-2"></i> {{ $sp->favorites_count }} YÊU THÍCH
                                 </div>
                             </td>
-                            <td class="text-end pe-4">
-                                <a href="{{ route('sanpham.detail', $sp->MaSP) }}" target="_blank" class="btn btn-sm btn-light rounded-pill border"><i class="fas fa-eye me-1"></i> Xem web</a>
+                            <td class="text-end">
+                                <a href="{{ route('sanpham.detail', $sp->MaSP) }}" target="_blank" class="btn btn-link text-muted p-0 hover-gold me-3" title="Xem trên web"><i class="fas fa-external-link-alt"></i></a>
+                                <a href="{{ route('admin.sanpham.index') }}" class="btn btn-link text-muted p-0 hover-gold" title="Chỉnh sửa"><i class="fas fa-pen-to-square"></i></a>
                             </td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="5" class="text-center py-4 text-muted">Chưa có dữ liệu yêu thích.</td>
+                            <td colspan="5" class="text-center py-12 text-muted ls-1 extra-small fw-bold">CHƯA CÓ DỮ LIỆU TƯƠNG TÁC TỪ NGƯỜI DÙNG</td>
                         </tr>
                         @endforelse
                     </tbody>
@@ -183,34 +204,45 @@
     </div>
 </div>
 
+<style>
+    .color-gold { color: var(--primary-color); }
+    .bg-ivory { background: #fdfbf7; }
+    .trans-fast { transition: all 0.3s cubic-bezier(0.19, 1, 0.22, 1); }
+    .alert-item:hover { transform: translateX(10px); border-color: var(--primary-color) !important; shadow: var(--shadow-md); }
+    .btn-white { background: white; color: var(--text-muted); }
+    .btn-white:hover { border-color: var(--primary-color) !important; color: var(--primary-color); }
+</style>
+
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const ctx = document.getElementById('doanhThuChart').getContext('2d');
+    const goldPrimary = '#af9245';
     
-    // Gradient for chart
     const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-    gradient.addColorStop(0, 'rgba(37, 99, 235, 0.4)');
-    gradient.addColorStop(1, 'rgba(37, 99, 235, 0.0)');
+    gradient.addColorStop(0, 'rgba(175, 146, 69, 0.25)');
+    gradient.addColorStop(1, 'rgba(175, 146, 69, 0.0)');
 
     const chart = new Chart(ctx, {
         type: 'line',
         data: {
             labels: {!! json_encode($labels) !!},
             datasets: [{
-                label: 'Doanh thu (VNĐ)',
+                label: 'DOANH THU',
                 data: {!! json_encode($data) !!},
-                borderColor: '#2563eb',
-                borderWidth: 3,
+                borderColor: goldPrimary,
+                borderWidth: 4,
                 backgroundColor: gradient,
                 fill: true,
-                tension: 0.4,
+                tension: 0.45,
                 pointBackgroundColor: '#fff',
-                pointBorderColor: '#2563eb',
-                pointBorderWidth: 2,
-                pointRadius: 4,
-                pointHoverRadius: 6
+                pointBorderColor: goldPrimary,
+                pointBorderWidth: 3,
+                pointRadius: 5,
+                pointHoverRadius: 8,
+                pointHoverBackgroundColor: goldPrimary,
+                pointHoverBorderColor: '#fff'
             }]
         },
         options: {
@@ -219,43 +251,31 @@ document.addEventListener('DOMContentLoaded', function() {
             plugins: {
                 legend: { display: false },
                 tooltip: {
-                    backgroundColor: '#1e293b',
-                    titleColor: '#fff',
-                    bodyColor: '#fff',
-                    padding: 12,
-                    displayColors: false,
+                    backgroundColor: '#1a1a1a',
+                    padding: 16,
+                    titleFont: { size: 13, family: 'Plus Jakarta Sans', weight: 'bold' },
+                    bodyFont: { size: 12, family: 'Plus Jakarta Sans' },
                     callbacks: {
-                        label: function(context) {
-                            return ' ' + context.parsed.y.toLocaleString() + ' ₫';
-                        }
+                        label: function(context) { return ' Doanh thu: ' + context.parsed.y.toLocaleString() + ' ₫'; }
                     }
                 }
             },
             scales: {
                 y: {
                     beginAtZero: true,
-                    grid: {
-                        color: 'rgba(0,0,0,0.05)',
-                        drawBorder: false
-                    },
+                    grid: { color: 'rgba(0,0,0,0.03)', drawBorder: false },
                     ticks: {
                         callback: v => v.toLocaleString() + ' ₫',
-                        font: { size: 11 }
+                        font: { size: 10, family: 'Plus Jakarta Sans', weight: 'bold' },
+                        color: '#999'
                     }
                 },
                 x: {
                     grid: { display: false },
-                    ticks: { font: { size: 11 } }
+                    ticks: { font: { size: 10, family: 'Plus Jakarta Sans', weight: 'bold' }, color: '#999' }
                 }
             }
         }
-    });
-
-    // Handle chart theme update if needed
-    window.addEventListener('admin-theme-changed', function(e) {
-        // Update chart colors based on theme if necessary
-        // chart.options.scales.y.grid.color = ...
-        // chart.update();
     });
 });
 </script>

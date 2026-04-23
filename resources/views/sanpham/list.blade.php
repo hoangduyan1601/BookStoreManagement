@@ -181,8 +181,8 @@
         display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
     }
 
-    .reveal-on-scroll { opacity: 0; transform: translateY(30px); transition: all 0.8s cubic-bezier(0.19, 1, 0.22, 1); }
-    .reveal-on-scroll.active { opacity: 1; transform: translateY(0); }
+    .reveal-on-scroll { opacity: 1; transition: all 0.8s cubic-bezier(0.19, 1, 0.22, 1); }
+    .reveal-on-scroll.active { transform: translateY(0); }
 </style>
 
 <script>
