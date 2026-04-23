@@ -15,6 +15,9 @@ class AdminKhuyenMaiController extends Controller
     {
         $status = $request->get('status', 'active');
         $type = $request->get('type', 'all');
+        $search = $request->get('search');
+        $minPercent = $request->get('min_percent');
+        $maxPercent = $request->get('max_percent');
         $now = now();
 
         $query = KhuyenMai::with('danhMuc');
@@ -33,15 +36,30 @@ class AdminKhuyenMaiController extends Controller
             $query->where('LoaiKM', $type);
         }
 
-        $list = $query->orderBy('NgayBatDau', 'desc')->get();
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('TenKM', 'LIKE', "%{$search}%")
+                  ->orWhere('MaGiamGia', 'LIKE', "%{$search}%");
+            });
+        }
+
+        if ($minPercent) {
+            $query->where('PhanTramGiam', '>=', $minPercent);
+        }
+
+        if ($maxPercent) {
+            $query->where('PhanTramGiam', '<=', $maxPercent);
+        }
+
+        $list = $query->orderBy('NgayBatDau', 'desc')->paginate(10)->withQueryString();
         $categories = DanhMuc::all();
 
-        // Đếm số lượng cho các nhãn (Giữ nguyên logic cũ cho nhãn status)
+        // Đếm số lượng cho các nhãn
         $countActive = KhuyenMai::where('NgayBatDau', '<=', $now)->where('NgayKetThuc', '>=', $now)->count();
         $countUpcoming = KhuyenMai::where('NgayBatDau', '>', $now)->count();
         $countExpired = KhuyenMai::where('NgayKetThuc', '<', $now)->count();
 
-        return view('admin.khuyenmai.index', compact('list', 'categories', 'status', 'type', 'countActive', 'countUpcoming', 'countExpired'));
+        return view('admin.khuyenmai.index', compact('list', 'categories', 'status', 'type', 'search', 'countActive', 'countUpcoming', 'countExpired'));
     }
 
     public function create()
@@ -70,28 +88,35 @@ class AdminKhuyenMaiController extends Controller
 
         $km = KhuyenMai::create($data);
 
-        // --- GỬI THÔNG BÁO CHO TẤT CẢ KHÁCH HÀNG ---
-        $customers = KhachHang::all();
+        // --- GỬI THÔNG BÁO CHO TẤT CẢ KHÁCH HÀNG (TỐI ƯU HÓA BATCH INSERT) ---
+        $customers = KhachHang::select('MaKH')->get();
         $message = "🎉 Ưu đãi mới: " . $km->TenKM . " giảm ngay " . $km->PhanTramGiam . "%! ";
         if ($km->MaGiamGia) {
             $message .= "Nhập mã: " . $km->MaGiamGia . " khi thanh toán.";
         }
 
-        foreach ($customers as $customer) {
-            $link = route('sanpham.index');
-            if ($km->LoaiKM == 'DanhMuc' && $km->MaDM) {
-                $link = route('danhmuc.show', $km->MaDM);
-            }
+        $notifications = [];
+        $now = now();
+        $link = route('sanpham.index');
+        if ($km->LoaiKM == 'DanhMuc' && $km->MaDM) {
+            $link = route('danhmuc.show', $km->MaDM);
+        }
 
-            ThongBao::create([
+        foreach ($customers as $customer) {
+            $notifications[] = [
                 'MaKH' => $customer->MaKH,
                 'TieuDe' => '🎁 Khuyến mãi mới hấp dẫn!',
                 'NoiDung' => $message,
-                'NgayGui' => now(),
+                'NgayGui' => $now,
                 'TrangThaiDoc' => false,
                 'LoaiTB' => 'KhuyenMai',
                 'LienKet' => $link
-            ]);
+            ];
+        }
+
+        // Chèn hàng loạt để tối ưu hiệu suất (chia nhỏ 500 bản ghi mỗi lần)
+        foreach (array_chunk($notifications, 500) as $chunk) {
+            ThongBao::insert($chunk);
         }
 
         return redirect()->route('admin.khuyenmai.index')->with('success', 'Thêm khuyến mãi và gửi thông báo thành công!');

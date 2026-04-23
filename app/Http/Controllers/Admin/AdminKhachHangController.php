@@ -13,12 +13,25 @@ class AdminKhachHangController extends Controller
     public function index(Request $request)
     {
         $search = $request->get('search');
+        $fromDate = $request->get('from_date');
+        $toDate = $request->get('to_date');
+
         $query = KhachHang::with('taiKhoan');
 
         if ($search) {
-            $query->where('HoTen', 'LIKE', "%{$search}%")
+            $query->where(function($q) use ($search) {
+                $q->where('HoTen', 'LIKE', "%{$search}%")
                   ->orWhere('Email', 'LIKE', "%{$search}%")
                   ->orWhere('SDT', 'LIKE', "%{$search}%");
+            });
+        }
+
+        if ($fromDate) {
+            $query->whereDate('NgayDangKy', '>=', $fromDate);
+        }
+
+        if ($toDate) {
+            $query->whereDate('NgayDangKy', '<=', $toDate);
         }
 
         $customers = $query->paginate(10)->withQueryString();
@@ -77,12 +90,25 @@ class AdminKhachHangController extends Controller
 
     public function destroy($id)
     {
-        $customer = KhachHang::findOrFail($id);
-        if ($customer->MaTK) {
-            TaiKhoan::where('MaTK', $customer->MaTK)->delete();
-        }
-        $customer->delete();
+        try {
+            $customer = KhachHang::findOrFail($id);
+            
+            // Kiểm tra lịch sử mua hàng
+            if ($customer->donHangs()->exists()) {
+                return redirect()->route('admin.khachhang.index')->with('error', 'Không thể xóa khách hàng này vì đã có dữ liệu lịch sử đơn hàng!');
+            }
 
-        return redirect()->route('admin.khachhang.index')->with('success', 'Xóa khách hàng thành công!');
+            \Illuminate\Support\Facades\DB::beginTransaction();
+            if ($customer->MaTK) {
+                TaiKhoan::where('MaTK', $customer->MaTK)->delete();
+            }
+            $customer->delete();
+            \Illuminate\Support\Facades\DB::commit();
+
+            return redirect()->route('admin.khachhang.index')->with('success', 'Xóa khách hàng thành công!');
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\DB::rollBack();
+            return redirect()->route('admin.khachhang.index')->with('error', 'Lỗi hệ thống: ' . $e->getMessage());
+        }
     }
 }

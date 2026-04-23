@@ -3,43 +3,59 @@
 @section('content')
 <div class="container py-5">
     <div class="row g-4">
-        <!-- Sidebar - Cải tiến phong cách Luxury -->
+        <!-- Sidebar - Elegant Luxury Style -->
         <div class="col-lg-3">
-            <div class="glass-panel border-0 rounded-4 p-4 sticky-top" style="top: 100px; background: white; shadow: var(--glass-shadow);">
-                <h5 class="font-luxury fw-bold mb-4 pb-2" style="border-bottom: 2px solid var(--gold-primary);">
-                    TINH HOA DANH MỤC
-                </h5>
-                <div class="list-group list-group-flush">
-                    <a href="{{ route('sanpham.index', ['sort' => $sort ?? 'latest']) }}" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex align-items-center justify-content-between {{ !isset($categoryId) || $categoryId == 0 ? 'text-dark fw-bold' : 'text-muted' }} hover-gold">
-                        <span><i class="fa-solid fa-book-open me-2"></i> Tất cả sách</span>
-                        @if(!isset($categoryId) || $categoryId == 0) <i class="fa-solid fa-chevron-right small"></i> @endif
-                    </a>
-                    @foreach ($categories as $dm)
-                        <a href="{{ route('danhmuc.show', ['id' => $dm->MaDM, 'sort' => $sort ?? 'latest']) }}" class="list-group-item list-group-item-action border-0 px-0 py-2 d-flex align-items-center justify-content-between {{ isset($categoryId) && $categoryId == $dm->MaDM ? 'text-dark fw-bold' : 'text-muted' }} hover-gold">
-                            <span><i class="fa-solid fa-bookmark me-2 opacity-50"></i> {{ $dm->TenDM }}</span>
-                            @if(isset($categoryId) && $categoryId == $dm->MaDM) <i class="fa-solid fa-chevron-right small"></i> @endif
+            <div class="sidebar-wrapper sticky-top" style="top: 160px; z-index: 100;">
+                <div class="glass-panel border-0 rounded-4 p-4 mb-4 bg-white shadow-sm">
+                    <h5 class="font-luxury fw-bold mb-4 pb-2 text-uppercase ls-1" style="border-bottom: 2px solid var(--gold-primary); font-size: 1.1rem;">
+                        Bộ Sưu Tập
+                    </h5>
+                    <div class="category-list">
+                        <a href="{{ route('sanpham.index', ['sort' => $sort ?? 'latest']) }}" class="cat-item {{ !isset($categoryId) || $categoryId == 0 ? 'active' : '' }} no-barba" data-barba-prevent>
+                            <span class="d-flex align-items-center">
+                                <i class="fa-solid fa-layer-group me-3 opacity-50"></i> Tất cả sách
+                            </span>
+                            <i class="fa-solid fa-chevron-right fs-xs opacity-0 trans-all"></i>
                         </a>
-                    @endforeach
+                        @foreach ($categories as $dm)
+                            <a href="{{ route('danhmuc.show', ['id' => $dm->MaDM, 'sort' => $sort ?? 'latest']) }}" class="cat-item {{ isset($categoryId) && $categoryId == $dm->MaDM ? 'active' : '' }} no-barba" data-barba-prevent>
+                                <span class="d-flex align-items-center">
+                                    <i class="fa-solid fa-bookmark me-3 opacity-50"></i> {{ $dm->TenDM }}
+                                </span>
+                                <i class="fa-solid fa-chevron-right fs-xs opacity-0 trans-all"></i>
+                            </a>
+                        @endforeach
+                    </div>
                 </div>
 
-                <div class="mt-5 p-4 rounded-4" style="background: linear-gradient(135deg, var(--text-main), #334155); color: white;">
-                    <h6 class="font-luxury mb-3" style="color: var(--gold-light);">Ưu đãi Đặc Quyền</h6>
-                    <p class="extra-small opacity-75 mb-0">Miễn phí vận chuyển cho đơn hàng từ 500.000₫</p>
+                <div class="promo-card p-4 rounded-4 position-relative overflow-hidden" style="background: #1a1a1a; color: white;">
+                    <div class="position-relative z-1">
+                        <h6 class="font-luxury mb-3" style="color: var(--gold-light); letter-spacing: 1px;">ĐẶC QUYỀN VIP</h6>
+                        <p class="extra-small opacity-75 mb-0">Nhận ngay ưu đãi miễn phí vận chuyển cho đơn hàng từ 500.000₫</p>
+                    </div>
+                    <i class="fa-solid fa-crown position-absolute end-0 bottom-0 opacity-10 mb-n2 me-n2" style="font-size: 3rem;"></i>
                 </div>
             </div>
         </div>
 
-        <!-- Product Grid -->
+        <!-- Product Grid Content -->
         <div class="col-lg-9">
-            <div class="d-flex justify-content-between align-items-end mb-5">
+            <!-- Filter Header -->
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end mb-5 gap-3">
                 <div>
-                    <h2 class="font-luxury fw-bold text-dark mb-1">{!! strip_tags($pageTitle) !!}</h2>
-                    <p class="text-muted small mb-0">Khám phá bộ sưu tập tri thức tuyển chọn ({{ $totalRecords }} đầu sách)</p>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb extra-small text-uppercase ls-1 mb-2">
+                            <li class="breadcrumb-item"><a href="{{ route('home') }}" class="text-decoration-none text-muted">Trang chủ</a></li>
+                            <li class="breadcrumb-item active text-dark fw-bold" aria-current="page">Cửa hàng</li>
+                        </ol>
+                    </nav>
+                    <h2 class="font-luxury fw-bold text-dark mb-1">Tất cả sách</h2>
+                    <p class="text-muted small mb-0 opacity-75">Khám phá bộ sưu tập tri thức tuyển chọn ({{ $totalRecords }} đầu sách)</p>
                 </div>
                 <div class="d-flex gap-3 align-items-center">
-                    <label class="small text-muted fw-bold mb-0 d-none d-md-block">SẮP XẾP:</label>
-                    <select class="form-select form-select-sm border-0 bg-white shadow-sm rounded-pill px-3 py-2" 
-                            style="font-size: 0.8rem; cursor: pointer; min-width: 150px;" 
+                    <span class="extra-small fw-bold text-muted ls-1">SẮP XẾP:</span>
+                    <select class="form-select border-0 shadow-sm rounded-pill px-4 py-2 small fw-bold text-dark" 
+                            style="cursor: pointer; min-width: 180px; font-size: 0.8rem; background-color: #f8f9fa;" 
                             onchange="location.href = '{{ request()->url() }}?id={{ $categoryId ?? 0 }}&sort=' + this.value">
                         <option value="latest" {{ ($sort ?? '') == 'latest' ? 'selected' : '' }}>Mới nhất</option>
                         <option value="price_asc" {{ ($sort ?? '') == 'price_asc' ? 'selected' : '' }}>Giá: Thấp đến Cao</option>
@@ -50,69 +66,75 @@
             </div>
 
             @if ($products->isEmpty())
-                <div class="glass-panel text-center py-5 rounded-4 bg-white border-0">
+                <div class="glass-panel text-center py-5 rounded-4 bg-white border-0 shadow-sm">
                     <img src="https://cdn-icons-png.flaticon.com/512/6134/6134065.png" width="80" alt="Not found" class="mb-4 opacity-25">
-                    <h5 class="text-dark fw-bold">Rất tiếc, bộ sưu tập này hiện đang cập nhật</h5>
+                    <h5 class="text-dark fw-bold">Hiện chưa có tác phẩm nào</h5>
                     <p class="text-muted small">Vui lòng quay lại sau hoặc khám phá các danh mục khác.</p>
-                    <a href="{{ route('sanpham.index') }}" class="btn btn-dark rounded-pill px-4 py-2 mt-3">XEM TẤT CẢ SÁCH</a>
+                    <a href="{{ route('sanpham.index') }}" class="btn btn-dark rounded-pill px-4 py-2 mt-3 no-barba" data-barba-prevent>TẤT CẢ SÁCH</a>
                 </div>
             @else
-                <div class="row g-4 row-cols-2 row-cols-md-3 row-cols-lg-4">
+                <div class="row g-4">
                     @foreach ($products as $sp)
-                        <div class="col">
-                            <div class="product-card border-0 shadow-sm bg-white">
-                                <div class="img-box position-relative bg-white" style="height: 250px;">
-                                    <a href="{{ route('sanpham.detail', $sp->MaSP) }}" class="w-100 h-100 d-flex align-items-center justify-content-center">
-                                        <img src="{{ $sp->HinhAnh ? asset('assets/images/products/' . $sp->HinhAnh) : 'https://via.placeholder.com/400x600' }}" 
-                                             style="max-height:85%; max-width:85%; object-fit:contain; transition: 0.5s ease;" alt="{{ $sp->TenSP }}">
+                        <div class="col-sm-6 col-md-4 col-xl-4">
+                            <div class="product-item h-100">
+                                <div class="product-thumb position-relative rounded-4 overflow-hidden mb-3 bg-light shadow-sm">
+                                    <a href="{{ route('sanpham.detail', $sp->MaSP) }}" class="d-block no-barba" data-barba-prevent>
+                                        <div class="img-wrapper d-flex align-items-center justify-content-center p-4 bg-white" style="height: 320px;">
+                                            <img src="{{ $sp->HinhAnh ? (Str::startsWith($sp->HinhAnh, 'http') ? $sp->HinhAnh : asset('assets/images/products/' . $sp->HinhAnh)) : 'https://via.placeholder.com/400x600' }}" 
+                                                 class="img-fluid trans-all-slow" alt="{{ $sp->TenSP }}" style="max-height: 100%; object-fit: contain;">
+                                        </div>
                                     </a>
                                     
                                     @if($sp->khuyen_mai_active)
-                                        <div class="position-absolute top-0 start-0 p-2" style="z-index: 5;">
-                                            <span class="badge bg-danger rounded-pill shadow-sm">-{{ (int)$sp->khuyen_mai_active->PhanTramGiam }}%</span>
+                                        <div class="position-absolute top-0 start-0 m-3" style="z-index: 5;">
+                                            <span class="badge bg-danger rounded-pill px-3 py-2 shadow-sm fw-bold">
+                                                -{{ (int)$sp->khuyen_mai_active->PhanTramGiam }}%
+                                            </span>
                                         </div>
                                     @endif
 
-                                    <div class="card-actions-overlay position-absolute top-0 end-0 p-2 d-flex flex-column gap-2" style="z-index: 5;">
-                                        <button onclick="toggleFavorite({{ $sp->MaSP }}, this)" class="btn btn-white shadow-sm rounded-circle d-flex align-items-center justify-content-center {{ $sp->is_favorite ? 'active' : '' }}" style="width: 35px; height: 35px; background: white; border: none;">
-                                            <i class="{{ $sp->is_favorite ? 'fa-solid text-danger' : 'fa-regular' }} fa-heart"></i>
+                                    <div class="thumb-actions position-absolute bottom-0 start-0 end-0 p-3 d-flex justify-content-center gap-2 opacity-0 translate-y-20 trans-all" style="z-index: 5;">
+                                        <button onclick="toggleFavorite({{ $sp->MaSP }}, this)" class="btn-action shadow-lg {{ $sp->is_favorite ? 'active' : '' }}" title="Yêu thích">
+                                            <i class="{{ $sp->is_favorite ? 'fa-solid' : 'fa-regular' }} fa-heart"></i>
+                                        </button>
+                                        <button onclick="addToCart({{ $sp->MaSP }})" class="btn-action shadow-lg" title="Thêm vào giỏ">
+                                            <i class="fa-solid fa-cart-plus"></i>
                                         </button>
                                     </div>
 
                                     @if($sp->SoLuong <= 0) 
-                                        <div class="position-absolute top-50 start-50 translate-middle bg-white bg-opacity-75 px-3 py-1 rounded-pill small fw-bold text-muted border">TẠM HẾT</div> 
+                                        <div class="out-of-stock-overlay position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-white bg-opacity-50" style="z-index: 4;">
+                                            <span class="badge bg-dark rounded-0 px-4 py-2 ls-1 extra-small">HẾT HÀNG</span>
+                                        </div> 
                                     @endif
                                 </div>
                                 
-                                <div class="card-details p-4 d-flex flex-column justify-content-between flex-grow-1 bg-white">
-                                    <div>
-                                        <div class="small mb-1" style="color: var(--gold-primary); font-weight: 700; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase;">{{ $sp->danhmuc->TenDM ?? 'Tri Thức' }}</div>
-                                        
-                                        <a href="{{ route('sanpham.detail', $sp->MaSP) }}" class="text-decoration-none text-dark fw-bold mb-2" style="display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; height:2.8rem; font-size:0.95rem; line-height: 1.4;">
+                                <div class="product-body px-1">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <span class="extra-small text-uppercase fw-bold ls-1" style="color: var(--gold-primary);">{{ $sp->danhmuc->TenDM ?? 'Premium' }}</span>
+                                        <div class="rating-stars text-warning extra-small"><i class="fa-solid fa-star"></i> 5.0</div>
+                                    </div>
+                                    
+                                    <h5 class="product-title mb-2">
+                                        <a href="{{ route('sanpham.detail', $sp->MaSP) }}" class="text-decoration-none text-dark fw-bold no-barba" data-barba-prevent>
                                             {{ $sp->TenSP }}
                                         </a>
-                                        
-                                        <div class="text-muted small mt-1 text-truncate" style="font-size: 0.75rem;">
-                                            <i class="fa-solid fa-pen-nib me-1 opacity-50"></i> {{ $sp->tac_gia_string ?? 'Đang cập nhật' }}
-                                        </div>
+                                    </h5>
+                                    
+                                    <div class="product-author text-muted extra-small mb-3 text-truncate">
+                                        <i class="fa-solid fa-feather-pointed me-1 opacity-50"></i> {{ $sp->tac_gia_string ?? 'Sưu tầm' }}
                                     </div>
 
-                                    <div class="mt-4">
-                                        <div class="d-flex justify-content-between align-items-center mb-3">
-                                            <div>
-                                                @if($sp->khuyen_mai_active)
-                                                    <div class="text-muted small text-decoration-line-through" style="font-size: 0.7rem;">{{ number_format($sp->DonGia, 0, ',', '.') }}₫</div>
-                                                    <span class="text-danger fw-bold fs-5">{{ number_format($sp->gia_hien_tai, 0, ',', '.') }}₫</span>
-                                                @else
-                                                    <span class="text-dark fw-bold fs-5">{{ number_format($sp->DonGia, 0, ',', '.') }}₫</span>
-                                                @endif
-                                            </div>
-                                            <span class="text-muted extra-small">Đã bán {{ (int)$sp->SoLuongDaBan }}</span>
+                                    <div class="product-footer d-flex justify-content-between align-items-end pt-2 border-top">
+                                        <div class="price-box">
+                                            @if($sp->khuyen_mai_active)
+                                                <div class="text-muted extra-small text-decoration-line-through mb-1">{{ number_format($sp->DonGia, 0, ',', '.') }}₫</div>
+                                                <div class="text-danger fw-bold fs-5 mb-0" style="line-height: 1;">{{ number_format($sp->gia_hien_tai, 0, ',', '.') }}₫</div>
+                                            @else
+                                                <div class="text-dark fw-bold fs-5 mb-0" style="line-height: 1;">{{ number_format($sp->DonGia, 0, ',', '.') }}₫</div>
+                                            @endif
                                         </div>
-                                        @php $outOfStock = (int)$sp->SoLuong <= 0; @endphp
-                                        <button type="button" onclick="addToCart({{ $sp->MaSP }})" class="btn btn-dark w-100 rounded-pill py-2 small fw-bold" {{ $outOfStock ? 'disabled' : '' }}>
-                                            {{ $outOfStock ? 'LIÊN HỆ' : 'MUA NGAY' }}
-                                        </button>
+                                        <div class="sold-count text-muted extra-small pb-1">Đã bán {{ (int)$sp->SoLuongDaBan }}</div>
                                     </div>
                                 </div>
                             </div>
@@ -120,8 +142,7 @@
                     @endforeach
                 </div>
 
-                <!-- Custom Pagination -->
-                <div class="mt-5 d-flex justify-content-center">
+                <div class="mt-5 pt-4 d-flex justify-content-center">
                     {{ $products->appends(request()->query())->links() }}
                 </div>
             @endif
@@ -130,11 +151,38 @@
 </div>
 
 <style>
-    .list-group-item { background: transparent; transition: all 0.3s; font-size: 0.9rem; }
-    .list-group-item:hover { color: var(--gold-primary) !important; padding-left: 10px; }
+    .ls-1 { letter-spacing: 1px; }
+    .fs-xs { font-size: 0.65rem; }
     .extra-small { font-size: 0.7rem; }
-    .pagination .page-link { border: none; color: var(--text-main); font-weight: 600; margin: 0 5px; border-radius: 50% !important; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: white; shadow: 0 2px 5px rgba(0,0,0,0.05); }
-    .pagination .page-item.active .page-link { background: var(--text-main); color: white; }
+    .trans-all { transition: all 0.3s ease; }
+    .trans-all-slow { transition: all 0.6s cubic-bezier(0.19, 1, 0.22, 1); }
+    .translate-y-20 { transform: translateY(20px); }
+
+    .cat-item { 
+        display: flex; align-items: center; justify-content: space-between; 
+        padding: 12px 0; text-decoration: none; color: #64748b; font-size: 0.9rem; 
+        font-weight: 500; border-bottom: 1px solid rgba(0,0,0,0.03); transition: all 0.3s ease;
+    }
+    .cat-item:hover, .cat-item.active { color: var(--text-main); padding-left: 5px; }
+    .cat-item.active { font-weight: 700; color: var(--gold-primary); }
+    
+    .product-thumb:hover .img-wrapper img { transform: scale(1.08); }
+    .product-thumb:hover .thumb-actions { opacity: 1; transform: translateY(0); }
+    
+    .btn-action {
+        width: 42px; height: 42px; border-radius: 50%; background: white; border: none;
+        color: var(--text-main); display: flex; align-items: center; justify-content: center; transition: all 0.3s ease;
+    }
+    .btn-action:hover { background: var(--gold-primary); color: white; transform: translateY(-3px); }
+    .btn-action.active { color: #dc3545; }
+
+    .product-title {
+        font-size: 1rem; line-height: 1.4; height: 2.8rem; overflow: hidden;
+        display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    }
+
+    .reveal-on-scroll { opacity: 0; transform: translateY(30px); transition: all 0.8s cubic-bezier(0.19, 1, 0.22, 1); }
+    .reveal-on-scroll.active { opacity: 1; transform: translateY(0); }
 </style>
 
 <script>
@@ -149,8 +197,6 @@ function addToCart(id) {
     .then(data => {
         if(data.status === 'success') {
             alert('Đã thêm tuyệt tác vào giỏ hàng!');
-            
-            // Cập nhật số lượng giỏ hàng trên Header
             const cartBadge = document.getElementById('cart-count-badge');
             if (cartBadge) {
                 cartBadge.innerText = data.cartCount;
@@ -186,7 +232,6 @@ function toggleFavorite(maSP, btn) {
             icon.className = 'fa-regular fa-heart';
         }
 
-        // Cập nhật số lượng trên Header
         const badge = document.getElementById('fav-count-badge');
         if (badge) {
             badge.innerText = data.favCount;

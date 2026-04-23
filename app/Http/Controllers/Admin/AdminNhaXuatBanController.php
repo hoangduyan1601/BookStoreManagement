@@ -8,10 +8,19 @@ use Illuminate\Http\Request;
 
 class AdminNhaXuatBanController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $list = NhaXuatBan::all();
-        return view('admin.nhaxuatban.index', compact('list'));
+        $search = $request->get('search');
+        $query = NhaXuatBan::query();
+
+        if ($search) {
+            $query->where('TenNXB', 'LIKE', "%{$search}%")
+                  ->orWhere('SDT', 'LIKE', "%{$search}%")
+                  ->orWhere('Email', 'LIKE', "%{$search}%");
+        }
+
+        $list = $query->paginate(10)->withQueryString();
+        return view('admin.nhaxuatban.index', compact('list', 'search'));
     }
 
     public function create()
@@ -50,9 +59,17 @@ class AdminNhaXuatBanController extends Controller
 
     public function destroy($id)
     {
-        $nxb = NhaXuatBan::findOrFail($id);
-        $nxb->delete();
+        try {
+            $nxb = NhaXuatBan::findOrFail($id);
 
-        return redirect()->route('admin.nhaxuatban.index')->with('success', 'Xóa nhà xuất bản thành công!');
+            if ($nxb->sanphams()->exists()) {
+                return redirect()->route('admin.nxb.index')->with('error', 'Không thể xóa nhà xuất bản này vì vẫn còn sản phẩm thuộc về họ!');
+            }
+
+            $nxb->delete();
+            return redirect()->route('admin.nxb.index')->with('success', 'Xóa nhà xuất bản thành công!');
+        } catch (\Exception $e) {
+            return redirect()->route('admin.nxb.index')->with('error', 'Lỗi hệ thống: ' . $e->getMessage());
+        }
     }
 }

@@ -1,133 +1,120 @@
 @extends('layouts.admin')
 
-@section('title', 'Quản Lý Nhà Cung Cấp')
+@section('title', 'Supply Chain - Suppliers Management')
 
 @section('content')
-<div class="d-md-flex align-items-center justify-content-between mb-4">
-    <div>
-        <h3 class="mb-0 fw-bold">Quản Lý Nhà Cung Cấp</h3>
-        <p class="text-muted small mb-0">Tổng cộng: <strong>{{ $list->count() }}</strong> đối tác cung ứng</p>
-    </div>
-    <div class="mt-3 mt-md-0">
-        <button type="button" class="btn btn-luxury-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#modalNCC" onclick="openModalThem()">
-            <i class="fas fa-plus me-2"></i>Thêm nhà cung cấp mới
+<style>
+    .dashboard-header {
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        padding: 2rem;
+        border-radius: 1.5rem;
+        color: white;
+        margin-bottom: 2rem;
+    }
+</style>
+
+<div class="container-fluid p-0">
+    <div class="dashboard-header d-md-flex align-items-center justify-content-between shadow-sm">
+        <div>
+            <h2 class="fw-bold mb-1">Quản Lý Nhà Cung Cấp</h2>
+            <p class="mb-0 text-white-50">Đối tác cung ứng vật tư và nguyên liệu</p>
+        </div>
+        <button type="button" class="btn btn-light rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#modalNCC" onclick="openModalThem()">
+            <i class="fas fa-plus me-2"></i> Thêm NCC
         </button>
     </div>
-</div>
 
-@if(session('success'))
-    <div class="alert alert-success border-0 shadow-sm rounded-3 mb-4 d-flex align-items-center" role="alert">
-        <i class="fas fa-check-circle me-2"></i>
-        <div>{{ session('success') }}</div>
-        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+        <form method="get" action="{{ route('admin.ncc.index') }}" class="row g-3">
+            <div class="col-md-9">
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-0 rounded-start-pill"><i class="fas fa-search"></i></span>
+                    <input type="text" name="search" class="form-control bg-light border-0 rounded-end-pill" placeholder="Tìm tên, email, sđt nhà cung cấp..." value="{{ request('search') }}">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-dark w-100 rounded-pill">Tìm kiếm</button>
+            </div>
+        </form>
     </div>
-@endif
 
-@if ($list->count() > 0)
-    <div class="table-custom-container">
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
         <div class="table-responsive">
-            <table class="table-custom">
-                <thead>
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
                     <tr>
-                        <th width="5%">#</th>
-                        <th>Tên Nhà Cung Cấp</th>
-                        <th>Liên hệ</th>
-                        <th>Địa chỉ</th>
-                        <th width="12%" class="text-center">Hành động</th>
+                        <th class="ps-4 py-3 text-uppercase small fw-bold" width="10%">#ID</th>
+                        <th class="py-3 text-uppercase small fw-bold">Nhà Cung Cấp</th>
+                        <th class="py-3 text-uppercase small fw-bold">Liên Hệ</th>
+                        <th class="py-3 text-uppercase small fw-bold">Địa Chỉ</th>
+                        <th class="pe-4 py-3 text-uppercase small fw-bold text-end">Hành Động</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($list as $index => $item)
+                    @foreach($list as $item)
                         <tr>
-                            <td class="text-muted fw-bold">{{ $index + 1 }}</td>
+                            <td class="ps-4 text-muted">#{{ $item->MaNCC }}</td>
+                            <td><span class="fw-bold text-dark">{{ $item->TenNCC }}</span></td>
                             <td>
-                                <div class="fw-bold text-main">{{ $item->TenNCC }}</div>
-                                <small class="text-muted">ID: #NCC{{ $item->MaNCC }}</small>
+                                <div class="small fw-medium">{{ $item->Email }}</div>
+                                <div class="small text-muted">{{ $item->SDT }}</div>
                             </td>
-                            <td>
-                                <div class="small"><i class="fas fa-phone me-2 text-muted"></i>{{ $item->SDT ?: 'N/A' }}</div>
-                                <div class="small"><i class="fas fa-envelope me-2 text-muted"></i>{{ $item->Email ?: 'N/A' }}</div>
-                            </td>
-                            <td class="text-muted small">{{ Str::limit($item->DiaChi, 50) }}</td>
-                            <td class="text-center">
-                                <div class="dropdown">
-                                    <button class="btn btn-light btn-sm border-0 rounded-circle p-2" data-bs-toggle="dropdown">
-                                        <i class="fas fa-ellipsis-v"></i>
+                            <td class="text-muted small">{{ $item->DiaChi }}</td>
+                            <td class="pe-4 text-end">
+                                <button class="btn btn-sm btn-light rounded-pill px-3 me-2" onclick="openModalSua('{{ $item->MaNCC }}', '{{ addslashes($item->TenNCC) }}', '{{ addslashes($item->SDT) }}', '{{ addslashes($item->DiaChi) }}', '{{ addslashes($item->Email) }}')">
+                                    <i class="fas fa-edit text-warning me-1"></i> Sửa
+                                </button>
+                                <form action="{{ route('admin.ncc.destroy', $item->MaNCC) }}" method="POST" class="d-inline">
+                                    @csrf @method('DELETE')
+                                    <button class="btn btn-sm btn-light rounded-pill px-3 text-danger" onclick="return confirm('Xác nhận xóa?')">
+                                        <i class="fas fa-trash me-1"></i> Xóa
                                     </button>
-                                    <ul class="dropdown-menu glass-card border-0 shadow-lg p-2">
-                                        <li>
-                                            <button type="button" class="dropdown-item rounded-2 py-2" 
-                                                    onclick="openModalSua('{{ $item->MaNCC }}', '{{ addslashes($item->TenNCC) }}', '{{ addslashes($item->SDT) }}', '{{ addslashes($item->DiaChi) }}', '{{ addslashes($item->Email) }}')">
-                                                <i class="fas fa-edit me-2 text-warning"></i> Chỉnh sửa
-                                            </button>
-                                        </li>
-                                        <li><hr class="dropdown-divider opacity-50"></li>
-                                        <li>
-                                            <form action="{{ route('admin.ncc.destroy', $item->MaNCC) }}" method="POST" onsubmit="return confirm('Xóa nhà cung cấp &quot;{{ $item->TenNCC }}&quot;?')">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="dropdown-item rounded-2 py-2 text-danger">
-                                                    <i class="fas fa-trash me-2"></i> Xóa đối tác
-                                                </button>
-                                            </form>
-                                        </li>
-                                    </ul>
-                                </div>
+                                </form>
                             </td>
                         </tr>
                     @endforeach
                 </tbody>
             </table>
         </div>
-    </div>
-@else
-    <div class="admin-card text-center py-5">
-        <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-4" style="width: 80px; height: 80px;">
-            <i class="fas fa-handshake fs-1 text-muted"></i>
+        <div class="p-4 bg-light border-top">
+            {{ $list->links() }}
         </div>
-        <h5 class="fw-bold">Chưa có nhà cung cấp nào</h5>
-        <button type="button" class="btn btn-luxury-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#modalNCC" onclick="openModalThem()">
-            <i class="fas fa-plus me-2"></i>Thêm nhà cung cấp mới
-        </button>
     </div>
-@endif
+</div>
 
 <!-- Modal Thêm/Sửa -->
-<div class="modal fade" id="modalNCC" tabindex="-1" aria-labelledby="modalNCCLabel" aria-hidden="true" data-bs-backdrop="static">
+<div class="modal fade" id="modalNCC" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content glass-card border-0">
-            <div class="modal-header border-bottom border-light p-4">
-                <h5 class="modal-title fw-bold" id="modalNCCLabel">
-                    <i class="fas fa-truck-loading me-2 text-luxury-gold"></i><span id="modalTitle">Thêm Nhà Cung Cấp Mới</span>
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-bottom-0 p-4 pb-0">
+                <h5 class="fw-bold" id="modalTitle">Thông Tin Nhà Cung Cấp</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4">
                 <form method="post" id="formNCC" action="{{ route('admin.ncc.store') }}">
                     @csrf
                     <div id="methodField"></div>
                     <div class="mb-3">
-                        <label class="admin-form-label">Tên nhà cung cấp <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control form-control-luxury" id="inputTen" name="TenNCC" required placeholder="Nhập tên công ty/đại lý">
+                        <label class="small fw-bold text-muted mb-2">TÊN NHÀ CUNG CẤP</label>
+                        <input type="text" class="form-control rounded-pill" id="inputTen" name="TenNCC" required>
                     </div>
-                    <div class="row g-3">
-                        <div class="col-md-6 mb-3">
-                            <label class="admin-form-label">Số điện thoại</label>
-                            <input type="text" class="form-control form-control-luxury" id="inputSDT" name="SDT" placeholder="09xxxxxxxx">
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="small fw-bold text-muted mb-2">SỐ ĐIỆN THOẠI</label>
+                            <input type="text" class="form-control rounded-pill" id="inputSDT" name="SDT">
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="admin-form-label">Email</label>
-                            <input type="email" class="form-control form-control-luxury" id="inputEmail" name="Email" placeholder="contact@supplier.com">
+                        <div class="col-md-6">
+                            <label class="small fw-bold text-muted mb-2">EMAIL</label>
+                            <input type="email" class="form-control rounded-pill" id="inputEmail" name="Email">
                         </div>
                     </div>
                     <div class="mb-4">
-                        <label class="admin-form-label">Địa chỉ</label>
-                        <input type="text" class="form-control form-control-luxury" id="inputDiaChi" name="DiaChi" placeholder="Địa chỉ trụ sở chính">
+                        <label class="small fw-bold text-muted mb-2">ĐỊA CHỈ TRỤ SỞ</label>
+                        <input type="text" class="form-control rounded-pill" id="inputDiaChi" name="DiaChi">
                     </div>
-                    <div class="d-flex justify-content-end gap-2">
-                        <button type="button" class="btn btn-luxury-outline" data-bs-dismiss="modal">Hủy</button>
-                        <button type="submit" class="btn btn-luxury-primary px-4"><span id="btnSubmitText">Thêm mới</span></button>
-                    </div>
+                    <button type="submit" class="btn btn-dark w-100 rounded-pill py-2 fw-bold shadow-sm">
+                        <span id="btnSubmitText">Xác Nhận Lưu</span>
+                    </button>
                 </form>
             </div>
         </div>

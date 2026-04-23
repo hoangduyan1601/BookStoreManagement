@@ -8,14 +8,34 @@ use Illuminate\Http\Request;
 
 class AdminThongBaoController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $recent = ThongBao::with('khachHang')->orderBy('NgayGui', 'desc')->take(10)->get();
+        $search = $request->get('search');
+        $type = $request->get('type');
+        
+        $query = ThongBao::with('khachHang');
+
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('TieuDe', 'LIKE', "%{$search}%")
+                  ->orWhere('NoiDung', 'LIKE', "%{$search}%")
+                  ->orWhereHas('khachHang', function($sub) use ($search) {
+                      $sub->where('HoTen', 'LIKE', "%{$search}%");
+                  });
+            });
+        }
+
+        if ($type && $type !== 'all') {
+            $query->where('LoaiTB', $type);
+        }
+
+        $recent = $query->orderBy('NgayGui', 'desc')->paginate(10)->withQueryString();
+        
         $ds_khach = \App\Models\KhachHang::whereHas('taiKhoan', function($q) {
             $q->where('TrangThai', 1);
         })->get();
         
-        return view('admin.thongbao.index', compact('recent', 'ds_khach'));
+        return view('admin.thongbao.index', compact('recent', 'ds_khach', 'search', 'type'));
     }
 
     public function create()

@@ -14,11 +14,43 @@ class AdminDonHangController extends Controller
     {
         $status = $request->get('status', 'all');
         $sort = $request->get('sort', 'newest');
+        $search = $request->get('search');
+        $fromDate = $request->get('from_date');
+        $toDate = $request->get('to_date');
+        $minTotal = $request->get('min_total');
+        $maxTotal = $request->get('max_total');
 
         $query = DonHang::query()->with('khachHang');
 
         if ($status !== 'all') {
             $query->where('TrangThai', $status);
+        }
+
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('MaDH', 'LIKE', "%{$search}%")
+                  ->orWhereHas('khachHang', function($q2) use ($search) {
+                      $q2->where('HoTen', 'LIKE', "%{$search}%")
+                         ->orWhere('Email', 'LIKE', "%{$search}%")
+                         ->orWhere('SDT', 'LIKE', "%{$search}%");
+                  });
+            });
+        }
+
+        if ($fromDate) {
+            $query->whereDate('NgayDat', '>=', $fromDate);
+        }
+
+        if ($toDate) {
+            $query->whereDate('NgayDat', '<=', $toDate);
+        }
+
+        if ($minTotal) {
+            $query->where('TongTien', '>=', $minTotal);
+        }
+
+        if ($maxTotal) {
+            $query->where('TongTien', '<=', $maxTotal);
         }
 
         if ($sort === 'newest') {

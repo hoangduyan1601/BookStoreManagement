@@ -53,8 +53,15 @@ document.addEventListener("DOMContentLoaded", () => {
     if (typeof barba !== 'undefined') {
         barba.init({
             sync: true,
-            cacheIgnore: true, // Vô hiệu hóa cache để luôn lấy dữ liệu mới nhất
+            cacheIgnore: true,
             prefetchIgnore: true,
+            prevent: ({ el }) => {
+                // Ngăn Barba can thiệp vào các liên kết có class 'no-barba' hoặc 'data-barba-prevent'
+                if (el.classList.contains('no-barba') || el.hasAttribute('data-barba-prevent')) return true;
+                if (el.getAttribute('href') && el.getAttribute('href').startsWith('javascript:')) return true;
+                if (el.getAttribute('target') === '_blank') return true;
+                return false;
+            },
             transitions: [{
                 name: '3d-cube-transition',
                 leave(data) {

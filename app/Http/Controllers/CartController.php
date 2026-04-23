@@ -18,7 +18,14 @@ class CartController extends Controller
         $khachHang = KhachHang::where('MaTK', $user->MaTK)->first();
         
         if (!$khachHang) {
-            return redirect('/')->with('error', 'Không tìm thấy thông tin khách hàng.');
+            // Tự động tạo bản ghi khách hàng để có thể vào giỏ hàng
+            $khachHang = KhachHang::create([
+                'MaTK' => $user->MaTK,
+                'HoTen' => $user->TenDN ?? 'Người dùng',
+                'SDT'   => '0000000000',
+                'Email' => $user->Email ?? 'user@example.com',
+                'DiaChi'=> 'Chưa cập nhật'
+            ]);
         }
 
         $maKH = $khachHang->MaKH;

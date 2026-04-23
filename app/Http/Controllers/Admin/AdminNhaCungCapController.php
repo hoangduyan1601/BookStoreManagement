@@ -8,10 +8,19 @@ use Illuminate\Http\Request;
 
 class AdminNhaCungCapController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $list = NhaCungCap::all();
-        return view('admin.nhacungcap.index', compact('list'));
+        $search = $request->get('search');
+        $query = NhaCungCap::query();
+
+        if ($search) {
+            $query->where('TenNCC', 'LIKE', "%{$search}%")
+                  ->orWhere('SDT', 'LIKE', "%{$search}%")
+                  ->orWhere('Email', 'LIKE', "%{$search}%");
+        }
+
+        $list = $query->paginate(10)->withQueryString();
+        return view('admin.nhacungcap.index', compact('list', 'search'));
     }
 
     public function create()
@@ -50,9 +59,18 @@ class AdminNhaCungCapController extends Controller
 
     public function destroy($id)
     {
-        $ncc = NhaCungCap::findOrFail($id);
-        $ncc->delete();
+        try {
+            $ncc = NhaCungCap::findOrFail($id);
 
-        return redirect()->route('admin.nhacungcap.index')->with('success', 'Xóa nhà cung cấp thành công!');
+            // Kiểm tra xem NCC có trong phiếu nhập nào chưa
+            if ($ncc->lichSuNhapHangs()->exists()) {
+                return redirect()->route('admin.ncc.index')->with('error', 'Không thể xóa nhà cung cấp này vì đã có dữ liệu nhập hàng liên quan!');
+            }
+
+            $ncc->delete();
+            return redirect()->route('admin.ncc.index')->with('success', 'Xóa nhà cung cấp thành công!');
+        } catch (\Exception $e) {
+            return redirect()->route('admin.ncc.index')->with('error', 'Lỗi hệ thống: ' . $e->getMessage());
+        }
     }
 }

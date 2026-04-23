@@ -8,10 +8,18 @@ use Illuminate\Http\Request;
 
 class AdminDanhMucController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $list = DanhMuc::all();
-        return view('admin.danhmuc.index', compact('list'));
+        $search = $request->get('search');
+        $query = DanhMuc::query();
+
+        if ($search) {
+            $query->where('TenDM', 'LIKE', "%{$search}%")
+                  ->orWhere('MoTa', 'LIKE', "%{$search}%");
+        }
+
+        $list = $query->paginate(10)->withQueryString();
+        return view('admin.danhmuc.index', compact('list', 'search'));
     }
 
     public function store(Request $request)
@@ -49,9 +57,18 @@ class AdminDanhMucController extends Controller
 
     public function destroy($id)
     {
-        $danhmuc = DanhMuc::findOrFail($id);
-        $danhmuc->delete();
+        try {
+            $danhmuc = DanhMuc::findOrFail($id);
+            
+            // Kiểm tra xem danh mục có sản phẩm không
+            if ($danhmuc->sanphams()->exists()) {
+                return redirect()->route('admin.danhmuc.index')->with('error', 'Không thể xóa danh mục này vì vẫn còn sản phẩm thuộc danh mục!');
+            }
 
-        return redirect()->route('admin.danhmuc.index')->with('success', 'Xóa danh mục thành công!');
+            $danhmuc->delete();
+            return redirect()->route('admin.danhmuc.index')->with('success', 'Xóa danh mục thành công!');
+        } catch (\Exception $e) {
+            return redirect()->route('admin.danhmuc.index')->with('error', 'Lỗi hệ thống: ' . $e->getMessage());
+        }
     }
 }

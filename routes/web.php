@@ -69,6 +69,9 @@ Route::middleware('auth')->group(function () {
     // Yêu thích
     Route::get('/favorites', [YeuThichController::class, 'index'])->name('favorites.index');
     Route::post('/favorites/toggle', [YeuThichController::class, 'toggle'])->name('favorites.toggle');
+
+    // Chatbot AI
+    Route::post('/chatbot/chat', [\App\Http\Controllers\ChatbotController::class, 'chat'])->name('chatbot.chat');
 });
 
 // Admin routes
@@ -83,7 +86,9 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(fun
     Route::resource('danhmuc', AdminDanhMucController::class);
     
     // Tac Gia
-    Route::resource('tacgia', AdminTacGiaController::class);
+    Route::resource('tacgia', AdminTacGiaController::class)->parameters([
+        'tacgia' => 'id'
+    ]);
     
     // San Pham
     Route::resource('sanpham', AdminSanPhamController::class);
@@ -120,6 +125,11 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(fun
 
     // Thong Bao
     Route::resource('thongbao', AdminThongBaoController::class);
+
+    // Ho tro Truc tuyen (Chat)
+    Route::get('chat', [\App\Http\Controllers\Admin\AdminChatController::class, 'index'])->name('chat.index');
+    Route::get('chat/{identifier}', [\App\Http\Controllers\Admin\AdminChatController::class, 'show'])->name('chat.show');
+    Route::post('chat/reply', [\App\Http\Controllers\Admin\AdminChatController::class, 'reply'])->name('chat.reply');
 
     // Profile
     Route::get('/profile', [DashboardController::class, 'profile'])->name('profile');

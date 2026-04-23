@@ -18,6 +18,10 @@ class AdminSanPhamController extends Controller
     {
         $search = $request->get('search');
         $categoryId = $request->get('category_id');
+        $publisherId = $request->get('publisher_id');
+        $minPrice = $request->get('min_price');
+        $maxPrice = $request->get('max_price');
+        $stockStatus = $request->get('stock_status');
 
         $query = SanPham::with(['danhmuc', 'nhaxuatban', 'tacgias'])->orderBy('MaSP', 'desc');
 
@@ -29,10 +33,31 @@ class AdminSanPhamController extends Controller
             $query->where('MaDM', $categoryId);
         }
 
+        if ($publisherId && $publisherId != 0) {
+            $query->where('MaNXB', $publisherId);
+        }
+
+        if ($minPrice) {
+            $query->where('DonGia', '>=', $minPrice);
+        }
+
+        if ($maxPrice) {
+            $query->where('DonGia', '<=', $maxPrice);
+        }
+
+        if ($stockStatus === 'out_of_stock') {
+            $query->where('SoLuong', '<=', 0);
+        } elseif ($stockStatus === 'low_stock') {
+            $query->where('SoLuong', '>', 0)->where('SoLuong', '<=', 10);
+        } elseif ($stockStatus === 'in_stock') {
+            $query->where('SoLuong', '>', 10);
+        }
+
         $list = $query->paginate(10)->withQueryString();
         $all_categories = DanhMuc::all();
+        $all_nxbs = NhaXuatBan::all();
 
-        return view('admin.sanpham.index', compact('list', 'all_categories'));
+        return view('admin.sanpham.index', compact('list', 'all_categories', 'all_nxbs'));
     }
 
     public function create()
@@ -198,15 +223,27 @@ class AdminSanPhamController extends Controller
 
     public function destroy($id)
     {
-        $product = SanPham::findOrFail($id);
-        $images = HinhAnhSanPham::where('MaSP', $id)->get();
-        foreach ($images as $img) {
-            $path = public_path('assets/images/products/' . $img->DuongDan);
-            if (File::exists($path)) File::delete($path);
-            $img->delete();
+        try {
+            $product = SanPham::findOrFail($id);
+            
+            // Kiểm tra xem sản phẩm có trong đơn hàng nào không
+            if ($product->chiTietDonHangs()->exists()) {
+                return redirect()->route('admin.sanpham.index')->with('error', 'Không thể xóa sản phẩm này vì đã có trong lịch sử đơn hàng!');
+            }
+
+            // Xóa ảnh liên quan
+            $images = HinhAnhSanPham::where('MaSP', $id)->get();
+            foreach ($images as $img) {
+                $path = public_path('assets/images/products/' . $img->DuongDan);
+                if (file_exists($path)) @unlink($path);
+                $img->delete();
+            }
+
+            $product->delete();
+            return redirect()->route('admin.sanpham.index')->with('success', 'Xóa sản phẩm thành công!');
+        } catch (\Exception $e) {
+            return redirect()->route('admin.sanpham.index')->with('error', 'Lỗi hệ thống: ' . $e->getMessage());
         }
-        $product->delete();
-        return redirect()->route('admin.sanpham.index')->with('success', 'Xóa sản phẩm thành công!');
     }
 
     public function assignAuthor($id)
