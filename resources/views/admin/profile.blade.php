@@ -46,7 +46,7 @@
                         <a href="{{ route('admin.dashboard') }}" class="btn btn-outline-secondary px-4 rounded-pill">
                             <i class="fas fa-arrow-left me-2"></i>Quay lại Dashboard
                         </a>
-                        <a href="{{ route('admin.taikhoan.doi_mk', $user->MaTK) }}" class="btn btn-warning px-4 rounded-pill">
+                        <a href="{{ route('admin.taikhoan.change_password', $user->MaTK) }}" class="btn btn-warning px-4 rounded-pill">
                             <i class="fas fa-key me-2"></i>Đổi mật khẩu
                         </a>
                     </div>

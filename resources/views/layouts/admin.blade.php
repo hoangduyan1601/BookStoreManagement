@@ -77,14 +77,6 @@
             padding: 20px 24px 8px;
             font-weight: 700;
         }
-
-        .user-profile-img {
-            width: 38px;
-            height: 38px;
-            border-radius: 10px;
-            object-fit: cover;
-            border: 2px solid var(--border-color);
-        }
     </style>
 </head>
 <body>
@@ -98,7 +90,6 @@
 
     <div class="nav-group-title">Chính</div>
     <a href="{{ route('admin.dashboard') }}" class="sidebar-nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
-        <i class="fas fa-grid-2"></i>
         <i class="fas fa-chart-pie"></i>
         <span>Dashboard</span>
     </a>
@@ -129,12 +120,8 @@
     <a href="{{ route('admin.donhang.index') }}" class="sidebar-nav-link {{ request()->routeIs('admin.donhang.*') ? 'active' : '' }}">
         <i class="fas fa-shopping-bag"></i>
         <span>Đơn hàng</span>
-        @if(isset($donChoXacNhan) && $donChoXacNhan > 0)
-            <span class="ms-auto badge bg-danger rounded-pill" style="font-size: 0.65rem;">{{ $donChoXacNhan }}</span>
-        @endif
     </a>
     <a href="{{ route('admin.khachhang.index') }}" class="sidebar-nav-link {{ request()->routeIs('admin.khachhang.*') ? 'active' : '' }}">
-        <i class="fas fa-users-viewfinder"></i>
         <i class="fas fa-user-friends"></i>
         <span>Khách hàng</span>
     </a>
@@ -157,6 +144,10 @@
     <a href="{{ route('admin.doanhthu.index') }}" class="sidebar-nav-link {{ request()->routeIs('admin.doanhthu.*') ? 'active' : '' }}">
         <i class="fas fa-chart-line"></i>
         <span>Doanh thu</span>
+    </a>
+    <a href="{{ route('admin.chat.index') }}" class="sidebar-nav-link {{ request()->routeIs('admin.chat.*') ? 'active' : '' }}">
+        <i class="fas fa-comments"></i>
+        <span>Hỗ trợ trực tuyến</span>
     </a>
     <a href="{{ route('admin.thongbao.index') }}" class="sidebar-nav-link {{ request()->routeIs('admin.thongbao.*') ? 'active' : '' }}">
         <i class="fas fa-bell"></i>
@@ -189,35 +180,6 @@
     </button>
 
     <div class="ms-auto d-flex align-items-center">
-        <!-- Prank Mode Dropdown -->
-        <div class="dropdown me-2">
-            <button class="btn border-0 p-2 text-warning" id="prank-dropdown" data-bs-toggle="dropdown" title="Kích hoạt hiệu ứng trêu chọc">
-                <i class="fas fa-bolt fs-5"></i>
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg p-2" style="border-radius: 15px;">
-                <li class="dropdown-header text-uppercase extra-small fw-bold text-primary">Kiệt tác Giao diện</li>
-                <li><a class="dropdown-item rounded-2 py-2" href="javascript:void(0)" onclick="togglePrankMode('elite-dark')"><i class="fas fa-crown me-2 text-warning"></i> Elite Dark Gold (Quý tộc)</a></li>
-                <li><a class="dropdown-item rounded-2 py-2" href="javascript:void(0)" onclick="togglePrankMode('elite-ivory')"><i class="fas fa-gem me-2 text-info"></i> Modern Minimalist (Tinh tế)</a></li>
-                
-                <li><hr class="dropdown-divider opacity-50"></li>
-                <li class="dropdown-header text-uppercase extra-small fw-bold text-secondary">Hiệu ứng Thẩm mỹ</li>
-                <li><a class="dropdown-item rounded-2 py-2" href="javascript:void(0)" onclick="togglePrankMode('gold-dust')"><i class="fas fa-sparkles me-2 text-warning"></i> Bụi vàng lấp lánh</a></li>
-                <li><a class="dropdown-item rounded-2 py-2" href="javascript:void(0)" onclick="togglePrankMode('metallic')"><i class="fas fa-magic me-2 text-info"></i> Ánh kim Metallic</a></li>
-                <li><a class="dropdown-item rounded-2 py-2" href="javascript:void(0)" onclick="togglePrankMode('glass-mode')"><i class="fas fa-clone me-2 text-success"></i> Giao diện mặt kính</a></li>
-                
-                <li><hr class="dropdown-divider opacity-50"></li>
-                <li class="dropdown-header text-uppercase extra-small fw-bold text-danger">Chế độ Trêu chọc</li>
-                <li><a class="dropdown-item rounded-2 py-2" href="javascript:void(0)" onclick="togglePrankMode('none')"><i class="fas fa-ban me-2 text-muted"></i> Tắt hiệu ứng</a></li>
-                <li><a class="dropdown-item rounded-2 py-2" href="javascript:void(0)" onclick="togglePrankMode('flash')"><i class="fas fa-bolt me-2 text-warning"></i> Nhấp nháy chói mắt</a></li>
-                <li><a class="dropdown-item rounded-2 py-2" href="javascript:void(0)" onclick="togglePrankMode('shake')"><i class="fas fa-expand-arrows-alt me-2 text-danger"></i> Rung lắc cực mạnh</a></li>
-                <li><a class="dropdown-item rounded-2 py-2" href="javascript:void(0)" onclick="togglePrankMode('eye-pain')"><i class="fas fa-eye-slash me-2 text-primary"></i> Gây đau mắt</a></li>
-                <li><a class="dropdown-item rounded-2 py-2" href="javascript:void(0)" onclick="togglePrankMode('upside-down')"><i class="fas fa-undo me-2 text-success"></i> Thế giới đảo ngược</a></li>
-                <li><a class="dropdown-item rounded-2 py-2" href="javascript:void(0)" onclick="togglePrankMode('drunken')"><i class="fas fa-wine-glass-alt me-2 text-info"></i> Chế độ say rượu</a></li>
-                <li><a class="dropdown-item rounded-2 py-2" href="javascript:void(0)" onclick="togglePrankMode('glitch')"><i class="fas fa-microchip me-2 text-dark"></i> Lỗi hệ thống (Glitch)</a></li>
-                <li><a class="dropdown-item rounded-2 py-2" href="javascript:void(0)" onclick="togglePrankMode('mirror')"><i class="fas fa-columns me-2 text-secondary"></i> Chế độ soi gương</a></li>
-            </ul>
-        </div>
-
         <!-- Theme Toggle -->
         <button class="theme-toggle me-3" id="theme-toggle" title="Chuyển chế độ Sáng/Tối">
             <i class="fas fa-moon"></i>
@@ -235,8 +197,7 @@
                 </div>
             </button>
             <ul class="dropdown-menu dropdown-menu-end glass-card mt-2 p-2 border-0 shadow-lg" style="min-width: 200px;">
-                <li><a class="dropdown-item rounded-2 py-2" href="#"><i class="fas fa-user-circle me-2"></i> Hồ sơ</a></li>
-                <li><a class="dropdown-item rounded-2 py-2" href="#"><i class="fas fa-cog me-2"></i> Cài đặt</a></li>
+                <li><a class="dropdown-item rounded-2 py-2" href="{{ route('admin.profile') }}"><i class="fas fa-user-circle me-2"></i> Hồ sơ</a></li>
                 <li><hr class="dropdown-divider opacity-50"></li>
                 <li>
                     <a class="dropdown-item rounded-2 py-2 text-danger" href="{{ route('logout') }}"
@@ -289,33 +250,11 @@
     // Close sidebar when clicking outside on mobile
     document.addEventListener('click', (e) => {
         if (window.innerWidth <= 992) {
-            if (!sidebar.contains(e.target) && !sidebarToggleMobile.contains(e.target)) {
+            if (sidebar && sidebarToggleMobile && !sidebar.contains(e.target) && !sidebarToggleMobile.contains(e.target)) {
                 sidebar.classList.remove('show');
             }
         }
     });
-
-    function togglePrankMode(effect) {
-        fetch('{{ route("admin.toggle_prank_mode") }}', {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({ effect: effect })
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.status === 'success') {
-                if (data.prank_mode !== 'none') {
-                    alert('🔥 Hiệu ứng [' + data.prank_mode + '] đã BẬT! Hãy ra trang chủ để thưởng thức.');
-                } else {
-                    alert('✅ Đã tắt mọi hiệu ứng trêu chọc.');
-                }
-            }
-        });
-    }
 </script>
 @stack('scripts')
 </body>

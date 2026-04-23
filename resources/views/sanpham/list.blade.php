@@ -5,7 +5,7 @@
     <div class="row g-4">
         <!-- Sidebar - Elegant Luxury Style -->
         <div class="col-lg-3">
-            <div class="sidebar-wrapper sticky-top" style="top: 100px;">
+            <div class="sidebar-wrapper sticky-top" style="top: 160px; z-index: 100;">
                 <div class="glass-panel border-0 rounded-4 p-4 mb-4 bg-white shadow-sm">
                     <h5 class="font-luxury fw-bold mb-4 pb-2 text-uppercase ls-1" style="border-bottom: 2px solid var(--gold-primary); font-size: 1.1rem;">
                         Bộ Sưu Tập
