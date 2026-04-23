@@ -10,10 +10,20 @@ use Illuminate\Support\Facades\Storage;
 
 class AdminBaiVietController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $articles = BaiViet::orderBy('NgayDang', 'desc')->get();
-        return view('admin.baiviet.index', compact('articles'));
+        $search = $request->get('search');
+        $query = BaiViet::query();
+
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('TieuDe', 'LIKE', "%{$search}%")
+                  ->orWhere('NoiDung', 'LIKE', "%{$search}%");
+            });
+        }
+
+        $articles = $query->orderBy('NgayDang', 'desc')->paginate(10)->withQueryString();
+        return view('admin.baiviet.index', compact('articles', 'search'));
     }
 
     public function create()

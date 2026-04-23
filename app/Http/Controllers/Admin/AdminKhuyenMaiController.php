@@ -15,6 +15,9 @@ class AdminKhuyenMaiController extends Controller
     {
         $status = $request->get('status', 'active');
         $type = $request->get('type', 'all');
+        $search = $request->get('search');
+        $minPercent = $request->get('min_percent');
+        $maxPercent = $request->get('max_percent');
         $now = now();
 
         $query = KhuyenMai::with('danhMuc');
@@ -33,15 +36,30 @@ class AdminKhuyenMaiController extends Controller
             $query->where('LoaiKM', $type);
         }
 
-        $list = $query->orderBy('NgayBatDau', 'desc')->get();
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('TenKM', 'LIKE', "%{$search}%")
+                  ->orWhere('MaGiamGia', 'LIKE', "%{$search}%");
+            });
+        }
+
+        if ($minPercent) {
+            $query->where('PhanTramGiam', '>=', $minPercent);
+        }
+
+        if ($maxPercent) {
+            $query->where('PhanTramGiam', '<=', $maxPercent);
+        }
+
+        $list = $query->orderBy('NgayBatDau', 'desc')->paginate(10)->withQueryString();
         $categories = DanhMuc::all();
 
-        // Đếm số lượng cho các nhãn (Giữ nguyên logic cũ cho nhãn status)
+        // Đếm số lượng cho các nhãn
         $countActive = KhuyenMai::where('NgayBatDau', '<=', $now)->where('NgayKetThuc', '>=', $now)->count();
         $countUpcoming = KhuyenMai::where('NgayBatDau', '>', $now)->count();
         $countExpired = KhuyenMai::where('NgayKetThuc', '<', $now)->count();
 
-        return view('admin.khuyenmai.index', compact('list', 'categories', 'status', 'type', 'countActive', 'countUpcoming', 'countExpired'));
+        return view('admin.khuyenmai.index', compact('list', 'categories', 'status', 'type', 'search', 'countActive', 'countUpcoming', 'countExpired'));
     }
 
     public function create()

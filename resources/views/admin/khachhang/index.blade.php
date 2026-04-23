@@ -15,13 +15,34 @@
     </div>
 </div>
 
-@if(session('success'))
-    <div class="alert alert-success border-0 shadow-sm rounded-3 mb-4 d-flex align-items-center" role="alert">
-        <i class="fas fa-check-circle me-2"></i>
-        <div>{{ session('success') }}</div>
-        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
-    </div>
-@endif
+<!-- Advanced Search Section -->
+<div class="admin-card p-4 mb-4">
+    <form method="get" action="{{ route('admin.khachhang.index') }}">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="admin-form-label">Tìm kiếm</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-transparent border-end-0 text-muted"><i class="fas fa-search"></i></span>
+                    <input type="text" name="search" class="form-control form-control-luxury border-start-0 ps-0" placeholder="Tên, Email, SĐT..." value="{{ request('search') }}">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <label class="admin-form-label">Đăng ký từ ngày</label>
+                <input type="date" name="from_date" class="form-control form-control-luxury" value="{{ request('from_date') }}">
+            </div>
+            <div class="col-md-3">
+                <label class="admin-form-label">Đến ngày</label>
+                <input type="date" name="to_date" class="form-control form-control-luxury" value="{{ request('to_date') }}">
+            </div>
+            <div class="col-md-2">
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-luxury-primary w-100">Lọc</button>
+                    <a href="{{ route('admin.khachhang.index') }}" class="btn btn-luxury-outline w-100"><i class="fas fa-sync-alt"></i></a>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
 
 @if ($customers->count() > 0)
     <div class="table-custom-container">

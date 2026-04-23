@@ -18,6 +18,10 @@ class AdminSanPhamController extends Controller
     {
         $search = $request->get('search');
         $categoryId = $request->get('category_id');
+        $publisherId = $request->get('publisher_id');
+        $minPrice = $request->get('min_price');
+        $maxPrice = $request->get('max_price');
+        $stockStatus = $request->get('stock_status');
 
         $query = SanPham::with(['danhmuc', 'nhaxuatban', 'tacgias'])->orderBy('MaSP', 'desc');
 
@@ -29,10 +33,31 @@ class AdminSanPhamController extends Controller
             $query->where('MaDM', $categoryId);
         }
 
+        if ($publisherId && $publisherId != 0) {
+            $query->where('MaNXB', $publisherId);
+        }
+
+        if ($minPrice) {
+            $query->where('DonGia', '>=', $minPrice);
+        }
+
+        if ($maxPrice) {
+            $query->where('DonGia', '<=', $maxPrice);
+        }
+
+        if ($stockStatus === 'out_of_stock') {
+            $query->where('SoLuong', '<=', 0);
+        } elseif ($stockStatus === 'low_stock') {
+            $query->where('SoLuong', '>', 0)->where('SoLuong', '<=', 10);
+        } elseif ($stockStatus === 'in_stock') {
+            $query->where('SoLuong', '>', 10);
+        }
+
         $list = $query->paginate(10)->withQueryString();
         $all_categories = DanhMuc::all();
+        $all_nxbs = NhaXuatBan::all();
 
-        return view('admin.sanpham.index', compact('list', 'all_categories'));
+        return view('admin.sanpham.index', compact('list', 'all_categories', 'all_nxbs'));
     }
 
     public function create()

@@ -13,12 +13,25 @@ class AdminKhachHangController extends Controller
     public function index(Request $request)
     {
         $search = $request->get('search');
+        $fromDate = $request->get('from_date');
+        $toDate = $request->get('to_date');
+
         $query = KhachHang::with('taiKhoan');
 
         if ($search) {
-            $query->where('HoTen', 'LIKE', "%{$search}%")
+            $query->where(function($q) use ($search) {
+                $q->where('HoTen', 'LIKE', "%{$search}%")
                   ->orWhere('Email', 'LIKE', "%{$search}%")
                   ->orWhere('SDT', 'LIKE', "%{$search}%");
+            });
+        }
+
+        if ($fromDate) {
+            $query->whereDate('NgayDangKy', '>=', $fromDate);
+        }
+
+        if ($toDate) {
+            $query->whereDate('NgayDangKy', '<=', $toDate);
         }
 
         $customers = $query->paginate(10)->withQueryString();

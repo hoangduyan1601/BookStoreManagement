@@ -10,37 +10,52 @@
     </div>
 </div>
 
-<!-- Filter Section -->
+<!-- Advanced Search Section -->
 <div class="admin-card p-4 mb-4">
-    <div class="d-flex flex-wrap align-items-center gap-2">
-        <span class="admin-form-label mb-0 me-2">Lọc trạng thái:</span>
+    <form method="get" action="{{ route('admin.donhang.index') }}">
+        <input type="hidden" name="status" value="{{ $status }}">
+        <input type="hidden" name="sort" value="{{ $sort }}">
         
-        <a href="?status=all&sort={{ $sort }}" class="btn btn-sm {{ $status === 'all' ? 'btn-luxury-primary' : 'btn-luxury-outline' }}">
-            Tất cả ({{ $stats['tong'] }})
-        </a>
-        
-        <a href="?status=ChoXacNhan&sort={{ $sort }}" class="btn btn-sm {{ $status === 'ChoXacNhan' ? 'btn-luxury-primary' : 'btn-luxury-outline' }}">
-            Chờ xác nhận ({{ $stats['pending'] }})
-        </a>
-        
-        <a href="?status=DangGiao&sort={{ $sort }}" class="btn btn-sm {{ $status === 'DangGiao' ? 'btn-luxury-primary' : 'btn-luxury-outline' }}">
-            Đang giao ({{ $stats['shipping'] }})
-        </a>
-        
-        <a href="?status=DaGiao&sort={{ $sort }}" class="btn btn-sm {{ $status === 'DaGiao' ? 'btn-luxury-primary' : 'btn-luxury-outline' }}">
-            Đã giao ({{ $stats['delivered'] }})
-        </a>
-        
-        <a href="?status=DaHuy&sort={{ $sort }}" class="btn btn-sm {{ $status === 'DaHuy' ? 'btn-luxury-primary' : 'btn-luxury-outline' }}">
-            Đã hủy ({{ $stats['cancelled'] }})
-        </a>
-
-        <div class="ms-auto d-flex align-items-center gap-2 mt-2 mt-md-0">
-            <span class="text-muted small">Sắp xếp:</span>
-            <a href="?status={{ $status }}&sort=newest" class="btn btn-sm {{ $sort === 'newest' ? 'bg-light border-dark' : 'btn-light border-0' }}"><i class="fas fa-sort-amount-down"></i></a>
-            <a href="?status={{ $status }}&sort=oldest" class="btn btn-sm {{ $sort === 'oldest' ? 'bg-light border-dark' : 'btn-light border-0' }}"><i class="fas fa-sort-amount-up"></i></a>
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label class="admin-form-label">Tìm kiếm</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-transparent border-end-0 text-muted"><i class="fas fa-search"></i></span>
+                    <input type="text" name="search" class="form-control form-control-luxury border-start-0 ps-0" placeholder="Mã đơn, tên KH, SĐT..." value="{{ request('search') }}">
+                </div>
+            </div>
+            <div class="col-md-2">
+                <label class="admin-form-label">Từ ngày</label>
+                <input type="date" name="from_date" class="form-control form-control-luxury" value="{{ request('from_date') }}">
+            </div>
+            <div class="col-md-2">
+                <label class="admin-form-label">Đến ngày</label>
+                <input type="date" name="to_date" class="form-control form-control-luxury" value="{{ request('to_date') }}">
+            </div>
+            <div class="col-md-2">
+                <label class="admin-form-label">Tổng tiền từ</label>
+                <input type="number" name="min_total" class="form-control form-control-luxury" placeholder="Min₫" value="{{ request('min_total') }}">
+            </div>
+            <div class="col-md-2">
+                <label class="admin-form-label">Đến</label>
+                <input type="number" name="max_total" class="form-control form-control-luxury" placeholder="Max₫" value="{{ request('max_total') }}">
+            </div>
+            <div class="col-md-12 d-flex justify-content-between align-items-center mt-3">
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                    <span class="admin-form-label mb-0 me-2">Trạng thái:</span>
+                    <a href="?status=all&sort={{ $sort }}&search={{ request('search') }}&from_date={{ request('from_date') }}&to_date={{ request('to_date') }}" class="btn btn-sm {{ $status === 'all' ? 'btn-luxury-primary' : 'btn-luxury-outline' }}">Tất cả</a>
+                    <a href="?status=ChoXacNhan&sort={{ $sort }}&search={{ request('search') }}&from_date={{ request('from_date') }}&to_date={{ request('to_date') }}" class="btn btn-sm {{ $status === 'ChoXacNhan' ? 'btn-luxury-primary' : 'btn-luxury-outline' }}">Chờ XN</a>
+                    <a href="?status=DangGiao&sort={{ $sort }}&search={{ request('search') }}&from_date={{ request('from_date') }}&to_date={{ request('to_date') }}" class="btn btn-sm {{ $status === 'DangGiao' ? 'btn-luxury-primary' : 'btn-luxury-outline' }}">Đang giao</a>
+                    <a href="?status=DaGiao&sort={{ $sort }}&search={{ request('search') }}&from_date={{ request('from_date') }}&to_date={{ request('to_date') }}" class="btn btn-sm {{ $status === 'DaGiao' ? 'btn-luxury-primary' : 'btn-luxury-outline' }}">Đã giao</a>
+                    <a href="?status=DaHuy&sort={{ $sort }}&search={{ request('search') }}&from_date={{ request('from_date') }}&to_date={{ request('to_date') }}" class="btn btn-sm {{ $status === 'DaHuy' ? 'btn-luxury-primary' : 'btn-luxury-outline' }}">Đã hủy</a>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-luxury-primary px-4">Lọc</button>
+                    <a href="{{ route('admin.donhang.index') }}" class="btn btn-luxury-outline"><i class="fas fa-sync-alt"></i></a>
+                </div>
+            </div>
         </div>
-    </div>
+    </form>
 </div>
 
 @if ($orders->count() > 0)

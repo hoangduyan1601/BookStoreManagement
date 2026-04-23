@@ -65,12 +65,30 @@
             <h2 class="mb-1 fw-semibold" style="color: var(--text-primary); font-size: 1.75rem;">
                 Quản Lý Nhập Hàng
             </h2>
-            <p class="text-muted mb-0" style="font-size: 0.9rem;">Tổng cộng: <strong>{{ $totalPhieu }}</strong> phiếu nhập</p>
+            <p class="text-muted mb-0" style="font-size: 0.9rem;">Tổng cộng: <strong>{{ $list->total() }}</strong> phiếu nhập</p>
         </div>
-        <a href="{{ route('admin.nhaphang.create') }}" class="btn" style="background: var(--text-primary); color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 500;">
-            <i class="fas fa-plus me-2"></i>Tạo phiếu nhập mới
-        </a>
+        <div class="d-flex gap-2">
+            <form action="{{ route('admin.nhaphang.index') }}" method="GET" class="d-flex me-2">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="fas fa-search"></i></span>
+                    <input type="text" name="search" class="form-control border-start-0 ps-0" placeholder="Mã phiếu, NCC..." value="{{ request('search') }}">
+                    <button class="btn btn-luxury-primary" type="submit">Tìm</button>
+                </div>
+            </form>
+            <a href="{{ route('admin.nhaphang.create') }}" class="btn btn-luxury-primary shadow-sm px-4 d-flex align-items-center">
+                <i class="fas fa-plus me-2"></i>Tạo phiếu nhập mới
+            </a>
+        </div>
     </div>
+
+    @if(request('search'))
+        <div class="mb-3">
+            <p>Kết quả tìm kiếm cho: <strong>"{{ request('search') }}"</strong> 
+            <a href="{{ route('admin.nhaphang.index') }}" class="ms-2 text-decoration-none small text-danger">
+                <i class="fas fa-times-circle me-1"></i>Xóa tìm kiếm
+            </a></p>
+        </div>
+    @endif
 
     <!-- Thống kê -->
     <div class="row g-3 mb-4">
@@ -114,7 +132,7 @@
                     <tbody>
                         @foreach ($list as $index => $r)
                             <tr>
-                                <td class="text-muted fw-semibold">{{ $index + 1 }}</td>
+                                <td class="text-muted fw-semibold">{{ ($list->currentPage()-1) * $list->perPage() + $index + 1 }}</td>
                                 <td><strong style="color: var(--text-primary);">#NH{{ str_pad($r->MaNhap, 5, '0', STR_PAD_LEFT) }}</strong></td>
                                 <td>
                                     <div style="color: var(--text-primary); font-weight: 500;">{{ date('d/m/Y', strtotime($r->NgayNhap)) }}</div>
@@ -150,13 +168,16 @@
                     </tbody>
                 </table>
             </div>
+            <div class="p-4 border-top">
+                {{ $list->links() }}
+            </div>
         </div>
     @else
         <div class="table-card text-center py-5">
             <i class="fas fa-file-invoice-dollar" style="font-size: 3rem; color: var(--text-light); margin-bottom: 1rem;"></i>
             <h5 style="color: var(--text-secondary); margin-bottom: 0.5rem;">Chưa có phiếu nhập nào</h5>
             <p class="text-muted mb-3">Hãy tạo phiếu nhập đầu tiên để bổ sung hàng hóa!</p>
-            <a href="{{ route('admin.nhaphang.create') }}" class="btn" style="background: var(--text-primary); color: #fff; border: none; padding: 10px 20px; border-radius: 8px;">
+            <a href="{{ route('admin.nhaphang.create') }}" class="btn btn-luxury-primary shadow-sm px-4">
                 <i class="fas fa-plus me-2"></i>Tạo phiếu nhập
             </a>
         </div>

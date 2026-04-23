@@ -4,10 +4,21 @@
 
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h3 class="fw-bold mb-0">Quản lý bài viết</h3>
-    <a href="{{ route('admin.baiviet.create') }}" class="btn btn-primary px-4 rounded-3">
-        <i class="fas fa-plus me-2"></i> Thêm bài viết mới
-    </a>
+    <div>
+        <h3 class="fw-bold mb-0">Quản lý bài viết</h3>
+        <p class="text-muted small">Tổng cộng: <strong>{{ $articles->total() }}</strong> bài viết</p>
+    </div>
+    <div class="d-flex gap-2">
+        <form action="{{ route('admin.baiviet.index') }}" method="GET" class="d-flex">
+            <div class="input-group">
+                <input type="text" name="search" class="form-control" placeholder="Tìm bài viết..." value="{{ request('search') }}">
+                <button class="btn btn-luxury-primary" type="submit"><i class="fas fa-search"></i></button>
+            </div>
+        </form>
+        <a href="{{ route('admin.baiviet.create') }}" class="btn btn-primary px-4 rounded-3">
+            <i class="fas fa-plus me-2"></i> Thêm bài viết mới
+        </a>
+    </div>
 </div>
 
 <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
@@ -31,7 +42,7 @@
                     </td>
                     <td>
                         <div class="fw-bold text-dark">{{ $bv->TieuDe }}</div>
-                        <small class="text-muted">{{ Str::limit($bv->TomTat, 50) }}</small>
+                        <small class="text-muted">{{ Str::limit(strip_tags($bv->NoiDung), 50) }}</small>
                     </td>
                     <td>{{ \Carbon\Carbon::parse($bv->NgayDang)->format('d/m/Y H:i') }}</td>
                     <td>
@@ -60,5 +71,9 @@
             </tbody>
         </table>
     </div>
+</div>
+
+<div class="mt-4">
+    {{ $articles->links() }}
 </div>
 @endsection

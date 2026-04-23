@@ -32,7 +32,14 @@ class HomeController extends Controller
         $customer = \App\Models\KhachHang::where('MaTK', $user->MaTK)->first();
 
         if (!$customer) {
-            return redirect()->route('home')->with('error', 'Không tìm thấy thông tin khách hàng.');
+            // Tự động tạo bản ghi khách hàng nếu thiếu để tránh lỗi điều hướng
+            $customer = \App\Models\KhachHang::create([
+                'MaTK' => $user->MaTK,
+                'HoTen' => $user->TenDN ?? 'Người dùng mới',
+                'Email' => $user->Email ?? 'user@example.com',
+                'SDT' => '0000000000',
+                'DiaChi' => 'Chưa cập nhật'
+            ]);
         }
 
         // Phân loại đơn hàng

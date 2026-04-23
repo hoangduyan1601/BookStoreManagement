@@ -18,18 +18,18 @@
 <!-- Filter Section -->
 <div class="admin-card p-4 mb-4">
     <form method="get" action="{{ route('admin.sanpham.index') }}">
-        <div class="row g-3 align-items-end">
-            <div class="col-md-5">
+        <div class="row g-3">
+            <div class="col-md-4">
                 <label class="admin-form-label">Tìm kiếm</label>
                 <div class="input-group">
                     <span class="input-group-text bg-transparent border-end-0 text-muted"><i class="fas fa-search"></i></span>
-                    <input type="text" name="search" class="form-control form-control-luxury border-start-0 ps-0" placeholder="Tìm theo tên sách..." value="{{ request('search') }}">
+                    <input type="text" name="search" class="form-control form-control-luxury border-start-0 ps-0" placeholder="Tên sách..." value="{{ request('search') }}">
                 </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-2">
                 <label class="admin-form-label">Danh mục</label>
-                <select name="category_id" class="form-select form-control-luxury" onchange="this.form.submit()">
-                    <option value="0">Tất cả danh mục</option>
+                <select name="category_id" class="form-select form-control-luxury">
+                    <option value="0">Tất cả</option>
                     @foreach($all_categories as $cat)
                         <option value="{{ $cat->MaDM }}" {{ request('category_id') == $cat->MaDM ? 'selected' : '' }}>
                             {{ $cat->TenDM }}
@@ -37,10 +37,38 @@
                     @endforeach
                 </select>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2">
+                <label class="admin-form-label">Nhà xuất bản</label>
+                <select name="publisher_id" class="form-select form-control-luxury">
+                    <option value="0">Tất cả</option>
+                    @foreach($all_nxbs as $nxb)
+                        <option value="{{ $nxb->MaNXB }}" {{ request('publisher_id') == $nxb->MaNXB ? 'selected' : '' }}>
+                            {{ $nxb->TenNXB }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="admin-form-label">Trạng thái kho</label>
+                <select name="stock_status" class="form-select form-control-luxury">
+                    <option value="">Tất cả</option>
+                    <option value="in_stock" {{ request('stock_status') === 'in_stock' ? 'selected' : '' }}>Còn hàng (>10)</option>
+                    <option value="low_stock" {{ request('stock_status') === 'low_stock' ? 'selected' : '' }}>Sắp hết (1-10)</option>
+                    <option value="out_of_stock" {{ request('stock_status') === 'out_of_stock' ? 'selected' : '' }}>Hết hàng</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="admin-form-label">Giá tối thiểu</label>
+                <input type="number" name="min_price" class="form-control form-control-luxury" placeholder="Min₫" value="{{ request('min_price') }}">
+            </div>
+            <div class="col-md-2">
+                <label class="admin-form-label">Giá tối đa</label>
+                <input type="number" name="max_price" class="form-control form-control-luxury" placeholder="Max₫" value="{{ request('max_price') }}">
+            </div>
+            <div class="col-md-2 offset-md-8">
                 <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-luxury-primary w-100">Lọc dữ liệu</button>
-                    <a href="{{ route('admin.sanpham.index') }}" class="btn btn-luxury-outline w-100"><i class="fas fa-sync-alt"></i></a>
+                    <button type="submit" class="btn btn-luxury-primary w-100"><i class="fas fa-filter me-1"></i> Lọc</button>
+                    <a href="{{ route('admin.sanpham.index') }}" class="btn btn-luxury-outline"><i class="fas fa-sync-alt"></i></a>
                 </div>
             </div>
         </div>

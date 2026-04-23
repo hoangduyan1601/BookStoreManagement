@@ -42,8 +42,8 @@
             </form>
 
             <nav class="d-flex align-items-center">
-                <a href="{{ route('home') }}" class="text-dark me-4 text-decoration-none small text-uppercase fw-bold hover-gold">Trang chủ</a>
-                <a href="{{ route('sanpham.index') }}" class="text-dark me-4 text-decoration-none small text-uppercase fw-bold hover-gold">Cửa hàng</a>
+                <a href="{{ route('home') }}" class="text-dark me-4 text-decoration-none small text-uppercase fw-bold hover-gold no-barba" data-barba-prevent>Trang chủ</a>
+                <a href="{{ route('sanpham.index') }}" class="text-dark me-4 text-decoration-none small text-uppercase fw-bold hover-gold no-barba" data-barba-prevent>Cửa hàng</a>
                 
                 <div class="d-flex gap-4 align-items-center">
                     @auth
@@ -92,24 +92,24 @@
                                     @endforelse
                                 </div>
                                 <div class="noti-footer p-3 text-center border-top">
-                                    <a href="{{ url('/profile') }}" class="text-dark fw-bold extra-small ls-2 text-decoration-none hover-gold">XEM TẤT CẢ</a>
+                                    <a href="{{ route('customer.profile') }}" class="text-dark fw-bold extra-small ls-2 text-decoration-none hover-gold no-barba" data-barba-prevent>XEM TẤT CẢ</a>
                                 </div>
                             </div>
                         </div>
 
-                        <a href="{{ route('favorites.index') }}" class="text-dark position-relative hover-gold p-2" title="Yêu thích">
+                        <a href="{{ route('favorites.index') }}" class="text-dark position-relative hover-gold p-2 no-barba" data-barba-prevent title="Yêu thích">
                             <i class="fa-regular fa-heart fs-5"></i>
                             <span id="fav-count-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-dark {{ $favCount > 0 ? '' : 'd-none' }}" style="font-size: 0.6rem; margin-top: 5px; margin-left: -5px;">{{ $favCount }}</span>
                         </a>
                     @endauth
 
-                    <a href="{{ url('/cart') }}" class="text-dark position-relative hover-gold p-2" title="Giỏ hàng">
+                    <a href="{{ route('cart.index') }}" class="text-dark position-relative hover-gold p-2 no-barba" data-barba-prevent title="Giỏ hàng">
                         <i class="fa-solid fa-cart-shopping fs-5"></i>
                         <span id="cart-count-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-dark {{ (isset($cartCount) && $cartCount > 0) ? '' : 'd-none' }}" style="font-size: 0.6rem; margin-top: 5px; margin-left: -5px;">{{ $cartCount ?? 0 }}</span>
                     </a>
 
                     @auth
-                        <a href="{{ route('customer.profile') }}" class="text-dark hover-gold p-2" title="Tài khoản">
+                        <a href="{{ route('customer.profile') }}" class="text-dark hover-gold p-2 no-barba" data-barba-prevent title="Tài khoản">
                             <i class="fa-regular fa-user fs-5"></i>
                         </a>
                         <a href="{{ route('logout') }}" 
@@ -191,7 +191,7 @@
         }, observerOptions);
 
         function initReveals() {
-            document.querySelectorAll('.product-card, section, h2, .bento-item').forEach(el => {
+            document.querySelectorAll('.product-item, .product-card, .promo-card, section, h2, .bento-item').forEach(el => {
                 el.classList.add('reveal-on-scroll');
                 observer.observe(el);
             });

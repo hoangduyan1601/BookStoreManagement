@@ -12,13 +12,25 @@ use Illuminate\Support\Facades\DB;
 
 class AdminNhapHangController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $list = LichSuNhapHang::with('nhacungcap')->orderBy('NgayNhap', 'desc')->get();
-        $totalPhieu = $list->count();
-        $tongTienNhap = $list->sum('TongTienNhap');
+        $search = $request->get('search');
+        $query = LichSuNhapHang::with('nhacungcap');
+
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('MaNhap', 'LIKE', "%{$search}%")
+                  ->orWhereHas('nhacungcap', function($q2) use ($search) {
+                      $q2->where('TenNCC', 'LIKE', "%{$search}%");
+                  });
+            });
+        }
+
+        $list = $query->orderBy('NgayNhap', 'desc')->paginate(10)->withQueryString();
+        $totalPhieu = LichSuNhapHang::count();
+        $tongTienNhap = LichSuNhapHang::sum('TongTienNhap');
         
-        return view('admin.nhaphang.index', compact('list', 'totalPhieu', 'tongTienNhap'));
+        return view('admin.nhaphang.index', compact('list', 'totalPhieu', 'tongTienNhap', 'search'));
     }
 
     public function create()

@@ -52,14 +52,19 @@ class AdminDoanhThuController extends Controller
         // 3. THỐNG KÊ THEO TUẦN (7 tuần gần nhất)
         $doanhthu_tuan = [];
         $nhaphang_tuan = [];
+        $loinhuan_tuan = [];
         $labels_tuan = [];
         for ($i = 6; $i >= 0; $i--) {
             $startOfWeek = Carbon::now()->subWeeks($i)->startOfWeek();
             $endOfWeek = Carbon::now()->subWeeks($i)->endOfWeek();
             $labels_tuan[] = 'T' . $startOfWeek->format('d/m');
             
-            $doanhthu_tuan[] = (float)DonHang::where('TrangThai', 'DaGiao')->whereBetween('NgayDat', [$startOfWeek, $endOfWeek])->sum('TongTien');
-            $nhaphang_tuan[] = (float)LichSuNhapHang::whereBetween('NgayNhap', [$startOfWeek, $endOfWeek])->sum('TongTienNhap');
+            $dt = (float)DonHang::where('TrangThai', 'DaGiao')->whereBetween('NgayDat', [$startOfWeek, $endOfWeek])->sum('TongTien');
+            $nh = (float)LichSuNhapHang::whereBetween('NgayNhap', [$startOfWeek, $endOfWeek])->sum('TongTienNhap');
+            
+            $doanhthu_tuan[] = $dt;
+            $nhaphang_tuan[] = $nh;
+            $loinhuan_tuan[] = $dt - $nh;
         }
 
         // 4. TOP SẢN PHẨM (Theo điều kiện lọc)
@@ -85,6 +90,29 @@ class AdminDoanhThuController extends Controller
         $top_ban = $top_ban_query->groupBy('chitietdonhang.MaSP', 'sanpham.TenSP')->orderBy('SoLuongBan', 'desc')->limit(5)->get();
         $top_nhap = $top_nhap_query->groupBy('chitietnhaphang.MaSP', 'sanpham.TenSP')->orderBy('SoLuongNhap', 'desc')->limit(5)->get();
 
+        // 5. DANH SÁCH CHI TIẾT SẢN PHẨM ĐÃ BÁN
+        $detailed_sold_products = DB::table('chitietdonhang')
+            ->join('donhang', 'chitietdonhang.MaDH', '=', 'donhang.MaDH')
+            ->join('sanpham', 'chitietdonhang.MaSP', '=', 'sanpham.MaSP')
+            ->select(
+                'sanpham.MaSP',
+                'sanpham.TenSP',
+                'sanpham.DonGia',
+                DB::raw('SUM(chitietdonhang.SoLuong) as TongSoLuong'),
+                DB::raw('SUM(chitietdonhang.SoLuong * chitietdonhang.DonGia) as TongDoanhThu')
+            )
+            ->where('donhang.TrangThai', 'DaGiao');
+
+        if ($tu_ngay && $den_ngay) {
+            $detailed_sold_products->whereBetween('donhang.NgayDat', [$tu_ngay, $den_ngay . ' 23:59:59']);
+        } else {
+            $detailed_sold_products->whereYear('donhang.NgayDat', $nam);
+        }
+
+        $sold_list = $detailed_sold_products->groupBy('sanpham.MaSP', 'sanpham.TenSP', 'sanpham.DonGia')
+            ->orderBy('TongSoLuong', 'desc')
+            ->get();
+
         // THỐNG KÊ YÊU THÍCH
         $favorite_stats = SanPham::withCount('favorites')
             ->orderBy('favorites_count', 'desc')
@@ -93,8 +121,8 @@ class AdminDoanhThuController extends Controller
         return view('admin.doanhthu.index', compact(
             'nam', 'yearsWithData', 'doanhthu_thang', 'nhaphang_thang', 
             'tong_doanh_thu', 'tong_nhap', 'loi_nhuan',
-            'top_ban', 'top_nhap', 'doanhthu_tuan', 'nhaphang_tuan', 'labels_tuan',
-            'tu_ngay', 'den_ngay', 'favorite_stats'
+            'top_ban', 'top_nhap', 'doanhthu_tuan', 'nhaphang_tuan', 'loinhuan_tuan', 'labels_tuan',
+            'tu_ngay', 'den_ngay', 'favorite_stats', 'sold_list'
         ));
     }
 }

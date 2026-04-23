@@ -16,41 +16,49 @@
 </div>
 
 <!-- Smart Filter Bar -->
-<div class="admin-card p-3 mb-4 bg-white shadow-sm border-0">
+<div class="admin-card p-4 mb-4 bg-white shadow-sm border-0">
     <form action="{{ route('admin.khuyenmai.index') }}" method="GET" id="filterForm">
-        <div class="row g-3 align-items-center">
-            <!-- Trạng thái -->
-            <div class="col-lg-5 col-md-12">
-                <div class="btn-group w-100 p-1 bg-light rounded-pill">
-                    <input type="radio" class="btn-check" name="status" id="st_active" value="active" {{ $status == 'active' ? 'checked' : '' }} onchange="this.form.submit()">
-                    <label class="btn btn-outline-luxury rounded-pill border-0 py-2" for="st_active">Đang chạy ({{ $countActive }})</label>
-
-                    <input type="radio" class="btn-check" name="status" id="st_upcoming" value="upcoming" {{ $status == 'upcoming' ? 'checked' : '' }} onchange="this.form.submit()">
-                    <label class="btn btn-outline-luxury rounded-pill border-0 py-2" for="st_upcoming">Sắp tới ({{ $countUpcoming }})</label>
-
-                    <input type="radio" class="btn-check" name="status" id="st_expired" value="expired" {{ $status == 'expired' ? 'checked' : '' }} onchange="this.form.submit()">
-                    <label class="btn btn-outline-luxury rounded-pill border-0 py-2" for="st_expired">Kết thúc ({{ $countExpired }})</label>
-                </div>
-            </div>
-
-            <!-- Loại khuyến mãi -->
-            <div class="col-lg-4 col-md-8">
+        <div class="row g-3">
+            <div class="col-md-3">
+                <label class="admin-form-label">Tìm kiếm</label>
                 <div class="input-group">
-                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="fas fa-filter"></i></span>
-                    <select name="type" class="form-select border-start-0 ps-0" onchange="this.form.submit()" style="border-radius: 0 50px 50px 0;">
-                        <option value="all" {{ $type == 'all' ? 'selected' : '' }}>Tất cả loại hình</option>
-                        <option value="TatCa" {{ $type == 'TatCa' ? 'selected' : '' }}>Giảm giá Toàn sàn</option>
-                        <option value="DanhMuc" {{ $type == 'DanhMuc' ? 'selected' : '' }}>Giảm giá theo Danh mục</option>
-                        <option value="DonHang" {{ $type == 'DonHang' ? 'selected' : '' }}>Mã giảm giá (Coupon)</option>
-                    </select>
+                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="fas fa-search"></i></span>
+                    <input type="text" name="search" class="form-control border-start-0 ps-0" placeholder="Tên KM, mã code..." value="{{ request('search') }}">
                 </div>
             </div>
+            <div class="col-md-3">
+                <label class="admin-form-label">Loại khuyến mãi</label>
+                <select name="type" class="form-select" onchange="this.form.submit()">
+                    <option value="all" {{ $type == 'all' ? 'selected' : '' }}>Tất cả</option>
+                    <option value="TatCa" {{ $type == 'TatCa' ? 'selected' : '' }}>Toàn sàn</option>
+                    <option value="DanhMuc" {{ $type == 'DanhMuc' ? 'selected' : '' }}>Danh mục</option>
+                    <option value="DonHang" {{ $type == 'DonHang' ? 'selected' : '' }}>Mã coupon</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="admin-form-label">Giảm từ (%)</label>
+                <input type="number" name="min_percent" class="form-control" placeholder="Min" value="{{ request('min_percent') }}">
+            </div>
+            <div class="col-md-2">
+                <label class="admin-form-label">Đến (%)</label>
+                <input type="number" name="max_percent" class="form-control" placeholder="Max" value="{{ request('max_percent') }}">
+            </div>
+            <div class="col-md-2 d-flex align-items-end gap-2">
+                <button type="submit" class="btn btn-luxury-primary w-100">Lọc</button>
+                <a href="{{ route('admin.khuyenmai.index') }}" class="btn btn-luxury-outline"><i class="fas fa-sync-alt"></i></a>
+            </div>
+        </div>
+        
+        <div class="mt-3">
+            <div class="btn-group p-1 bg-light rounded-pill">
+                <input type="radio" class="btn-check" name="status" id="st_active" value="active" {{ $status == 'active' ? 'checked' : '' }} onchange="this.form.submit()">
+                <label class="btn btn-outline-luxury rounded-pill border-0 py-2 px-3" for="st_active">Đang chạy ({{ $countActive }})</label>
 
-            <!-- Nút Reset -->
-            <div class="col-lg-3 col-md-4">
-                <a href="{{ route('admin.khuyenmai.index') }}" class="btn btn-outline-secondary w-100 rounded-pill py-2 border-dashed">
-                    <i class="fas fa-sync-alt me-2"></i>Làm mới bộ lọc
-                </a>
+                <input type="radio" class="btn-check" name="status" id="st_upcoming" value="upcoming" {{ $status == 'upcoming' ? 'checked' : '' }} onchange="this.form.submit()">
+                <label class="btn btn-outline-luxury rounded-pill border-0 py-2 px-3" for="st_upcoming">Sắp tới ({{ $countUpcoming }})</label>
+
+                <input type="radio" class="btn-check" name="status" id="st_expired" value="expired" {{ $status == 'expired' ? 'checked' : '' }} onchange="this.form.submit()">
+                <label class="btn btn-outline-luxury rounded-pill border-0 py-2 px-3" for="st_expired">Kết thúc ({{ $countExpired }})</label>
             </div>
         </div>
     </form>
