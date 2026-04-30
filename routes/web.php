@@ -69,10 +69,11 @@ Route::middleware('auth')->group(function () {
     // Yêu thích
     Route::get('/favorites', [YeuThichController::class, 'index'])->name('favorites.index');
     Route::post('/favorites/toggle', [YeuThichController::class, 'toggle'])->name('favorites.toggle');
-
-    // Chatbot AI
-    Route::post('/chatbot/chat', [\App\Http\Controllers\ChatbotController::class, 'chat'])->name('chatbot.chat');
 });
+
+// Chatbot AI (Cho phép cả khách vãng lai)
+Route::post('/chatbot/chat', [\App\Http\Controllers\ChatbotController::class, 'chat'])->name('chatbot.chat');
+Route::get('/chatbot/history', [\App\Http\Controllers\ChatbotController::class, 'getHistory'])->name('chatbot.history');
 
 // Admin routes
 Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(function () {
@@ -97,6 +98,7 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(fun
     Route::delete('sanpham/{sp_id}/xoa-tacgia/{tg_id}', [AdminSanPhamController::class, 'removeAuthor'])->name('sanpham.remove_author');
     
     // Don Hang
+    Route::get('donhang/count-pending', [AdminDonHangController::class, 'countPending'])->name('donhang.count_pending');
     Route::resource('donhang', AdminDonHangController::class);
     Route::post('donhang/{id}/status', [AdminDonHangController::class, 'updateStatus'])->name('donhang.update_status');
 

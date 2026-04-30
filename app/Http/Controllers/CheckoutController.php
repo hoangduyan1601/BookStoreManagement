@@ -12,6 +12,9 @@ use App\Models\DonHang;
 use App\Models\ChiTietDonHang;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
+use App\Notifications\NewOrderNotification;
+use App\Notifications\OrderStatusNotification;
 
 class CheckoutController extends Controller
 {
@@ -164,6 +167,20 @@ class CheckoutController extends Controller
 
             session()->forget('cart_promotion');
             DB::commit();
+
+            // Gửi thông báo email
+            try {
+                // Cho Admin
+                Notification::route('mail', config('mail.from.address'))
+                    ->notify(new NewOrderNotification($donHang->load('khachHang')));
+                
+                // Cho Khách hàng
+                Notification::route('mail', $khachHang->Email)
+                    ->notify(new OrderStatusNotification($donHang));
+            } catch (\Exception $e) {
+                // Log lỗi nhưng không chặn quy trình đặt hàng của khách
+                \Log::error('Lỗi gửi email thông báo đơn hàng: ' . $e->getMessage());
+            }
 
             return redirect()->route('checkout.success', $donHang->MaDH);
 
