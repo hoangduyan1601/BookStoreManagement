@@ -152,6 +152,15 @@ class HomeController extends Controller
             }
 
             \Illuminate\Support\Facades\DB::commit();
+
+            // Gửi thông báo email cho Admin về việc hủy đơn
+            try {
+                \Illuminate\Support\Facades\Notification::route('mail', config('mail.from.address'))
+                    ->notify(new \App\Notifications\OrderStatusNotification($order->load('khachHang')));
+            } catch (\Exception $e) {
+                \Log::error('Lỗi gửi email thông báo hủy đơn hàng: ' . $e->getMessage());
+            }
+
             return back()->with('success', 'Đã hủy đơn hàng #' . $id . ' thành công.');
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\DB::rollBack();

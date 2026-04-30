@@ -63,6 +63,9 @@
         max-width: 85%;
         font-size: 0.9rem;
     }
+    .user-msg p, .bot-msg p { margin-bottom: 0.5rem; }
+    .user-msg p:last-child, .bot-msg p:last-child { margin-bottom: 0; }
+    
     .typing-loader {
         width: 40px;
         height: 20px;
@@ -77,6 +80,8 @@
     @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-5px); } }
 </style>
 
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const toggle = document.getElementById('chatbot-toggle');
@@ -89,10 +94,31 @@ document.addEventListener('DOMContentLoaded', function() {
     toggle.addEventListener('click', () => {
         window.classList.toggle('active');
         document.getElementById('bot-notif').style.display = 'none';
-        if(window.classList.contains('active')) input.focus();
+        if(window.classList.contains('active')) {
+            input.focus();
+            loadHistory();
+        }
     });
 
     close.addEventListener('click', () => window.classList.remove('active'));
+
+    async function loadHistory() {
+        if(msgBox.dataset.loaded === 'true') return;
+        
+        try {
+            const response = await fetch("{{ route('chatbot.history') }}");
+            const messages = await response.json();
+            if(messages.length > 0) {
+                msgBox.innerHTML = ''; // Clear welcome message if history exists
+                messages.forEach(m => {
+                    appendMessage(m.message, m.sender === 'user' ? 'user' : 'bot');
+                });
+            }
+            msgBox.dataset.loaded = 'true';
+        } catch (error) {
+            console.error('Error loading history:', error);
+        }
+    }
 
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -138,8 +164,10 @@ document.addEventListener('DOMContentLoaded', function() {
         msg.className = side === 'user' ? 'user-msg msg-bubble' : 'bot-msg msg-bubble';
         if(side === 'bot') {
             msg.style = 'align-self: flex-start; background: #fff; padding: 12px 16px; border-radius: 1rem 1rem 1rem 0; box-shadow: 0 2px 4px rgba(0,0,0,0.05); max-width: 85%; font-size: 0.9rem; border: 1px solid #e2e8f0;';
+            msg.innerHTML = marked.parse(text);
+        } else {
+            msg.textContent = text;
         }
-        msg.textContent = text;
         msgBox.appendChild(msg);
         msgBox.scrollTop = msgBox.scrollHeight;
     }

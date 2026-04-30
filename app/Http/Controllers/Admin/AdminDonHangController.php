@@ -7,9 +7,17 @@ use App\Models\DonHang;
 use App\Models\ChiTietDonHang;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
+use App\Notifications\OrderStatusNotification;
 
 class AdminDonHangController extends Controller
 {
+    public function countPending()
+    {
+        $count = \App\Models\DonHang::where('TrangThai', 'ChoXacNhan')->count();
+        return response()->json(['count' => $count]);
+    }
+
     public function index(Request $request)
     {
         $status = $request->get('status', 'all');
@@ -80,9 +88,17 @@ class AdminDonHangController extends Controller
 
     public function updateStatus(Request $request, $id)
     {
-        $order = DonHang::findOrFail($id);
+        $order = DonHang::with('khachHang')->findOrFail($id);
         $order->TrangThai = $request->status;
         $order->save();
+
+        // Gửi thông báo cho khách hàng
+        try {
+            Notification::route('mail', $order->khachHang->Email)
+                ->notify(new OrderStatusNotification($order));
+        } catch (\Exception $e) {
+            \Log::error('Lỗi gửi email cập nhật trạng thái đơn hàng: ' . $e->getMessage());
+        }
 
         return redirect()->back()->with('success', 'Cập nhật trạng thái đơn hàng thành công!');
     }

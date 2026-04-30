@@ -120,6 +120,7 @@
     <a href="{{ route('admin.donhang.index') }}" class="sidebar-nav-link {{ request()->routeIs('admin.donhang.*') ? 'active' : '' }}">
         <i class="fas fa-shopping-bag"></i>
         <span>Đơn hàng</span>
+        <span class="badge bg-danger rounded-pill ms-auto" id="pending-orders-badge" style="display: none;">0</span>
     </a>
     <a href="{{ route('admin.khachhang.index') }}" class="sidebar-nav-link {{ request()->routeIs('admin.khachhang.*') ? 'active' : '' }}">
         <i class="fas fa-user-friends"></i>
@@ -255,6 +256,26 @@
             }
         }
     });
+
+    // AJAX update pending orders count
+    function updatePendingOrdersCount() {
+        fetch('{{ route('admin.donhang.count_pending') }}')
+            .then(response => response.json())
+            .then(data => {
+                const badge = document.getElementById('pending-orders-badge');
+                if (data.count > 0) {
+                    badge.textContent = data.count;
+                    badge.style.display = 'inline-block';
+                } else {
+                    badge.style.display = 'none';
+                }
+            })
+            .catch(error => console.error('Error fetching order count:', error));
+    }
+
+    // Run immediately and then every 30 seconds
+    updatePendingOrdersCount();
+    setInterval(updatePendingOrdersCount, 30000);
 </script>
 @stack('scripts')
 </body>
