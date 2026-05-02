@@ -114,7 +114,13 @@
                                     <tr>
                                         <td class="ps-4 py-4 fw-bold">#{{ $order->MaDH }}</td>
                                         <td class="small text-muted">{{ date('d/m/Y H:i', strtotime($order->NgayDat)) }}</td>
-                                        <td class="fw-bold text-dark">{{ number_format($order->TongTien, 0, ',', '.') }}₫</td>
+                                        <td class="fw-bold text-dark">
+                                            @if($order->PhuongThucThanhToan === 'ChuyenKhoan')
+                                                <span class="text-success">0₫</span> <small class="text-muted" style="font-size: 0.6rem;">(Đã CK)</small>
+                                            @else
+                                                {{ number_format($order->TongTien, 0, ',', '.') }}₫
+                                            @endif
+                                        </td>
                                         <td>
                                             @php
                                                 $s = match($order->TrangThai) {
@@ -176,7 +182,13 @@
                                     <tr>
                                         <td class="ps-4 py-4 fw-bold">#{{ $order->MaDH }}</td>
                                         <td class="small text-muted">{{ date('d/m/Y H:i', strtotime($order->NgayDat)) }}</td>
-                                        <td class="fw-bold text-dark">{{ number_format($order->TongTien, 0, ',', '.') }}₫</td>
+                                        <td class="fw-bold text-dark">
+                                            @if($order->PhuongThucThanhToan === 'ChuyenKhoan')
+                                                <span class="text-success">0₫</span> <small class="text-muted" style="font-size: 0.6rem;">(Đã CK)</small>
+                                            @else
+                                                {{ number_format($order->TongTien, 0, ',', '.') }}₫
+                                            @endif
+                                        </td>
                                         <td>
                                             @php
                                                 $s = match($order->TrangThai) {
@@ -398,7 +410,7 @@
 
                         <div class="p-4 bg-dark text-white rounded-4 mt-4 shadow-lg">
                             <div class="d-flex justify-content-between mb-2 opacity-75 small">
-                                <span>Tạm tính</span>
+                                <span>Tổng giá trị đơn hàng</span>
                                 <span>${(Number(order.TongTien) + Number(order.SoTienGiam || 0)).toLocaleString('vi-VN')}₫</span>
                             </div>
                             ${order.SoTienGiam > 0 ? `
@@ -407,9 +419,28 @@
                                     <span>-${Number(order.SoTienGiam).toLocaleString('vi-VN')}₫</span>
                                 </div>
                             ` : ''}
-                            <div class="d-flex justify-content-between pt-3 border-top border-secondary mt-2">
-                                <span class="fw-bold text-uppercase ls-1">Tổng cộng cuối cùng</span>
-                                <span class="fw-bold fs-3 text-warning">${Number(order.TongTien).toLocaleString('vi-VN')}₫</span>
+                            
+                            <div class="pt-3 border-top border-secondary mt-2">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="fw-bold text-uppercase ls-1 small opacity-75">Thanh toán</span>
+                                    <span class="fw-bold">${order.PhuongThucThanhToan === 'TienMat' ? 'Tại nhà (COD)' : 'Chuyển khoản'}</span>
+                                </div>
+                                
+                                ${order.PhuongThucThanhToan === 'ChuyenKhoan' ? `
+                                    <div class="d-flex justify-content-between mb-2 text-success">
+                                        <span class="fw-bold text-uppercase ls-1 small">Đã thanh toán</span>
+                                        <span class="fw-bold">${Number(order.TongTien).toLocaleString('vi-VN')}₫</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <span class="fw-bold text-uppercase ls-1">Cần trả thêm</span>
+                                        <span class="fw-bold fs-3 text-warning">0₫</span>
+                                    </div>
+                                ` : `
+                                    <div class="d-flex justify-content-between">
+                                        <span class="fw-bold text-uppercase ls-1">Cần trả thêm</span>
+                                        <span class="fw-bold fs-3 text-warning">${Number(order.TongTien).toLocaleString('vi-VN')}₫</span>
+                                    </div>
+                                `}
                             </div>
                         </div>
                     </div>

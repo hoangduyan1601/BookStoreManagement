@@ -154,10 +154,25 @@
                                 <span class="fw-medium">Miễn phí</span>
                             </div>
                             <hr>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span class="h5 mb-0 fw-bold">Tổng thanh toán:</span>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="fw-bold">Tổng giá trị:</span>
+                                <span class="fw-bold text-primary">{{ number_format($order->TongTien, 0, ',', '.') }}₫</span>
+                            </div>
+                            @if($order->PhuongThucThanhToan === 'ChuyenKhoan')
+                            <div class="d-flex justify-content-between align-items-center mb-2 text-success">
+                                <span class="small fw-bold">Đã thanh toán qua ngân hàng:</span>
+                                <span class="fw-bold">-{{ number_format($order->TongTien, 0, ',', '.') }}₫</span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center border-top pt-2">
+                                <span class="h5 mb-0 fw-bold">Số tiền cần thu COD:</span>
+                                <span class="h4 mb-0 fw-bold text-dark">0₫</span>
+                            </div>
+                            @else
+                            <div class="d-flex justify-content-between align-items-center border-top pt-2">
+                                <span class="h5 mb-0 fw-bold">Số tiền cần thu COD:</span>
                                 <span class="h4 mb-0 fw-bold text-primary">{{ number_format($order->TongTien, 0, ',', '.') }}₫</span>
                             </div>
+                            @endif
                         </div>
                     </div>
                 </div>

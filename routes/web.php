@@ -58,6 +58,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
     Route::post('/checkout', [CheckoutController::class, 'process'])->name('checkout.process');
     Route::get('/checkout/success/{id}', [CheckoutController::class, 'success'])->name('checkout.success');
+    Route::get('/checkout/check-status/{id}', [CheckoutController::class, 'checkStatus'])->name('checkout.checkStatus');
+    Route::post('/checkout/change-method/{id}', [CheckoutController::class, 'changePaymentMethod'])->name('checkout.changeMethod');
     Route::post('/checkout/apply-promotion', [CheckoutController::class, 'applyPromotion'])->name('checkout.applyPromotion');
 
     // Thông báo & Đơn hàng cho người dùng

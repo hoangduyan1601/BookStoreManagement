@@ -5,11 +5,19 @@
     <div class="row justify-content-center">
         <div class="col-lg-6 text-center">
             <div class="mb-5" data-aos="zoom-in">
-                <div class="d-inline-flex align-items-center justify-content-center bg-success bg-opacity-10 rounded-circle mb-4" style="width: 100px; height: 100px;">
-                    <i class="fa-solid fa-check text-success fs-1"></i>
-                </div>
-                <h1 class="font-luxury display-4 mb-3">Đặt Hàng Thành Công!</h1>
-                <p class="text-muted lead">Cảm ơn bạn đã lựa chọn tri thức tại <span class="fw-bold text-dark">Luxury Bookstore</span>. Tuyệt tác của bạn đang được chuẩn bị.</p>
+                @if($order->PhuongThucThanhToan === 'ChuyenKhoan' && $order->TrangThai === 'ChoThanhToan')
+                    <div class="d-inline-flex align-items-center justify-content-center bg-warning bg-opacity-10 rounded-circle mb-4" style="width: 100px; height: 100px;" id="status-icon-box">
+                        <i class="fa-solid fa-clock text-warning fs-1"></i>
+                    </div>
+                    <h1 class="font-luxury display-4 mb-3" id="success-title">Đang Chờ Thanh Toán...</h1>
+                    <p class="text-muted lead" id="success-msg">Mọi thứ đã sẵn sàng. Vui lòng quét mã QR bên dưới để hoàn tất tuyệt tác của bạn.</p>
+                @else
+                    <div class="d-inline-flex align-items-center justify-content-center bg-success bg-opacity-10 rounded-circle mb-4" style="width: 100px; height: 100px;">
+                        <i class="fa-solid fa-check text-success fs-1"></i>
+                    </div>
+                    <h1 class="font-luxury display-4 mb-3">Đặt Hàng Thành Công!</h1>
+                    <p class="text-muted lead">Cảm ơn bạn đã lựa chọn tri thức tại <span class="fw-bold text-dark">Luxury Bookstore</span>. Tuyệt tác của bạn đang được chuẩn bị.</p>
+                @endif
             </div>
 
             <div class="glass-panel p-4 rounded-4 bg-white shadow-sm border-0 mb-4 text-start" data-aos="fade-up" data-aos-delay="200">
@@ -17,6 +25,25 @@
                     <span class="text-muted small fw-bold text-uppercase ls-1">Mã đơn hàng:</span>
                     <span class="fw-bold text-dark">#{{ $order->MaDH }}</span>
                 </div>
+
+                @if($order->TrangThai === 'ChoThanhToan')
+                <div class="alert alert-warning border-0 rounded-4 p-3 mb-4 small">
+                    <div class="d-flex align-items-center">
+                        <i class="fa-solid fa-circle-exclamation fs-4 me-3"></i>
+                        <div>
+                            <strong>Lưu ý:</strong> Đơn hàng sẽ chỉ được gửi đến hệ thống sau khi bạn thanh toán thành công.
+                            Nếu gặp sự cố khi thanh toán, bạn có thể chuyển sang trả tiền mặt.
+                        </div>
+                    </div>
+                    <form action="{{ route('checkout.changeMethod', $order->MaDH) }}" method="POST" class="mt-3 text-end no-barba">
+                        @csrf
+                        <input type="hidden" name="method" value="TienMat">
+                        <button type="submit" class="btn btn-outline-dark btn-sm rounded-pill px-3 fw-bold">
+                            <i class="fa-solid fa-rotate me-1"></i> ĐỔI SANG TRẢ TIỀN MẶT (COD)
+                        </button>
+                    </form>
+                </div>
+                @endif
                 
                 <!-- Danh sách sản phẩm -->
                 <div class="mb-4">
@@ -50,9 +77,24 @@
                         <span class="small text-success fw-bold">Miễn phí</span>
                     </div>
                     <div class="d-flex justify-content-between pt-2 border-top">
-                        <span class="text-muted small fw-bold text-uppercase ls-1">Tổng thanh toán:</span>
+                        <span class="text-muted small fw-bold text-uppercase ls-1">Tổng giá trị đơn hàng:</span>
                         <span class="fw-bold text-dark fs-5">{{ number_format($order->TongTien, 0, ',', '.') }}₫</span>
                     </div>
+                    @if($order->PhuongThucThanhToan === 'ChuyenKhoan')
+                    <div class="d-flex justify-content-between pt-2 border-top mt-2" style="border-top: 2px dashed #eee !important;">
+                        <span class="text-muted small fw-bold text-uppercase ls-1 text-success">Số tiền đã thanh toán:</span>
+                        <span class="fw-bold text-success fs-5">{{ number_format($order->TongTien, 0, ',', '.') }}₫</span>
+                    </div>
+                    <div class="d-flex justify-content-between pt-2">
+                        <span class="text-muted small fw-bold text-uppercase ls-1">Số tiền cần thanh toán tại nhà:</span>
+                        <span class="fw-bold text-dark fs-5">0₫</span>
+                    </div>
+                    @else
+                    <div class="d-flex justify-content-between pt-2 border-top mt-2" style="border-top: 2px dashed #eee !important;">
+                        <span class="text-muted small fw-bold text-uppercase ls-1">Số tiền cần thanh toán tại nhà:</span>
+                        <span class="fw-bold text-dark fs-5">{{ number_format($order->TongTien, 0, ',', '.') }}₫</span>
+                    </div>
+                    @endif
                 </div>
 
                 <div class="mt-4 pt-3 border-top">
@@ -71,12 +113,84 @@
 
             @if($order->PhuongThucThanhToan === 'ChuyenKhoan')
                 <div class="alert alert-info rounded-4 border-0 p-4 mb-5 text-start" style="background: #f0f9ff; color: #075985;">
-                    <h6 class="fw-bold mb-2"><i class="fa-solid fa-building-columns me-2"></i>Thông tin chuyển khoản:</h6>
-                    <p class="small mb-1">Ngân hàng: <strong>Vietcombank</strong></p>
-                    <p class="small mb-1">Số tài khoản: <strong>1234567890</strong></p>
-                    <p class="small mb-1">Chủ tài khoản: <strong>LUXURY BOOKSTORE</strong></p>
-                    <p class="small mb-0">Nội dung: <strong>CK {{ $order->MaDH }}</strong></p>
+                    <div class="row align-items-center">
+                        <div class="col-md-7">
+                            <h6 class="fw-bold mb-3"><i class="fa-solid fa-building-columns me-2"></i>Thông tin chuyển khoản:</h6>
+                            <p class="small mb-1">Ngân hàng: <strong>Vietcombank (VCB)</strong></p>
+                            <p class="small mb-1">Số tài khoản: <strong>1234567890</strong></p>
+                            <p class="small mb-1">Chủ tài khoản: <strong>LUXURY BOOKSTORE</strong></p>
+                            <p class="small mb-3">Nội dung: <strong class="text-danger">CK {{ $order->MaDH }}</strong></p>
+                            <div class="p-2 bg-white rounded-3 border border-info border-opacity-25 small italic">
+                                <i class="fa-solid fa-circle-info me-1"></i> Vui lòng nhập chính xác nội dung chuyển khoản để đơn hàng được xác nhận tự động nhanh nhất.
+                            </div>
+                        </div>
+                        <div class="col-md-5 text-center mt-3 mt-md-0">
+                            <div class="bg-white p-3 rounded-4 shadow-sm d-inline-block border position-relative" id="qr-container">
+                                @php
+                                    $bankId = "VCB";
+                                    $accountNo = "1234567890";
+                                    $template = "compact2";
+                                    $amount = (int)$order->TongTien;
+                                    $description = "CK " . $order->MaDH;
+                                    $accountName = "LUXURY BOOKSTORE";
+                                    $qrUrl = "https://img.vietqr.io/image/{$bankId}-{$accountNo}-{$template}.png?amount={$amount}&addInfo=" . urlencode($description) . "&accountName=" . urlencode($accountName);
+                                @endphp
+                                <img src="{{ $qrUrl }}" alt="QR Thanh toán" class="img-fluid rounded-3 mb-2" style="max-width: 180px;">
+                                <div class="extra-small fw-bold text-uppercase ls-1 text-muted" style="font-size: 0.6rem;">Quét mã để thanh toán</div>
+                                
+                                <div id="payment-status-overlay" class="position-absolute top-0 start-0 w-100 h-100 bg-white d-none flex-column align-items-center justify-content-center rounded-4" style="z-index: 5;">
+                                    <div class="spinner-border text-success mb-2" role="status"></div>
+                                    <div class="small fw-bold text-success">Đang chờ xác nhận...</div>
+                                </div>
+                            </div>
+                            <div class="mt-3">
+                                <button onclick="confirmPayment()" id="btn-confirm-payment" class="btn btn-sm btn-info text-white rounded-pill px-4 fw-bold extra-small">
+                                    <i class="fa-solid fa-paper-plane me-1"></i> TÔI ĐÃ CHUYỂN KHOẢN
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+
+                @push('scripts')
+                <script>
+                    function confirmPayment() {
+                        const btn = document.getElementById('btn-confirm-payment');
+                        const overlay = document.getElementById('payment-status-overlay');
+                        
+                        btn.disabled = true;
+                        btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin me-1"></i> ĐANG CHỜ NGÂN HÀNG...';
+                        overlay.classList.remove('d-none');
+                        overlay.classList.add('d-flex');
+
+                        // Bắt đầu kiểm tra trạng thái tự động mỗi 3 giây
+                        const checkInterval = setInterval(() => {
+                            fetch('{{ route("checkout.checkStatus", $order->MaDH) }}')
+                                .then(res => res.json())
+                                .then(data => {
+                                    if (data.is_paid) {
+                                        clearInterval(checkInterval);
+                                        overlay.innerHTML = `
+                                            <i class="fa-solid fa-circle-check text-success fs-1 mb-2"></i>
+                                            <div class="small fw-bold text-success">THANH TOÁN THÀNH CÔNG!</div>
+                                        `;
+                                        btn.innerHTML = '<i class="fa-solid fa-check me-1"></i> GIAO DỊCH HOÀN TẤT';
+                                        btn.className = 'btn btn-sm btn-success text-white rounded-pill px-4 fw-bold extra-small';
+                                        
+                                        // Có thể reload lại trang sau 2 giây để cập nhật toàn bộ UI
+                                        setTimeout(() => location.reload(), 2000);
+                                    }
+                                });
+                        }, 3000);
+
+                        // Tự động dừng sau 5 phút để tiết kiệm tài nguyên
+                        setTimeout(() => clearInterval(checkInterval), 300000);
+                    }
+
+                    // Tự động chạy confirmPayment nếu muốn khách hàng không cần bấm
+                    // window.onload = confirmPayment;
+                </script>
+                @endpush
             @endif
 
             <div class="d-flex flex-column flex-md-row gap-3 justify-content-center" data-aos="fade-up" data-aos-delay="400">

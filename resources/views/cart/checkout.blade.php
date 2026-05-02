@@ -55,10 +55,10 @@
                         <div class="form-check p-3 rounded-4 border mb-3 position-relative transition-all" style="background: white; cursor: pointer;">
                             <input class="form-check-input ms-0 me-3 mt-1" type="radio" name="payment_method" id="pay2" value="ChuyenKhoan">
                             <label class="form-check-label d-flex align-items-center" for="pay2" style="cursor: pointer;">
-                                <div class="bg-light p-2 rounded-3 me-3 text-primary"><i class="fa-solid fa-building-columns"></i></div>
+                                <div class="bg-light p-2 rounded-3 me-3 text-primary"><i class="fa-solid fa-qrcode"></i></div>
                                 <div>
-                                    <span class="fw-bold d-block text-dark">Chuyển khoản ngân hàng</span>
-                                    <small class="text-muted">Nhận mã đơn hàng và thực hiện chuyển khoản sau khi đặt</small>
+                                    <span class="fw-bold d-block text-dark">Chuyển khoản / Quét mã QR</span>
+                                    <small class="text-muted">Quét mã VietQR để thanh toán nhanh chóng và chính xác</small>
                                 </div>
                             </label>
                         </div>

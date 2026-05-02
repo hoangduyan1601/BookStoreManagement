@@ -145,7 +145,11 @@
                                 <small class="text-muted">{{ $r->khachHang->SDT }}</small>
                             </td>
                             <td class="text-center">
-                                <span class="fw-bold text-primary">{{ number_format($r->TongTien) }}₫</span>
+                                @if($r->PhuongThucThanhToan === 'ChuyenKhoan')
+                                    <span class="fw-bold text-success">0₫</span> <small class="text-muted d-block" style="font-size: 0.6rem;">(Đã CK)</small>
+                                @else
+                                    <span class="fw-bold text-primary">{{ number_format($r->TongTien) }}₫</span>
+                                @endif
                             </td>
                             <td class="text-center">
                                 <span class="status-pill shadow-sm" style="{{ $statusStyle }}">{{ $statusText }}</span>
