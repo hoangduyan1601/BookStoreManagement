@@ -71,6 +71,7 @@ class AdminDonHangController extends Controller
 
         $stats = [
             'tong' => DonHang::count(),
+            'unpaid' => DonHang::where('TrangThai', 'ChoThanhToan')->count(),
             'pending' => DonHang::where('TrangThai', 'ChoXacNhan')->count(),
             'shipping' => DonHang::where('TrangThai', 'DangGiao')->count(),
             'delivered' => DonHang::where('TrangThai', 'DaGiao')->count(),

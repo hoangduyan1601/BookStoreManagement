@@ -114,10 +114,23 @@
                                     <tr>
                                         <td class="ps-4 py-4 fw-bold">#{{ $order->MaDH }}</td>
                                         <td class="small text-muted">{{ date('d/m/Y H:i', strtotime($order->NgayDat)) }}</td>
-                                        <td class="fw-bold text-dark">{{ number_format($order->TongTien, 0, ',', '.') }}₫</td>
+                                        <td class="fw-bold text-dark">
+                                            @php
+                                                $soTienCanThu = max(0, $order->TongTien - ($order->SoTienDaThanhToan ?? 0));
+                                            @endphp
+                                            @if($soTienCanThu == 0)
+                                                <span class="text-success">0₫</span> 
+                                                <small class="text-muted" style="font-size: 0.6rem;">
+                                                    ({{ $order->PhuongThucThanhToan === 'VNPay' ? 'Đã thanh toán VNPay' : 'Đã CK' }})
+                                                </small>
+                                            @else
+                                                {{ number_format($soTienCanThu, 0, ',', '.') }}₫
+                                            @endif
+                                        </td>
                                         <td>
                                             @php
                                                 $s = match($order->TrangThai) {
+                                                    'ChoThanhToan' => ['#fef2f2', '#991b1b', 'Chờ thanh toán'],
                                                     'ChoXacNhan' => ['#fffbeb', '#92400e', 'Chờ xác nhận'],
                                                     'DaXacNhan'  => ['#eff6ff', '#1e40af', 'Đã xác nhận'],
                                                     'DangGiao'   => ['#f0f9ff', '#0369a1', 'Đang giao'],
@@ -129,7 +142,7 @@
                                         <td class="text-center">
                                             <div class="d-flex justify-content-center gap-2">
                                                 <button onclick="viewOrderDetail({{ $order->MaDH }})" class="btn btn-sm btn-dark rounded-pill px-3 py-1 fw-bold extra-small ls-1">CHI TIẾT</button>
-                                                @if($order->TrangThai === 'ChoXacNhan')
+                                                @if(in_array($order->TrangThai, ['ChoThanhToan', 'ChoXacNhan']))
                                                     <form action="{{ route('orders.cancel', $order->MaDH) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này?')" class="no-barba">
                                                         @csrf
                                                         <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1 fw-bold extra-small ls-1">HỦY</button>
@@ -176,7 +189,19 @@
                                     <tr>
                                         <td class="ps-4 py-4 fw-bold">#{{ $order->MaDH }}</td>
                                         <td class="small text-muted">{{ date('d/m/Y H:i', strtotime($order->NgayDat)) }}</td>
-                                        <td class="fw-bold text-dark">{{ number_format($order->TongTien, 0, ',', '.') }}₫</td>
+                                        <td class="fw-bold text-dark">
+                                            @php
+                                                $soTienCanThu = max(0, $order->TongTien - ($order->SoTienDaThanhToan ?? 0));
+                                            @endphp
+                                            @if($soTienCanThu == 0)
+                                                <span class="text-success">0₫</span> 
+                                                <small class="text-muted" style="font-size: 0.6rem;">
+                                                    ({{ $order->PhuongThucThanhToan === 'VNPay' ? 'Đã thanh toán VNPay' : 'Đã CK' }})
+                                                </small>
+                                            @else
+                                                {{ number_format($soTienCanThu, 0, ',', '.') }}₫
+                                            @endif
+                                        </td>
                                         <td>
                                             @php
                                                 $s = match($order->TrangThai) {
@@ -238,7 +263,7 @@
     </div>
 </div>
 
-<!-- Modal Chi tiết đơn hàng chuyên nghiệp (Giữ nguyên logic cũ nhưng làm đẹp giao diện) -->
+<!-- Modal Chi tiết đơn hàng chuyên nghiệp -->
 <div class="modal fade" id="orderModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
@@ -291,8 +316,41 @@
     .info-icon { width: 32px; text-align: center; }
     .table tbody tr { transition: all 0.2s; }
     .table tbody tr:hover { background: #fbfbfb !important; }
-    .receipt-header { background: #1a1a1a; color: white; padding: 2.5rem; }
+    
+    .receipt-header { background: #1a1a1a; color: white; padding: 2.5rem; position: relative; overflow: hidden; }
     .order-item-img { width: 50px; height: 75px; object-fit: cover; border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    
+    /* Paid Stamp Effect */
+    .paid-stamp {
+        position: absolute;
+        top: 20px;
+        right: 60px;
+        width: 130px;
+        height: 130px;
+        border: 4px double #198754;
+        color: #198754;
+        border-radius: 50%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        font-weight: 900;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        transform: rotate(-20deg);
+        opacity: 0.8;
+        pointer-events: none;
+        z-index: 10;
+        background: rgba(255,255,255,0.1);
+        box-shadow: 0 0 0 5px rgba(25, 135, 84, 0.1);
+        animation: stampIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .paid-stamp i { font-size: 2rem; margin-bottom: 2px; }
+    
+    @keyframes stampIn {
+        from { transform: rotate(-20deg) scale(2); opacity: 0; }
+        to { transform: rotate(-20deg) scale(1); opacity: 0.8; }
+    }
 </style>
 
 <script>
@@ -323,11 +381,21 @@
             .then(order => {
                 const date = new Date(order.NgayDat).toLocaleString('vi-VN');
                 const statusMap = {
-                    'ChoXacNhan': 'Chờ xác nhận', 'DaXacNhan': 'Đã xác nhận', 'DangGiao': 'Đang giao', 'DaGiao': 'Đã giao', 'DaHuy': 'Đã hủy'
+                    'ChoThanhToan': 'Chờ thanh toán', 'ChoXacNhan': 'Chờ xác nhận', 'DaXacNhan': 'Đã xác nhận', 'DangGiao': 'Đang giao', 'DaGiao': 'Đã giao', 'DaHuy': 'Đã hủy'
                 };
                 
+                const isFullyPaid = Number(order.SoTienDaThanhToan) >= Number(order.TongTien);
+                const hasPaidSomething = Number(order.SoTienDaThanhToan) > 0;
+
                 let html = `
                     <div class="receipt-header">
+                        ${isFullyPaid ? `
+                            <div class="paid-stamp">
+                                <i class="fa-solid fa-certificate"></i>
+                                <span>ĐÃ THANH TOÁN</span>
+                                <small style="font-size: 0.5rem;">LUXURY BOOKSTORE</small>
+                            </div>
+                        ` : ''}
                         <div class="d-flex justify-content-between align-items-start">
                             <div>
                                 <h3 class="font-luxury fw-bold mb-1 text-uppercase ls-1">Hóa Đơn Chi Tiết</h3>
@@ -347,6 +415,16 @@
                         </div>
                     </div>
                     <div class="modal-body p-4 bg-white">
+                        ${hasPaidSomething ? `
+                            <div class="alert alert-success border-0 rounded-4 p-3 mb-4 d-flex align-items-center shadow-sm" style="background: #f0fdf4;">
+                                <i class="fa-solid fa-shield-check fs-4 me-3 text-success"></i>
+                                <div>
+                                    <div class="fw-bold text-success small">XÁC NHẬN THANH TOÁN</div>
+                                    <div class="extra-small text-muted">Hệ thống đã ghi nhận khoản thanh toán chuyển khoản trị giá <strong>${Number(order.SoTienDaThanhToan).toLocaleString('vi-VN')}₫</strong> cho đơn hàng này.</div>
+                                </div>
+                            </div>
+                        ` : ''}
+
                         <div class="row mb-5 g-4">
                             <div class="col-md-6">
                                 <div class="p-4 bg-light rounded-4 h-100 border-0 shadow-sm">
@@ -359,7 +437,10 @@
                             <div class="col-md-6">
                                 <div class="p-4 bg-light rounded-4 h-100 border-0 shadow-sm">
                                     <h6 class="fw-bold mb-3 text-dark small text-uppercase ls-1">Thanh toán & Vận chuyển</h6>
-                                    <div class="fw-bold text-dark mb-1">${order.PhuongThucThanhToan === 'TienMat' ? 'Thanh toán tiền mặt (COD)' : 'Chuyển khoản ngân hàng'}</div>
+                                    <div class="fw-bold text-dark mb-1">
+                                        ${order.PhuongThucThanhToan === 'TienMat' ? 'Thanh toán tiền mặt (COD)' : 
+                                          (order.PhuongThucThanhToan === 'VNPay' ? 'Thanh toán online qua VNPay' : 'Chuyển khoản ngân hàng')}
+                                    </div>
                                     <div class="text-secondary small">Hình thức: Giao hàng tiêu chuẩn</div>
                                     <div class="text-success small fw-bold mt-2">Phí vận chuyển: Miễn phí</div>
                                 </div>
@@ -398,7 +479,7 @@
 
                         <div class="p-4 bg-dark text-white rounded-4 mt-4 shadow-lg">
                             <div class="d-flex justify-content-between mb-2 opacity-75 small">
-                                <span>Tạm tính</span>
+                                <span>Tổng giá trị đơn hàng</span>
                                 <span>${(Number(order.TongTien) + Number(order.SoTienGiam || 0)).toLocaleString('vi-VN')}₫</span>
                             </div>
                             ${order.SoTienGiam > 0 ? `
@@ -407,15 +488,30 @@
                                     <span>-${Number(order.SoTienGiam).toLocaleString('vi-VN')}₫</span>
                                 </div>
                             ` : ''}
-                            <div class="d-flex justify-content-between pt-3 border-top border-secondary mt-2">
-                                <span class="fw-bold text-uppercase ls-1">Tổng cộng cuối cùng</span>
-                                <span class="fw-bold fs-3 text-warning">${Number(order.TongTien).toLocaleString('vi-VN')}₫</span>
+                            
+                            <div class="pt-3 border-top border-secondary mt-2">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="fw-bold text-uppercase ls-1 small opacity-75">Thanh toán</span>
+                                    <span class="fw-bold">
+                                        ${order.PhuongThucThanhToan === 'TienMat' ? 'Tại nhà (COD)' : 
+                                          (order.PhuongThucThanhToan === 'VNPay' ? 'VNPay Online' : 'Chuyển khoản')}
+                                    </span>
+                                </div>
+                                
+                                <div class="d-flex justify-content-between mb-2 text-success">
+                                    <span class="fw-bold text-uppercase ls-1 small">Đã thanh toán</span>
+                                    <span class="fw-bold">${Number(order.SoTienDaThanhToan || 0).toLocaleString('vi-VN')}₫</span>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span class="fw-bold text-uppercase ls-1">Cần trả thêm</span>
+                                    <span class="fw-bold fs-3 text-warning">${Math.max(0, Number(order.TongTien) - Number(order.SoTienDaThanhToan || 0)).toLocaleString('vi-VN')}₫</span>
+                                </div>
                             </div>
                         </div>
                     </div>
                     <div class="modal-footer border-0 p-4 pt-2 bg-white">
                         <button class="btn btn-light rounded-pill px-4 fw-bold small ls-1 border" data-bs-dismiss="modal">ĐÓNG</button>
-                        ${order.TrangThai === 'ChoXacNhan' ? `
+                        ${['ChoThanhToan', 'ChoXacNhan'].includes(order.TrangThai) ? `
                             <form action="/orders/cancel/${order.MaDH}" method="POST" onsubmit="return confirm('Hành động này không thể hoàn tác. Bạn chắc chắn muốn hủy đơn hàng?')" class="no-barba">
                                 <input type="hidden" name="_token" value="${document.querySelector('meta[name="csrf-token"]').getAttribute('content')}">
                                 <button type="submit" class="btn btn-outline-danger rounded-pill px-4 fw-bold small ls-1">HỦY ĐƠN HÀNG</button>

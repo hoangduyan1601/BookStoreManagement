@@ -44,7 +44,7 @@ class HomeController extends Controller
 
         // Phân loại đơn hàng
         $ordersInProgress = \App\Models\DonHang::where('MaKH', $customer->MaKH)
-            ->whereIn('TrangThai', ['ChoXacNhan', 'DaXacNhan', 'DangGiao'])
+            ->whereIn('TrangThai', ['ChoThanhToan', 'ChoXacNhan', 'DaXacNhan', 'DangGiao'])
             ->orderBy('NgayDat', 'desc')
             ->get();
 
@@ -132,7 +132,7 @@ class HomeController extends Controller
         }
 
         // Kiểm tra trạng thái
-        if ($order->TrangThai !== 'ChoXacNhan') {
+        if (!in_array($order->TrangThai, ['ChoThanhToan', 'ChoXacNhan'])) {
             return back()->with('error', 'Đơn hàng này không thể hủy ở trạng thái hiện tại.');
         }
 

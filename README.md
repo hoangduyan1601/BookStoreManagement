@@ -43,6 +43,20 @@ Hệ thống tận dụng các công nghệ hiện đại nhất trong hệ sinh
 *   **Khách hàng**: Quản lý hồ sơ cá nhân và lịch sử mua hàng.
 *   **Xác thực**: Hệ thống tài khoản bảo mật cao, phân định rõ vai trò quản trị và người dùng cuối.
 
+### 5. Tích Hợp Thanh Toán Online
+*   **VNPay**: Tích hợp cổng thanh toán VNPay với quy trình chuyển hướng tự động và xử lý IPN (Instant Payment Notification) để cập nhật trạng thái đơn hàng thời gian thực.
+*   **Chuyển Khoản Tự Động**: Hỗ trợ quét mã QR VietQR và xử lý Webhook tự động xác nhận đơn hàng khi nhận được tiền.
+
+---
+
+## 🔐 Cấu Hình Thanh Toán (VNPay)
+Để sử dụng chức năng thanh toán qua VNPay, bạn cần thêm các thông số sau vào tệp `.env`:
+```env
+VNP_TMN_CODE=your_tmn_code
+VNP_HASH_SECRET=your_hash_secret
+VNP_URL=https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
+```
+
 ---
 
 ## 🏗 Kiến Trúc Dữ Liệu

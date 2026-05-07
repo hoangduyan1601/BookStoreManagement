@@ -80,9 +80,51 @@ class ChatbotController extends Controller
 
         $messages = ChatMessage::where(function($q) use ($maKH, $sessionId) {
             if ($maKH) $q->where('MaKH', $maKH);
-            else $q->where('session_id', $sessionId);
+            if ($sessionId) $q->orWhere('session_id', $sessionId);
         })->orderBy('created_at', 'asc')->get();
 
+        // Đánh dấu là đã đọc khi lấy lịch sử
+        ChatMessage::where(function($q) use ($maKH, $sessionId) {
+            if ($maKH) $q->where('MaKH', $maKH);
+            if ($sessionId) $q->orWhere('session_id', $sessionId);
+        })->whereIn('sender', ['ai', 'admin'])->update(['is_read' => true]);
+
         return response()->json($messages);
+    }
+
+    public function checkUnread()
+    {
+        $sessionId = session()->getId();
+        $maKH = null;
+        if (Auth::check()) {
+            $kh = KhachHang::where('MaTK', Auth::user()->MaTK)->first();
+            $maKH = $kh ? $kh->MaKH : null;
+        }
+
+        $count = ChatMessage::where(function($q) use ($maKH, $sessionId) {
+            if ($maKH) $q->where('MaKH', $maKH);
+            if ($sessionId) $q->orWhere('session_id', $sessionId);
+        })->whereIn('sender', ['ai', 'admin'])
+          ->where('is_read', false)
+          ->count();
+
+        return response()->json(['unread_count' => $count]);
+    }
+
+    public function markAsRead()
+    {
+        $sessionId = session()->getId();
+        $maKH = null;
+        if (Auth::check()) {
+            $kh = KhachHang::where('MaTK', Auth::user()->MaTK)->first();
+            $maKH = $kh ? $kh->MaKH : null;
+        }
+
+        ChatMessage::where(function($q) use ($maKH, $sessionId) {
+            if ($maKH) $q->where('MaKH', $maKH);
+            if ($sessionId) $q->orWhere('session_id', $sessionId);
+        })->whereIn('sender', ['ai', 'admin'])->update(['is_read' => true]);
+
+        return response()->json(['success' => true]);
     }
 }

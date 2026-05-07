@@ -6,6 +6,7 @@ use App\Http\Controllers\SanPhamController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\VNPayController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\AdminDanhMucController;
 use App\Http\Controllers\Admin\AdminTacGiaController;
@@ -58,7 +59,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
     Route::post('/checkout', [CheckoutController::class, 'process'])->name('checkout.process');
     Route::get('/checkout/success/{id}', [CheckoutController::class, 'success'])->name('checkout.success');
+    Route::get('/checkout/check-status/{id}', [CheckoutController::class, 'checkStatus'])->name('checkout.checkStatus');
+    Route::post('/checkout/confirm-bank-transfer/{id}', [CheckoutController::class, 'confirmBankTransfer'])->name('checkout.confirmBankTransfer');
+    Route::post('/checkout/change-method/{id}', [CheckoutController::class, 'changePaymentMethod'])->name('checkout.changeMethod');
     Route::post('/checkout/apply-promotion', [CheckoutController::class, 'applyPromotion'])->name('checkout.applyPromotion');
+
+    // VNPay (Return can stay inside auth for user session, but IPN must be outside)
+    Route::post('/vnpay-payment/{orderId}', [VNPayController::class, 'createPayment'])->name('vnpay.payment');
+    Route::get('/vnpay-return', [VNPayController::class, 'vnpayReturn'])->name('vnpay.return');
 
     // Thông báo & Đơn hàng cho người dùng
     Route::post('/notifications/mark-as-read/{id}', [HomeController::class, 'markNotificationRead']);
@@ -71,9 +79,13 @@ Route::middleware('auth')->group(function () {
     Route::post('/favorites/toggle', [YeuThichController::class, 'toggle'])->name('favorites.toggle');
 });
 
+Route::match(['get', 'post'], '/vnpay-ipn', [VNPayController::class, 'vnpayIPN'])->name('vnpay.ipn');
+
 // Chatbot AI (Cho phép cả khách vãng lai)
 Route::post('/chatbot/chat', [\App\Http\Controllers\ChatbotController::class, 'chat'])->name('chatbot.chat');
 Route::get('/chatbot/history', [\App\Http\Controllers\ChatbotController::class, 'getHistory'])->name('chatbot.history');
+Route::get('/chatbot/unread', [\App\Http\Controllers\ChatbotController::class, 'checkUnread'])->name('chatbot.unread');
+Route::post('/chatbot/mark-read', [\App\Http\Controllers\ChatbotController::class, 'markAsRead'])->name('chatbot.mark-read');
 
 // Admin routes
 Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(function () {
