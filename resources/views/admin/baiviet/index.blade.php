@@ -30,7 +30,7 @@
             <div class="col-md-10">
                 <div class="input-group">
                     <span class="input-group-text bg-light border-0 rounded-start-pill"><i class="fas fa-search"></i></span>
-                    <input type="text" name="search" class="form-control bg-light border-0 rounded-end-pill" placeholder="Tìm tiêu đề bài viết..." value="{{ request('search') }}">
+                    <input type="text" name="search" class="form-control bg-light border-0 rounded-end-pill" placeholder="Tìm tiêu đề bài viết..." value="{{ request('search') }}" autocomplete="off" data-search-type="article">
                 </div>
             </div>
             <div class="col-md-2">

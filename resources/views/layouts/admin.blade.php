@@ -180,6 +180,15 @@
         <i class="fas fa-indent fs-5"></i>
     </button>
 
+    <!-- Global Search -->
+    <div class="d-none d-md-flex align-items-center ms-2" style="max-width: 400px; flex: 1;">
+        <div class="input-group position-relative" id="global-search-wrapper">
+            <span class="input-group-text bg-light border-0 rounded-start-pill text-muted"><i class="fas fa-search"></i></span>
+            <input type="text" id="global-search-input" class="form-control bg-light border-0 rounded-end-pill py-2" placeholder="Tìm sản phẩm, đơn hàng, khách hàng..." autocomplete="off">
+            <div id="global-search-suggestions" class="search-suggestions-admin" style="width: 500px;"></div>
+        </div>
+    </div>
+
     <div class="ms-auto d-flex align-items-center">
         <!-- Theme Toggle -->
         <button class="theme-toggle me-3" id="theme-toggle" title="Chuyển chế độ Sáng/Tối">
@@ -272,6 +281,156 @@
             })
             .catch(error => console.error('Error fetching order count:', error));
     }
+
+    // Unified Admin Search Suggestion
+    function initAdminSearch(inputId, suggestionsId, type = 'product', isAdmin = 1) {
+        const input = document.getElementById(inputId);
+        const container = document.getElementById(suggestionsId);
+        let debounceTimer;
+
+        if (!input || !container) return;
+
+        input.addEventListener('input', () => {
+            clearTimeout(debounceTimer);
+            const keyword = input.value.trim();
+
+            if (keyword.length < 2) {
+                container.classList.remove('active');
+                container.innerHTML = '';
+                return;
+            }
+
+            debounceTimer = setTimeout(() => {
+                fetch(`{{ route('sanpham.suggestions') }}?keyword=${encodeURIComponent(keyword)}&type=${type}&admin=${isAdmin}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.length > 0) {
+                            let html = '';
+                            data.forEach(item => {
+                                if (type === 'global') {
+                                    html += `
+                                        <a href="${item.Url}" class="suggestion-item-admin">
+                                            ${item.Img ? `<img src="${item.Img}" class="suggestion-img-admin">` : `<div class="suggestion-img-admin d-flex align-items-center justify-content-center bg-light text-muted"><i class="fas fa-search"></i></div>`}
+                                            <div class="suggestion-info-admin">
+                                                <div class="d-flex align-items-center justify-content-between">
+                                                    <span class="suggestion-title-admin text-truncate" style="max-width: 300px;">${item.Title}</span>
+                                                    <span class="suggestion-badge-admin ${item.BadgeClass} text-white">${item.Badge}</span>
+                                                </div>
+                                                <span class="suggestion-meta-admin">${item.Meta}</span>
+                                            </div>
+                                        </a>
+                                    `;
+                                } else if (type === 'product') {
+                                    html += `
+                                        <a href="${item.Url}" class="suggestion-item-admin">
+                                            <img src="${item.HinhAnh}" class="suggestion-img-admin">
+                                            <div class="suggestion-info-admin">
+                                                <span class="suggestion-title-admin">${item.TenSP}</span>
+                                                <span class="suggestion-meta-admin">Mã: #SP${item.MaSP} | Tồn: ${item.SoLuong} | <span class="text-success fw-bold">${item.GiaHienTai}</span></span>
+                                            </div>
+                                        </a>
+                                    `;
+                                } else if (type === 'order') {
+                                    html += `
+                                        <a href="${item.Url}" class="suggestion-item-admin">
+                                            <div class="suggestion-img-admin d-flex align-items-center justify-content-center bg-light text-primary"><i class="fas fa-shopping-bag"></i></div>
+                                            <div class="suggestion-info-admin">
+                                                <span class="suggestion-title-admin">Đơn hàng #${item.MaDH}</span>
+                                                <span class="suggestion-meta-admin">${item.HoTen} | <span class="text-primary fw-bold">${item.TongTien}</span> | Trạng thái: ${item.TrangThai}</span>
+                                            </div>
+                                        </a>
+                                    `;
+                                } else if (type === 'customer') {
+                                    html += `
+                                        <a href="${item.Url}" class="suggestion-item-admin">
+                                            <div class="suggestion-img-admin d-flex align-items-center justify-content-center bg-light text-info"><i class="fas fa-user"></i></div>
+                                            <div class="suggestion-info-admin">
+                                                <span class="suggestion-title-admin">${item.HoTen}</span>
+                                                <span class="suggestion-meta-admin">SĐT: ${item.SDT} | Email: ${item.Email}</span>
+                                            </div>
+                                        </a>
+                                    `;
+                                } else if (type === 'article') {
+                                    html += `
+                                        <a href="${item.Url}" class="suggestion-item-admin">
+                                            <img src="${item.HinhAnh}" class="suggestion-img-admin">
+                                            <div class="suggestion-info-admin">
+                                                <span class="suggestion-title-admin">${item.TieuDe}</span>
+                                                <span class="suggestion-meta-admin">ID: #BV${item.MaBV} | Click để sửa bài</span>
+                                            </div>
+                                        </a>
+                                    `;
+                                } else if (type === 'category') {
+                                    html += `
+                                        <a href="${item.Url}" class="suggestion-item-admin">
+                                            <div class="suggestion-img-admin d-flex align-items-center justify-content-center bg-light text-warning"><i class="fas fa-layer-group"></i></div>
+                                            <div class="suggestion-info-admin">
+                                                <span class="suggestion-title-admin">${item.TenDM}</span>
+                                                <span class="suggestion-meta-admin">Danh mục sản phẩm | ID: #DM${item.MaDM}</span>
+                                            </div>
+                                        </a>
+                                    `;
+                                } else if (type === 'author') {
+                                    html += `
+                                        <a href="${item.Url}" class="suggestion-item-admin">
+                                            <div class="suggestion-img-admin d-flex align-items-center justify-content-center bg-light text-success"><i class="fas fa-pen-nib"></i></div>
+                                            <div class="suggestion-info-admin">
+                                                <span class="suggestion-title-admin">${item.TenTacGia}</span>
+                                                <span class="suggestion-meta-admin">Tác giả | ID: #TG${item.MaTacGia}</span>
+                                            </div>
+                                        </a>
+                                    `;
+                                }
+                            });
+                            container.innerHTML = html;
+                            container.classList.add('active');
+                        } else {
+                            container.classList.remove('active');
+                            container.innerHTML = '';
+                        }
+                    });
+            }, 300);
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!input.contains(e.target) && !container.contains(e.target)) {
+                container.classList.remove('active');
+            }
+        });
+
+        input.addEventListener('focus', () => {
+            if (container.innerHTML.trim() !== '') {
+                container.classList.add('active');
+            }
+        });
+    }
+
+    // Initialize searches
+    document.addEventListener('DOMContentLoaded', () => {
+        // Global search
+        initAdminSearch('global-search-input', 'global-search-suggestions', 'global');
+
+        // Auto-initialize any input with data-search-type
+        document.querySelectorAll('[data-search-type]').forEach(el => {
+            const type = el.getAttribute('data-search-type');
+            const wrapper = el.closest('.input-group');
+            if (wrapper) {
+                wrapper.classList.add('position-relative');
+                let suggestions = wrapper.querySelector('.search-suggestions-admin');
+                if (!suggestions) {
+                    suggestions = document.createElement('div');
+                    suggestions.className = 'search-suggestions-admin';
+                    wrapper.appendChild(suggestions);
+                }
+                
+                // Ensure ID for initAdminSearch
+                if (!el.id) el.id = 'search-input-' + Math.random().toString(36).substr(2, 9);
+                if (!suggestions.id) suggestions.id = 'suggestions-' + Math.random().toString(36).substr(2, 9);
+                
+                initAdminSearch(el.id, suggestions.id, type);
+            }
+        });
+    });
 
     // Run immediately and then every 30 seconds
     updatePendingOrdersCount();
