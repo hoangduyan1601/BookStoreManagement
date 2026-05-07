@@ -114,7 +114,7 @@
                                 </button>
                                 <form action="{{ route('admin.khuyenmai.destroy', $item->MaKM) }}" method="POST" class="d-inline">
                                     @csrf @method('DELETE')
-                                    <button class="btn btn-sm btn-light rounded-pill px-3 text-danger" onclick="return confirm('Xóa khuyến mãi?')">
+                                    <button type="submit" class="btn btn-sm btn-light rounded-pill px-3 text-danger" onclick="return confirm('Xác nhận xóa chương trình khuyến mãi này?')">
                                         <i class="fas fa-trash-alt"></i>
                                     </button>
                                 </form>

@@ -215,6 +215,15 @@
                                             <li><form action="{{ route('admin.donhang.update_status', $r->MaDH) }}" method="POST">@csrf<input type="hidden" name="status" value="DaGiao"><button class="dropdown-item rounded-2 py-2">Đánh dấu hoàn tất</button></form></li>
                                             <li><hr class="dropdown-divider"></li>
                                             <li><form action="{{ route('admin.donhang.update_status', $r->MaDH) }}" method="POST">@csrf<input type="hidden" name="status" value="DaHuy"><button class="dropdown-item text-danger rounded-2 py-2">Hủy đơn hàng</button></form></li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li>
+                                                <form action="{{ route('admin.donhang.destroy', $r->MaDH) }}" method="POST" onsubmit="return confirm('Xác nhận xóa vĩnh viễn đơn hàng này?')">
+                                                    @csrf @method('DELETE')
+                                                    <button type="submit" class="dropdown-item text-danger rounded-2 py-2">
+                                                        <i class="fas fa-trash-alt me-2"></i>Xóa đơn hàng
+                                                    </button>
+                                                </form>
+                                            </li>
                                         </ul>
                                     </div>
                                 </div>

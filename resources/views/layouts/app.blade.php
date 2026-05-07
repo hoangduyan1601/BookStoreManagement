@@ -89,7 +89,73 @@
             padding: 8px 15px;
             border-radius: 20px;
         }
-        .auth-nav-btn:hover { background: rgba(175, 146, 69, 0.08); color: var(--gold-primary); }
+        /* Notification Panel Improvements */
+        .noti-3d-panel {
+            width: 420px;
+            right: -20px;
+            top: calc(100% + 20px);
+            border: none;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.18);
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+        }
+        .noti-header {
+            padding: 24px 28px !important;
+            border-bottom: 1px solid rgba(0,0,0,0.04) !important;
+            background: transparent;
+        }
+        .noti-header h6 {
+            font-size: 0.85rem;
+            letter-spacing: 2px;
+            color: #1a1a1a;
+            font-family: var(--jakarta, 'Plus Jakarta Sans', sans-serif);
+        }
+        .noti-item {
+            padding: 20px 28px !important;
+            transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+            border-bottom: 1px solid rgba(0,0,0,0.03) !important;
+            cursor: pointer;
+            position: relative;
+        }
+        .noti-item:hover {
+            background: rgba(175, 146, 69, 0.03);
+            transform: translateX(5px);
+        }
+        .noti-item.unread {
+            background: rgba(175, 146, 69, 0.02);
+            border-left: 3px solid var(--gold-primary);
+        }
+        .noti-item .noti-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 4px;
+            display: block;
+        }
+        .noti-item .noti-desc {
+            font-size: 0.82rem;
+            color: #666;
+            line-height: 1.5;
+            margin-bottom: 8px;
+            display: block;
+        }
+        .noti-item .noti-time {
+            font-size: 0.72rem;
+            color: #aaa;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .noti-body::-webkit-scrollbar { width: 4px; }
+        .noti-body::-webkit-scrollbar-track { background: transparent; }
+        .noti-body::-webkit-scrollbar-thumb { background: rgba(175, 146, 69, 0.2); border-radius: 10px; }
+
+        #noti-badge {
+            background: #d4af37;
+            border: 2px solid #fff;
+            box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3);
+        }
 
         /* Search Suggestions */
         .search-wrapper { position: relative; z-index: 1060; }
@@ -199,13 +265,11 @@
                                                 $notifications = $customer ? \App\Models\ThongBao::where('MaKH', $customer->MaKH)->orderBy('NgayGui', 'desc')->take(5)->get() : collect();
                                             @endphp
                                             @forelse($notifications as $tb)
-                                                <div class="noti-item p-4 border-bottom {{ $tb->TrangThaiDoc ? 'opacity-75' : 'bg-light-gold border-start border-4 border-dark' }}" 
+                                                <div class="noti-item {{ $tb->TrangThaiDoc ? 'opacity-75' : 'unread' }}" 
                                                      onclick="markAsRead({{ $tb->MaTB }}, '{{ $tb->LienKet }}')">
-                                                    <div class="d-flex justify-content-between mb-1">
-                                                        <span class="fw-bold small text-dark">{{ $tb->TieuDe }}</span>
-                                                        <small class="text-muted extra-small">{{ \Carbon\Carbon::parse($tb->NgayGui)->diffForHumans() }}</small>
-                                                    </div>
-                                                    <p class="mb-0 text-secondary extra-small lh-base">{{ Str::limit($tb->NoiDung, 80) }}</p>
+                                                    <span class="noti-title">{{ $tb->TieuDe }}</span>
+                                                    <span class="noti-desc">{{ Str::limit($tb->NoiDung, 90) }}</span>
+                                                    <div class="noti-time">{{ \Carbon\Carbon::parse($tb->NgayGui)->diffForHumans() }}</div>
                                                 </div>
                                             @empty
                                                 <div class="text-center py-5">

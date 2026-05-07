@@ -70,7 +70,7 @@
                                 </button>
                                 <form action="{{ route('admin.danhmuc.destroy', $item->MaDM) }}" method="POST" class="d-inline">
                                     @csrf @method('DELETE')
-                                    <button class="btn btn-sm btn-light rounded-pill px-3 text-danger" onclick="return confirm('Xác nhận xóa?')">
+                                    <button type="submit" class="btn btn-sm btn-light rounded-pill px-3 text-danger" onclick="return confirm('Xác nhận xóa danh mục này?')">
                                         <i class="fas fa-trash me-1"></i> Xóa
                                     </button>
                                 </form>

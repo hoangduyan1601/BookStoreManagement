@@ -93,12 +93,16 @@ class AdminNhapHangController extends Controller
 
     public function destroy($id)
     {
-        $nhapHang = LichSuNhapHang::findOrFail($id);
-        
-        // Khi xóa phiếu nhập, có thể cần cân nhắc việc trừ lại tồn kho. 
-        // Ở đây tôi chỉ xóa phiếu để đơn giản, hoặc bạn có thể thêm logic trừ kho.
-        $nhapHang->delete();
+        try {
+            $nhapHang = LichSuNhapHang::findOrFail($id);
+            
+            // Khi xóa phiếu nhập, có thể cần cân nhắc việc trừ lại tồn kho. 
+            // Ở đây tôi chỉ xóa phiếu để đơn giản, hoặc bạn có thể thêm logic trừ kho.
+            $nhapHang->delete();
 
-        return redirect()->route('admin.nhaphang.index')->with('success', 'Xóa phiếu nhập thành công!');
+            return redirect()->route('admin.nhaphang.index')->with('success', 'Xóa phiếu nhập thành công!');
+        } catch (\Exception $e) {
+            return redirect()->route('admin.nhaphang.index')->with('error', 'Lỗi hệ thống khi xóa phiếu nhập: ' . $e->getMessage());
+        }
     }
 }

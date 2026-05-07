@@ -16,4 +16,9 @@ class NhaCungCap extends Model
         'DiaChi',
         'Email',
     ];
+
+    public function lichSuNhapHangs()
+    {
+        return $this->hasMany(LichSuNhapHang::class, 'MaNCC', 'MaNCC');
+    }
 }

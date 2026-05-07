@@ -94,9 +94,13 @@ class AdminThongBaoController extends Controller
 
     public function destroy($id)
     {
-        $thongBao = ThongBao::findOrFail($id);
-        $thongBao->delete();
+        try {
+            $thongBao = ThongBao::findOrFail($id);
+            $thongBao->delete();
 
-        return redirect()->route('admin.thongbao.index')->with('success', 'Xóa thông báo thành công!');
+            return redirect()->route('admin.thongbao.index')->with('success', 'Xóa thông báo thành công!');
+        } catch (\Exception $e) {
+            return redirect()->route('admin.thongbao.index')->with('error', 'Lỗi hệ thống khi xóa thông báo: ' . $e->getMessage());
+        }
     }
 }

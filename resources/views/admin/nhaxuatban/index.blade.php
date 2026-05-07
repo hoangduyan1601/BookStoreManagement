@@ -66,7 +66,7 @@
                                 </button>
                                 <form action="{{ route('admin.nxb.destroy', $item->MaNXB) }}" method="POST" class="d-inline">
                                     @csrf @method('DELETE')
-                                    <button class="btn btn-sm btn-light rounded-pill px-3 text-danger" onclick="return confirm('Xác nhận xóa?')">
+                                    <button type="submit" class="btn btn-sm btn-light rounded-pill px-3 text-danger" onclick="return confirm('Xác nhận xóa nhà xuất bản này?')">
                                         <i class="fas fa-trash me-1"></i> Xóa
                                     </button>
                                 </form>

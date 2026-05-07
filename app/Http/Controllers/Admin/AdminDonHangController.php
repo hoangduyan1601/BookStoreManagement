@@ -106,9 +106,13 @@ class AdminDonHangController extends Controller
 
     public function destroy($id)
     {
-        $order = DonHang::findOrFail($id);
-        $order->delete();
+        try {
+            $order = DonHang::findOrFail($id);
+            $order->delete();
 
-        return redirect()->route('admin.donhang.index')->with('success', 'Xóa đơn hàng thành công!');
+            return redirect()->route('admin.donhang.index')->with('success', 'Xóa đơn hàng thành công!');
+        } catch (\Exception $e) {
+            return redirect()->route('admin.donhang.index')->with('error', 'Lỗi hệ thống khi xóa đơn hàng: ' . $e->getMessage());
+        }
     }
 }

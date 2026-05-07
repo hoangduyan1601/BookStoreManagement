@@ -47,6 +47,21 @@ class SanPham extends Model
         return $this->hasOne(ChiTietSanPham::class, 'MaSP', 'MaSP');
     }
 
+    public function chiTietDonHangs()
+    {
+        return $this->hasMany(ChiTietDonHang::class, 'MaSP', 'MaSP');
+    }
+
+    public function chiTietNhapHangs()
+    {
+        return $this->hasMany(ChiTietNhapHang::class, 'MaSP', 'MaSP');
+    }
+
+    public function chiTietGioHangs()
+    {
+        return $this->hasMany(ChiTietGioHang::class, 'MaSP', 'MaSP');
+    }
+
     public function favorites()
     {
         return $this->belongsToMany(KhachHang::class, 'yeuthich', 'MaSP', 'MaKH')->withPivot('NgayThem');

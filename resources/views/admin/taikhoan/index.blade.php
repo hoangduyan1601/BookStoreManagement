@@ -103,7 +103,7 @@
                                 </button>
                                 <form action="{{ route('admin.taikhoan.destroy', $item->MaTK) }}" method="POST" class="d-inline">
                                     @csrf @method('DELETE')
-                                    <button class="btn btn-sm btn-light rounded-pill px-3 text-danger" onclick="return confirm('Xác nhận xóa tài khoản?')">
+                                    <button type="submit" class="btn btn-sm btn-light rounded-pill px-3 text-danger" onclick="return confirm('Xác nhận xóa tài khoản này?')">
                                         <i class="fas fa-trash-alt"></i>
                                     </button>
                                 </form>

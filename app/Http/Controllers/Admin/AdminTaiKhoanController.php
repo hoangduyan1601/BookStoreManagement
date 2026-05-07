@@ -76,10 +76,18 @@ class AdminTaiKhoanController extends Controller
 
     public function destroy($id)
     {
-        $taiKhoan = TaiKhoan::findOrFail($id);
-        $taiKhoan->delete();
+        try {
+            if (auth()->id() == $id) {
+                return redirect()->route('admin.taikhoan.index')->with('error', 'Bạn không thể tự xóa tài khoản của chính mình!');
+            }
 
-        return redirect()->route('admin.taikhoan.index')->with('success', 'Xóa tài khoản thành công!');
+            $taiKhoan = TaiKhoan::findOrFail($id);
+            $taiKhoan->delete();
+
+            return redirect()->route('admin.taikhoan.index')->with('success', 'Xóa tài khoản thành công!');
+        } catch (\Exception $e) {
+            return redirect()->route('admin.taikhoan.index')->with('error', 'Lỗi hệ thống khi xóa tài khoản: ' . $e->getMessage());
+        }
     }
 
     public function changePassword($id)

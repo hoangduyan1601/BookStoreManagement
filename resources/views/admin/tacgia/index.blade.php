@@ -77,7 +77,7 @@
                                 </button>
                                 <form action="{{ route('admin.tacgia.destroy', ['id' => $item->MaTacGia]) }}" method="POST" class="d-inline">
                                     @csrf @method('DELETE')
-                                    <button class="btn btn-sm btn-light rounded-pill px-3 text-danger" onclick="return confirm('Xác nhận xóa?')">
+                                    <button type="submit" class="btn btn-sm btn-light rounded-pill px-3 text-danger" onclick="return confirm('Xác nhận xóa hồ sơ tác giả này?')">
                                         <i class="fas fa-trash-alt"></i>
                                     </button>
                                 </form>
