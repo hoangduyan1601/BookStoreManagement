@@ -12,6 +12,17 @@
     
     <style>
         /* Layout Specific Adjustments */
+        :root {
+            --sidebar-width: 260px;
+            --topbar-height: 70px;
+            --transition-speed: 0.3s;
+        }
+
+        body {
+            overflow-x: hidden;
+            background: var(--bg-main);
+        }
+
         .sidebar {
             position: fixed;
             top: 0;
@@ -19,53 +30,76 @@
             width: var(--sidebar-width);
             height: 100vh;
             background: var(--bg-sidebar);
-            z-index: 1040;
-            transition: all 0.3s ease;
+            z-index: 1100;
+            transition: transform var(--transition-speed) ease;
             overflow-y: auto;
         }
         
-        .sidebar.collapsed {
-            transform: translateX(-100%);
-        }
-
         .topbar {
             position: fixed;
             top: 0;
-            left: var(--sidebar-width);
+            left: var(--sidebar-width) !important;
             right: 0;
             height: var(--topbar-height);
+            width: calc(100% - var(--sidebar-width)) !important;
             background: var(--bg-topbar);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             border-bottom: 1px solid var(--border-color);
-            z-index: 1030;
+            z-index: 1080;
             display: flex;
             align-items: center;
             padding: 0 24px;
-            transition: all 0.3s ease;
+            transition: all var(--transition-speed) ease;
         }
 
         .main-content {
-            margin-left: var(--sidebar-width);
+            margin-left: var(--sidebar-width) !important;
+            width: calc(100% - var(--sidebar-width)) !important;
             padding-top: var(--topbar-height);
             min-height: 100vh;
-            transition: all 0.3s ease;
+            transition: all var(--transition-speed) ease;
+            background: var(--bg-main);
+            position: relative;
         }
 
-        .main-content.expanded {
-            margin-left: 0;
+        /* State: Sidebar Collapsed */
+        body.sidebar-collapsed .sidebar {
+            transform: translateX(-100%) !important;
+        }
+        body.sidebar-collapsed .topbar {
+            left: 0 !important;
+            width: 100% !important;
+        }
+        body.sidebar-collapsed .main-content {
+            margin-left: 0 !important;
+            width: 100% !important;
         }
 
-        @media (max-width: 992px) {
+        /* Mobile Adjustments */
+        @media (max-width: 991.98px) {
             .sidebar {
-                transform: translateX(-100%);
-            }
-            .sidebar.show {
-                transform: translateX(0);
+                transform: translateX(-100%) !important;
             }
             .topbar, .main-content {
-                left: 0;
-                margin-left: 0;
+                left: 0 !important;
+                margin-left: 0 !important;
+                width: 100% !important;
+            }
+
+            body.sidebar-mobile-open .sidebar {
+                transform: translateX(0) !important;
+            }
+
+            @media (min-width: 768px) {
+                body.sidebar-mobile-open .topbar {
+                    left: var(--sidebar-width) !important;
+                    width: calc(100% - var(--sidebar-width)) !important;
+                }
+                body.sidebar-mobile-open .main-content {
+                    margin-left: var(--sidebar-width) !important;
+                    width: calc(100% - var(--sidebar-width)) !important;
+                }
             }
         }
 
@@ -247,25 +281,6 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="{{ asset('assets/js/admin-theme.js') }}"></script>
 <script>
-    // Sidebar Mobile Toggle
-    const sidebarToggleMobile = document.getElementById('sidebar-toggle-mobile');
-    const sidebar = document.getElementById('sidebar');
-    
-    if (sidebarToggleMobile) {
-        sidebarToggleMobile.addEventListener('click', () => {
-            sidebar.classList.toggle('show');
-        });
-    }
-
-    // Close sidebar when clicking outside on mobile
-    document.addEventListener('click', (e) => {
-        if (window.innerWidth <= 992) {
-            if (sidebar && sidebarToggleMobile && !sidebar.contains(e.target) && !sidebarToggleMobile.contains(e.target)) {
-                sidebar.classList.remove('show');
-            }
-        }
-    });
-
     // AJAX update pending orders count
     function updatePendingOrdersCount() {
         fetch('{{ route('admin.donhang.count_pending') }}')

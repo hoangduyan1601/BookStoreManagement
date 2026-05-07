@@ -6,10 +6,12 @@
 <style>
     .dashboard-header {
         background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-        padding: 2rem;
+        padding: 5rem 2.5rem 2.5rem 2.5rem;
         border-radius: 1.5rem;
         color: white;
         margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
     }
     .user-avatar-placeholder {
         width: 40px;
