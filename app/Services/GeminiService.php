@@ -66,6 +66,13 @@ class GeminiService
                   "--- LỊCH SỬ GẦN ĐÂY ---\n" . $historyContext . "\n\n" .
                   "--- CÂU HỎI HIỆN TẠI ---\n" . $message;
 
+        // 5. Phân tích cảm xúc (Sentiment Analysis)
+        $isNegative = $this->checkSentiment($message);
+        if ($isNegative) {
+            $systemInstruction .= "\n\nLƯU Ý QUAN TRỌNG: Quý khách đang có dấu hiệu không hài lòng hoặc giận dữ. Hãy phản hồi với thái độ cực kỳ cầu thị, xin lỗi chân thành và đề nghị kết nối với nhân viên hỗ trợ ngay lập tức.";
+            Log::warning("AI detected negative sentiment from user: " . $message);
+        }
+
         try {
             $response = Http::post($this->apiUrl . '?key=' . $this->apiKey, [
                 'contents' => [
@@ -90,6 +97,19 @@ class GeminiService
             Log::error('Gemini Service Exception: ' . $e->getMessage());
             return $this->generateFallbackResponse($message, $contextData);
         }
+    }
+
+    /**
+     * Kiểm tra cảm xúc tiêu cực từ người dùng
+     */
+    private function checkSentiment($message)
+    {
+        $negKeywords = ['tệ', 'kém', 'lừa đảo', 'vớ vẩn', 'bực', 'tức', 'chậm', 'hỏng', 'sai', 'không hài lòng', 'thất vọng'];
+        $msg = mb_strtolower($message);
+        foreach ($negKeywords as $kw) {
+            if (str_contains($msg, $kw)) return true;
+        }
+        return false;
     }
 
     /**
@@ -172,28 +192,49 @@ class GeminiService
         $msg = mb_strtolower($message);
         $context = "";
 
+        // 0. Tra cứu đơn hàng cụ thể
+        if (preg_match('/(?:tra cứu|kiểm tra|xem).*đơn hàng.*?(\d+)/i', $msg, $matches) || preg_match('/đơn hàng\s*(\d+)/i', $msg, $matches)) {
+            $orderId = $matches[1];
+            $orderQuery = DonHang::where('MaDH', $orderId);
+            
+            // Nếu có MaKH, ưu tiên tìm đơn của khách đó. Nếu không, chỉ tìm đơn theo ID (dành cho khách vãng lai nhớ mã đơn)
+            if ($maKH) {
+                $orderQuery->where('MaKH', $maKH);
+            }
+            
+            $order = $orderQuery->first();
+            
+            if ($order) {
+                $context .= "THÔNG TIN ĐƠN HÀNG #{$orderId}:\n";
+                $context .= "- Trạng thái: **{$order->TrangThai}**\n";
+                $context .= "- Ngày đặt: " . date('d/m/Y H:i', strtotime($order->NgayDat)) . "\n";
+                $context .= "- Tổng tiền: " . number_format($order->TongTien) . "đ\n";
+                $context .= "Quý khách có cần hỗ trợ thêm thông tin gì về đơn hàng này không?\n";
+                return $context; // Trả về luôn để AI tập trung vào đơn hàng
+            } else {
+                $context .= "Xin lỗi, tôi không tìm thấy đơn hàng số #{$orderId}" . ($maKH ? " trong tài khoản của Quý khách." : ".") . " Quý khách vui lòng kiểm tra lại mã đơn hàng nhé.\n";
+                return $context;
+            }
+        } elseif (str_contains($msg, 'tra cứu đơn hàng') || str_contains($msg, 'kiểm tra đơn hàng')) {
+            return "Để kiểm tra đơn hàng, Quý khách vui lòng cung cấp mã đơn hàng (ví dụ: 'Tra cứu đơn hàng 1234').";
+        }
+
         // 1. Sách mới nhất
         if (str_contains($msg, 'mới') || str_contains($msg, 'vừa về')) {
             $newBooks = SanPham::orderBy('NgayCapNhat', 'desc')->limit(3)->get();
-            $context .= "Sách mới về: " . $newBooks->map(function($b) {
-                $priceInfo = number_format($b->DonGia) . "đ";
-                if ($b->gia_hien_tai < $b->DonGia) {
-                    $priceInfo = "Đang giảm còn " . number_format($b->gia_hien_tai) . "đ (Giá gốc " . number_format($b->DonGia) . "đ)";
-                }
-                return "{$b->TenSP} ($priceInfo)";
-            })->implode(', ') . ".\n";
+            $context .= "Sách mới về:\n";
+            foreach ($newBooks as $b) {
+                $context .= $this->formatProductCard($b);
+            }
         }
 
         // 2. Sách bán chạy / hot
         if (str_contains($msg, 'bán chạy') || str_contains($msg, 'hot') || str_contains($msg, 'hay nhất') || str_contains($msg, 'gợi ý')) {
             $hotBooks = SanPham::orderBy('SoLuongDaBan', 'desc')->limit(3)->get();
-            $context .= "Sách đang hot/bán chạy: " . $hotBooks->map(function($b) {
-                $priceInfo = number_format($b->DonGia) . "đ";
-                if ($b->gia_hien_tai < $b->DonGia) {
-                    $priceInfo = "Giảm sốc: " . number_format($b->gia_hien_tai) . "đ";
-                }
-                return "{$b->TenSP} ($priceInfo)";
-            })->implode(', ') . ".\n";
+            $context .= "Sách đang hot/bán chạy:\n";
+            foreach ($hotBooks as $b) {
+                $context .= $this->formatProductCard($b);
+            }
         }
 
         // 3. Tìm kiếm theo tên sách hoặc nội dung
@@ -203,12 +244,7 @@ class GeminiService
         if ($products->count() > 0) {
             $context .= "Kết quả tìm kiếm sản phẩm:\n";
             foreach ($products as $p) {
-                $priceLine = "Giá: " . number_format($p->DonGia) . " VNĐ";
-                if ($p->gia_hien_tai < $p->DonGia) {
-                    $km = $p->khuyen_mai_active;
-                    $priceLine = "Giá Ưu Đãi: " . number_format($p->gia_hien_tai) . " VNĐ (Giảm {$km->PhanTramGiam}% từ giá gốc " . number_format($p->DonGia) . " VNĐ)";
-                }
-                $context .= "- {$p->TenSP}. $priceLine. Tình trạng: " . ($p->SoLuong > 0 ? 'Còn hàng' : 'Hết hàng') . ". Mô tả: " . Str::limit($p->MoTa, 100) . "\n";
+                $context .= $this->formatProductCard($p);
             }
         }
 
@@ -254,5 +290,38 @@ class GeminiService
         }
 
         return $context;
+    }
+
+    /**
+     * Tạo HTML Card cho sản phẩm để hiển thị đẹp trong khung chat
+     */
+    private function formatProductCard($p)
+    {
+        $imgUrl = asset('assets/images/products/' . ($p->HinhAnh ?: 'default.jpg'));
+        $priceOrig = number_format($p->DonGia) . "đ";
+        $priceCurrent = number_format($p->gia_hien_tai) . "đ";
+        $hasSale = $p->gia_hien_tai < $p->DonGia;
+        
+        $saleBadge = $hasSale ? "<span style='background:#ef4444;color:white;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:bold;margin-left:5px;'>SALE</span>" : "";
+        
+        $card = "\n<div class='product-card-ai' style='background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:10px; margin-bottom:10px; display:flex; gap:12px; align-items:center;'>";
+        $card .= "<img src='{$imgUrl}' style='width:60px; height:80px; object-fit:cover; border-radius:6px;'>";
+        $card .= "<div style='flex:1; min-width:0;'>";
+        $card .= "<h6 style='margin:0; font-size:13px; font-weight:700; color:#1e293b; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;'>{$p->TenSP}</h6>";
+        $card .= "<div style='margin-top:4px;'>";
+        if ($hasSale) {
+            $card .= "<span style='color:#ef4444; font-weight:bold; font-size:14px;'>{$priceCurrent}</span>";
+            $card .= "<span style='color:#94a3b8; text-decoration:line-through; font-size:11px; margin-left:5px;'>{$priceOrig}</span>{$saleBadge}";
+        } else {
+            $card .= "<span style='color:#1e293b; font-weight:bold; font-size:14px;'>{$priceOrig}</span>";
+        }
+        $card .= "</div>";
+        $card .= "<div style='margin-top:8px; display:flex; gap:5px;'>";
+        $card .= "<a href='/sanpham/{$p->MaSP}' style='flex:1; background:#f1f5f9; color:#1e293b; text-decoration:none; padding:4px; border-radius:6px; font-size:11px; text-align:center; font-weight:600;'>Chi tiết</a>";
+        $card .= "<a href='javascript:void(0)' onclick='addToCartAI({$p->MaSP})' style='flex:1; background:#1e293b; color:white; text-decoration:none; padding:4px; border-radius:6px; font-size:11px; text-align:center; font-weight:600;'>+ Giỏ hàng</a>";
+        $card .= "</div>";
+        $card .= "</div></div>\n";
+        
+        return $card;
     }
 }

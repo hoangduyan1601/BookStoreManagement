@@ -34,6 +34,14 @@
 
         <!-- Input Area -->
         <div class="p-3 border-top bg-white">
+            <!-- Quick Replies -->
+            <div class="d-flex gap-2 mb-2 overflow-auto custom-scrollbar quick-replies" style="white-space: nowrap; padding-bottom: 4px;">
+                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1 text-nowrap quick-reply-btn" style="font-size: 0.8rem;">🔥 Khuyến mãi</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1 text-nowrap quick-reply-btn" style="font-size: 0.8rem;">✨ Sách mới</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1 text-nowrap quick-reply-btn" style="font-size: 0.8rem;">📦 Tra cứu đơn hàng</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1 text-nowrap quick-reply-btn" style="font-size: 0.8rem;">🏆 Bán chạy nhất</button>
+            </div>
+            
             <form id="chat-form" class="d-flex gap-2 align-items-center">
                 <input type="text" id="chat-input" class="form-control border-0 bg-light rounded-pill px-3" placeholder="Nhập tin nhắn..." autocomplete="off" style="font-size: 0.9rem;">
                 <button type="submit" class="btn btn-dark rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
@@ -48,6 +56,13 @@
 </div>
 
 <style>
+    /* Custom Scrollbar for Quick Replies */
+    .quick-replies::-webkit-scrollbar { height: 4px; }
+    .quick-replies::-webkit-scrollbar-track { background: transparent; }
+    .quick-replies::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+    .quick-replies::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
+    .quick-reply-btn:hover { background-color: #f8fafc; color: #1e293b; border-color: #cbd5e1; }
+
     #chatbot-window.active { display: flex !important; animation: popIn 0.3s ease; }
     @keyframes popIn {
         from { opacity: 0; transform: scale(0.8) translateY(20px); }
@@ -89,20 +104,50 @@
     .typing-loader div:nth-child(3) { animation-delay: 0.4s; }
     @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-5px); } }
 </style>
-
 <!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script>
+// Function cho AI Card để thêm vào giỏ hàng
+async function addToCartAI(maSP) {
+    try {
+        const response = await fetch("{{ route('cart.add') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ MaSP: maSP, SoLuong: 1 })
+        });
+        const data = await response.json();
+        if(data.status === 'success') {
+            alert('Đã thêm sản phẩm vào giỏ hàng!');
+            if(window.updateCartBadge) window.updateCartBadge();
+        } else {
+            alert(data.message || 'Có lỗi xảy ra.');
+        }
+    } catch (error) {
+        console.error('Error adding to cart:', error);
+        alert('Vui lòng đăng nhập để thực hiện tính năng này.');
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
+    // Cấu hình marked
+    marked.setOptions({
+        sanitize: false,
+        headerIds: false,
+        mangle: false
+    });
+
     const toggle = document.getElementById('chatbot-toggle');
-    const window = document.getElementById('chatbot-window');
+    const chatWindow = document.getElementById('chatbot-window');
     const close = document.getElementById('close-chat');
     const form = document.getElementById('chat-form');
     const input = document.getElementById('chat-input');
     const msgBox = document.getElementById('chat-messages');
 
     toggle.addEventListener('click', async () => {
-        const isActive = window.classList.toggle('active');
+        const isActive = chatWindow.classList.toggle('active');
         const notif = document.getElementById('bot-notif');
         
         if(isActive) {
@@ -110,21 +155,17 @@ document.addEventListener('DOMContentLoaded', function() {
             notif.textContent = '0';
             input.focus();
             await loadHistory();
-            // Đánh dấu đã đọc khi mở chat
             fetch("{{ route('chatbot.mark-read') }}", {
                 method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                }
+                headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
             });
         }
     });
 
-    close.addEventListener('click', () => window.classList.remove('active'));
+    close.addEventListener('click', () => chatWindow.classList.remove('active'));
 
-    // Kiểm tra tin nhắn chưa đọc định kỳ
     async function checkUnread() {
-        if(window.classList.contains('active')) return;
+        if(chatWindow.classList.contains('active')) return;
         
         try {
             const response = await fetch("{{ route('chatbot.unread') }}");
@@ -133,8 +174,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 const notif = document.getElementById('bot-notif');
                 notif.textContent = data.unread_count;
                 notif.style.display = 'block';
-                
-                // Hiệu ứng rung logo để gây chú ý
                 toggle.classList.add('shake-animation');
                 setTimeout(() => toggle.classList.remove('shake-animation'), 500);
             }
@@ -143,13 +182,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Chạy kiểm tra ngay khi load và mỗi 10s
     checkUnread();
     setInterval(checkUnread, 10000);
 
-    // Tự động làm mới tin nhắn nếu đang mở cửa sổ chat
     setInterval(async () => {
-        if(window.classList.contains('active')) {
+        if(chatWindow.classList.contains('active')) {
             await loadHistory(true);
         }
     }, 5000);
@@ -177,16 +214,22 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    document.querySelectorAll('.quick-reply-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const text = this.textContent.replace(/[🔥✨📦🏆]/g, '').trim();
+            input.value = text;
+            form.dispatchEvent(new Event('submit'));
+        });
+    });
+
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const text = input.value.trim();
         if(!text) return;
 
-        // Add User Message
         appendMessage(text, 'user');
         input.value = '';
 
-        // Add Typing Loader
         const loaderId = 'loader-' + Date.now();
         const loader = document.createElement('div');
         loader.id = loaderId;
@@ -207,11 +250,13 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             const data = await response.json();
             
-            document.getElementById(loaderId).remove();
+            const l = document.getElementById(loaderId);
+            if(l) l.remove();
             appendMessage(data.reply, 'bot');
         } catch (error) {
             console.error(error);
-            document.getElementById(loaderId).remove();
+            const l = document.getElementById(loaderId);
+            if(l) l.remove();
             appendMessage('Xin lỗi, tôi đang gặp trục trặc kỹ thuật. Vui lòng thử lại sau!', 'bot');
         }
     });
@@ -223,8 +268,7 @@ document.addEventListener('DOMContentLoaded', function() {
             msg.style = 'align-self: flex-start; background: #fff; padding: 12px 16px; border-radius: 1rem 1rem 1rem 0; box-shadow: 0 2px 4px rgba(0,0,0,0.05); max-width: 85%; font-size: 0.9rem; border: 1px solid #e2e8f0;';
             msg.innerHTML = marked.parse(text);
 
-            // Hiển thị thông báo nếu cửa sổ chat đang đóng và không phải load lịch sử
-            if(!window.classList.contains('active') && !skipNotif) {
+            if(!chatWindow.classList.contains('active') && !skipNotif) {
                 const notif = document.getElementById('bot-notif');
                 let count = parseInt(notif.textContent) || 0;
                 count++;
