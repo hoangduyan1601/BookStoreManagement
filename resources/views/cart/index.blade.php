@@ -54,7 +54,14 @@
                                             </div>
                                         </div>
                                     </td>
-                                    <td class="text-center text-dark fw-medium">{{ number_format($item['price'], 0, ',', '.') }}₫</td>
+                                    <td class="text-center text-dark fw-medium">
+                                        @if($item['price'] < $item['original_price'])
+                                            <div class="text-muted small text-decoration-line-through">{{ number_format($item['original_price'], 0, ',', '.') }}₫</div>
+                                            <div class="text-danger fw-bold">{{ number_format($item['price'], 0, ',', '.') }}₫</div>
+                                        @else
+                                            {{ number_format($item['price'], 0, ',', '.') }}₫
+                                        @endif
+                                    </td>
                                     <td class="text-center">
                                         <div class="input-group input-group-sm rounded-pill overflow-hidden border mx-auto" style="width: 110px;">
                                             <button class="btn btn-link text-dark text-decoration-none px-2 py-0" type="button" onclick="changeQty({{ $id }}, -1)"><i class="fa-solid fa-minus fs-xs"></i></button>
@@ -130,148 +137,188 @@
     .ls-1 { letter-spacing: 1px; }
 </style>
 
-@push('scripts')
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const selectAll = document.getElementById('select-all');
-        if (selectAll) {
-            selectAll.addEventListener('change', function() {
-                const checkboxes = document.querySelectorAll('.item-checkbox');
-                checkboxes.forEach(cb => cb.checked = this.checked);
-                updateSummary();
+    (function() {
+        function initCartPage() {
+            const selectAll = document.getElementById('select-all');
+            if (selectAll) {
+                // Remove existing listener to avoid duplicates
+                const newSelectAll = selectAll.cloneNode(true);
+                selectAll.parentNode.replaceChild(newSelectAll, selectAll);
+                
+                newSelectAll.addEventListener('change', function() {
+                    const checkboxes = document.querySelectorAll('.item-checkbox');
+                    checkboxes.forEach(cb => cb.checked = this.checked);
+                    updateSummary();
+                });
+            }
+            // Delay slightly to ensure DOM is fully ready in Barba transition
+            setTimeout(updateSummary, 200);
+        }
+
+        // Global export for inline onchange attributes
+        window.updateSummary = function() {
+            let subtotal = 0;
+            let count = 0;
+            // Focus only on checkboxes within the active container to avoid conflicts during Barba transitions
+            const container = document.getElementById('cart-container') || document;
+            const checkboxes = container.querySelectorAll('.item-checkbox:checked');
+            const listContainer = document.getElementById('selected-items-list');
+            if (!listContainer) return;
+
+            listContainer.innerHTML = ''; // Clear current list
+            
+            checkboxes.forEach(cb => {
+                const row = document.getElementById(`cart-row-${cb.value}`);
+                if (!row) return;
+
+                const nameElement = row.querySelector('.fw-bold');
+                const name = nameElement ? nameElement.innerText : 'Sản phẩm';
+                const qtyInput = row.querySelector('.qty-input');
+                const qty = qtyInput ? qtyInput.value : 0;
+                const itemTotalElement = document.getElementById(`item-total-${cb.value}`);
+                const itemTotal = itemTotalElement ? parseInt(itemTotalElement.getAttribute('data-value') || 0) : 0;
+                const itemTotalStr = itemTotalElement ? itemTotalElement.innerText : '0₫';
+                
+                subtotal += itemTotal;
+                count += parseInt(qty);
+
+                // Add to summary detail list
+                const itemHtml = `
+                    <div class="d-flex justify-content-between align-items-center mb-2 animate__animated animate__fadeIn">
+                        <span class="small text-truncate me-2" style="max-width: 150px;">${name}</span>
+                        <span class="small text-muted">x${qty}</span>
+                        <span class="small fw-bold ms-auto">${itemTotalStr}</span>
+                    </div>
+                `;
+                listContainer.insertAdjacentHTML('beforeend', itemHtml);
             });
-        }
-        updateSummary();
-    });
 
-    function updateSummary() {
-        let subtotal = 0;
-        let count = 0;
-        const checkboxes = document.querySelectorAll('.item-checkbox:checked');
-        const listContainer = document.getElementById('selected-items-list');
-        listContainer.innerHTML = ''; // Clear current list
-        
-        checkboxes.forEach(cb => {
-            const row = document.getElementById(`cart-row-${cb.value}`);
-            const name = row.querySelector('.fw-bold').innerText;
-            const qty = row.querySelector('.qty-input').value;
-            const itemTotalStr = document.getElementById(`item-total-${cb.value}`).innerText;
-            const itemTotal = parseInt(itemTotalStr.replace(/\./g, '').replace('₫', ''));
+            const formatted = new Intl.NumberFormat('vi-VN').format(subtotal) + '₫';
+            const subtotalEl = document.getElementById('summary-subtotal');
+            const totalEl = document.getElementById('summary-total');
+            const countEl = document.getElementById('selected-count');
+
+            if (subtotalEl) subtotalEl.innerText = formatted;
+            if (totalEl) totalEl.innerText = formatted;
+            if (countEl) countEl.innerText = count;
             
-            subtotal += itemTotal;
-            count += parseInt(qty);
-
-            // Add to summary detail list
-            const itemHtml = `
-                <div class="d-flex justify-content-between align-items-center mb-2 animate__animated animate__fadeIn">
-                    <span class="small text-truncate me-2" style="max-width: 150px;">${name}</span>
-                    <span class="small text-muted">x${qty}</span>
-                    <span class="small fw-bold ms-auto">${itemTotalStr}</span>
-                </div>
-            `;
-            listContainer.insertAdjacentHTML('beforeend', itemHtml);
-        });
-
-        const formatted = new Intl.NumberFormat('vi-VN').format(subtotal) + '₫';
-        document.getElementById('summary-subtotal').innerText = formatted;
-        document.getElementById('summary-total').innerText = formatted;
-        document.getElementById('selected-count').innerText = count;
-        
-        const checkoutBtn = document.querySelector('a[href*="{{ route("checkout.index") }}"]');
-        if (checkboxes.length === 0) {
-            checkoutBtn.classList.add('disabled', 'opacity-50');
-            checkoutBtn.style.pointerEvents = 'none';
-            listContainer.innerHTML = '<p class="text-muted small text-center py-2">Chưa chọn sản phẩm nào</p>';
-        } else {
-            checkoutBtn.classList.remove('disabled', 'opacity-50');
-            checkoutBtn.style.pointerEvents = 'auto';
-            
-            const selectedIds = Array.from(checkboxes).map(cb => cb.value).join(',');
-            checkoutBtn.href = `{{ route("checkout.index") }}?ids=${selectedIds}`;
-        }
-    }
-
-    function changeQty(id, delta) {
-        const input = document.getElementById(`qty-input-${id}`);
-        const row = document.getElementById(`cart-row-${id}`);
-        const price = parseInt(row.getAttribute('data-price'));
-        let newQty = parseInt(input.value) + delta;
-        
-        if (newQty < 1) return;
-
-        // Cập nhật giao diện ngay lập tức
-        input.value = newQty;
-        const newItemTotal = price * newQty;
-        document.getElementById(`item-total-${id}`).innerText = new Intl.NumberFormat('vi-VN').format(newItemTotal) + '₫';
-        
-        updateSummary(); // Cập nhật tổng đơn hàng ngay lập tức
-        updateCartAjax(id, newQty); // Đồng bộ với server sau
-    }
-
-    function updateCartAjax(id, qty) {
-        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-        
-        fetch(`{{ route('cart.ajaxUpdate') }}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
-            body: JSON.stringify({ id: id, qty: qty })
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.status === 'success') {
-                // Đảm bảo con số cuối cùng khớp với server (trường hợp có khuyến mãi hoặc giá thay đổi)
-                document.getElementById(`item-total-${id}`).innerText = data.itemTotal;
-                updateSummary();
-                
-                const cartBadge = document.getElementById('cart-count-badge');
-                if (cartBadge) {
-                    cartBadge.innerText = data.cartCount;
-                    cartBadge.classList.remove('d-none');
+            const checkoutBtn = document.querySelector('a[href*="{{ route("checkout.index") }}"]');
+            if (checkoutBtn) {
+                if (checkboxes.length === 0) {
+                    checkoutBtn.classList.add('disabled', 'opacity-50');
+                    checkoutBtn.style.pointerEvents = 'none';
+                    listContainer.innerHTML = '<p class="text-muted small text-center py-2">Chưa chọn sản phẩm nào</p>';
+                } else {
+                    checkoutBtn.classList.remove('disabled', 'opacity-50');
+                    checkoutBtn.style.pointerEvents = 'auto';
+                    
+                    const selectedIds = Array.from(checkboxes).map(cb => cb.value).join(',');
+                    checkoutBtn.href = `{{ route("checkout.index") }}?ids=${selectedIds}`;
                 }
-            } else if (data.status === 'error') {
-                alert(data.message);
-                location.reload();
             }
-        });
-    }
+        };
 
-    function removeCartItem(id) {
-        if (!confirm('Xóa tuyệt tác này khỏi giỏ?')) return;
+        window.changeQty = function(id, delta) {
+            const input = document.getElementById(`qty-input-${id}`);
+            if (!input) return;
 
-        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-        
-        fetch(`{{ route('cart.ajaxRemove') }}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
-            body: JSON.stringify({ id: id })
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.status === 'success') {
-                const row = document.getElementById(`cart-row-${id}`);
-                row.style.opacity = '0';
-                row.style.transform = 'translateX(20px)';
-                
-                setTimeout(() => {
-                    row.remove();
-                    if (data.isEmpty) {
-                        location.reload();
-                    } else {
-                        updateSummary();
-                        
-                        const cartBadge = document.getElementById('cart-count-badge');
-                        if (cartBadge) {
-                            cartBadge.innerText = data.cartCount;
-                            if (data.cartCount <= 0) cartBadge.classList.add('d-none');
-                        }
-                        
-                        const rows = document.querySelectorAll('#cart-table-body tr').length;
-                        document.getElementById('total-items-badge').innerText = rows + ' ĐẦU SÁCH';
+            const row = document.getElementById(`cart-row-${id}`);
+            const price = parseInt(row.getAttribute('data-price'));
+            let newQty = parseInt(input.value) + delta;
+            
+            if (newQty < 1) return;
+
+            // Cập nhật giao diện ngay lập tức
+            input.value = newQty;
+            const newItemTotal = price * newQty;
+            const itemTotalEl = document.getElementById(`item-total-${id}`);
+            if (itemTotalEl) {
+                itemTotalEl.innerText = new Intl.NumberFormat('vi-VN').format(newItemTotal) + '₫';
+                itemTotalEl.setAttribute('data-value', newItemTotal);
+            }
+            
+            updateSummary(); // Cập nhật tổng đơn hàng ngay lập tức
+            updateCartAjax(id, newQty); // Đồng bộ với server sau
+        };
+
+        window.updateCartAjax = function(id, qty) {
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            
+            fetch(`{{ route('cart.ajaxUpdate') }}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
+                body: JSON.stringify({ id: id, qty: qty })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const row = document.getElementById(`cart-row-${id}`);
+                    if (row && data.unitPrice) {
+                        row.setAttribute('data-price', data.unitPrice);
                     }
-                }, 300);
-            }
-        });
-    }
+                    
+                    const itemTotalEl = document.getElementById(`item-total-${id}`);
+                    if (itemTotalEl) {
+                        itemTotalEl.innerText = data.itemTotal;
+                        const numericValue = parseInt(data.itemTotal.replace(/\./g, '').replace('₫', ''));
+                        itemTotalEl.setAttribute('data-value', numericValue);
+                    }
+                    updateSummary();
+                    
+                    const cartBadge = document.getElementById('cart-count-badge');
+                    if (cartBadge) {
+                        cartBadge.innerText = data.cartCount;
+                        cartBadge.classList.remove('d-none');
+                    }
+                } else if (data.status === 'error') {
+                    alert(data.message);
+                    location.reload();
+                }
+            });
+        };
+
+        window.removeCartItem = function(id) {
+            if (!confirm('Xóa tuyệt tác này khỏi giỏ?')) return;
+
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            
+            fetch(`{{ route('cart.ajaxRemove') }}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
+                body: JSON.stringify({ id: id })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const row = document.getElementById(`cart-row-${id}`);
+                    row.style.opacity = '0';
+                    row.style.transform = 'translateX(20px)';
+                    
+                    setTimeout(() => {
+                        row.remove();
+                        if (data.isEmpty) {
+                            location.reload();
+                        } else {
+                            updateSummary();
+                            
+                            const cartBadge = document.getElementById('cart-count-badge');
+                            if (cartBadge) {
+                                cartBadge.innerText = data.cartCount;
+                                if (data.cartCount <= 0) cartBadge.classList.add('d-none');
+                            }
+                            
+                            const rows = document.querySelectorAll('#cart-table-body tr').length;
+                            const badge = document.getElementById('total-items-badge');
+                            if (badge) badge.innerText = rows + ' ĐẦU SÁCH';
+                        }
+                    }, 300);
+                }
+            });
+        };
+
+        // Initialize immediately
+        initCartPage();
+    })();
 </script>
-@endpush
 @endsection

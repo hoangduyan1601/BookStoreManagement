@@ -53,6 +53,16 @@
         from { opacity: 0; transform: scale(0.8) translateY(20px); }
         to { opacity: 1; transform: scale(1) translateY(0); }
     }
+
+    @keyframes shake {
+        0% { transform: scale(1); }
+        10%, 20% { transform: scale(1.1) rotate(-3deg); }
+        30%, 50%, 70%, 90% { transform: scale(1.1) rotate(3deg); }
+        40%, 60%, 80% { transform: scale(1.1) rotate(-3deg); }
+        100% { transform: scale(1) rotate(0); }
+    }
+    .shake-animation { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
+
     .user-msg {
         align-self: flex-end !important;
         background: linear-gradient(135deg, #1e293b 0%, #334155 100%) !important;
@@ -91,16 +101,51 @@ document.addEventListener('DOMContentLoaded', function() {
     const input = document.getElementById('chat-input');
     const msgBox = document.getElementById('chat-messages');
 
-    toggle.addEventListener('click', () => {
-        window.classList.toggle('active');
-        document.getElementById('bot-notif').style.display = 'none';
-        if(window.classList.contains('active')) {
+    toggle.addEventListener('click', async () => {
+        const isActive = window.classList.toggle('active');
+        const notif = document.getElementById('bot-notif');
+        
+        if(isActive) {
+            notif.style.display = 'none';
+            notif.textContent = '0';
             input.focus();
-            loadHistory();
+            await loadHistory();
+            // Đánh dấu đã đọc khi mở chat
+            fetch("{{ route('chatbot.mark-read') }}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
+            });
         }
     });
 
     close.addEventListener('click', () => window.classList.remove('active'));
+
+    // Kiểm tra tin nhắn chưa đọc định kỳ
+    async function checkUnread() {
+        if(window.classList.contains('active')) return;
+        
+        try {
+            const response = await fetch("{{ route('chatbot.unread') }}");
+            const data = await response.json();
+            if(data.unread_count > 0) {
+                const notif = document.getElementById('bot-notif');
+                notif.textContent = data.unread_count;
+                notif.style.display = 'block';
+                
+                // Hiệu ứng rung logo để gây chú ý
+                toggle.classList.add('shake-animation');
+                setTimeout(() => toggle.classList.remove('shake-animation'), 500);
+            }
+        } catch (error) {
+            console.error('Error checking unread:', error);
+        }
+    }
+
+    // Chạy kiểm tra ngay khi load và mỗi 30s
+    checkUnread();
+    setInterval(checkUnread, 30000);
 
     async function loadHistory() {
         if(msgBox.dataset.loaded === 'true') return;
@@ -165,6 +210,18 @@ document.addEventListener('DOMContentLoaded', function() {
         if(side === 'bot') {
             msg.style = 'align-self: flex-start; background: #fff; padding: 12px 16px; border-radius: 1rem 1rem 1rem 0; box-shadow: 0 2px 4px rgba(0,0,0,0.05); max-width: 85%; font-size: 0.9rem; border: 1px solid #e2e8f0;';
             msg.innerHTML = marked.parse(text);
+
+            // Hiển thị thông báo nếu cửa sổ chat đang đóng
+            if(!window.classList.contains('active')) {
+                const notif = document.getElementById('bot-notif');
+                let count = parseInt(notif.textContent) || 0;
+                count++;
+                notif.textContent = count;
+                notif.style.display = 'block';
+                
+                toggle.classList.add('shake-animation');
+                setTimeout(() => toggle.classList.remove('shake-animation'), 500);
+            }
         } else {
             msg.textContent = text;
         }

@@ -138,7 +138,7 @@
                                     $template = "compact2";
                                     $amount = (int)$order->TongTien;
                                     $description = "CK " . $order->MaDH;
-                                    $accountName = "LUXURY BOOKSTORE";
+                                    $accountName = "HOANG DUY AN";
                                     $qrUrl = "https://img.vietqr.io/image/{$bankId}-{$accountNo}-{$template}.png?amount={$amount}&addInfo=" . urlencode($description) . "&accountName=" . urlencode($accountName);
                                 @endphp
                                 <img src="{{ $qrUrl }}" alt="QR Thanh toán" class="img-fluid rounded-3 mb-2" style="max-width: 180px;">
@@ -163,38 +163,59 @@
                     function confirmPayment() {
                         const btn = document.getElementById('btn-confirm-payment');
                         const overlay = document.getElementById('payment-status-overlay');
+                        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
                         
                         btn.disabled = true;
-                        btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin me-1"></i> ĐANG CHỜ NGÂN HÀNG...';
-                        overlay.classList.remove('d-none');
-                        overlay.classList.add('d-flex');
+                        btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin me-1"></i> ĐANG GỬI XÁC NHẬN...';
 
-                        // Bắt đầu kiểm tra trạng thái tự động mỗi 3 giây
-                        const checkInterval = setInterval(() => {
-                            fetch('{{ route("checkout.checkStatus", $order->MaDH) }}')
-                                .then(res => res.json())
-                                .then(data => {
-                                    if (data.is_paid) {
-                                        clearInterval(checkInterval);
-                                        overlay.innerHTML = `
-                                            <i class="fa-solid fa-circle-check text-success fs-1 mb-2"></i>
-                                            <div class="small fw-bold text-success">THANH TOÁN THÀNH CÔNG!</div>
-                                        `;
-                                        btn.innerHTML = '<i class="fa-solid fa-check me-1"></i> GIAO DỊCH HOÀN TẤT';
-                                        btn.className = 'btn btn-sm btn-success text-white rounded-pill px-4 fw-bold extra-small';
-                                        
-                                        // Có thể reload lại trang sau 2 giây để cập nhật toàn bộ UI
-                                        setTimeout(() => location.reload(), 2000);
-                                    }
-                                });
-                        }, 3000);
+                        // Gửi thông báo cho server rằng người dùng đã chuyển khoản
+                        fetch('{{ route("checkout.confirmBankTransfer", $order->MaDH) }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': csrfToken,
+                                'Accept': 'application/json'
+                            }
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.status === 'success') {
+                                btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin me-1"></i> ĐANG CHỜ NGÂN HÀNG...';
+                                overlay.classList.remove('d-none');
+                                overlay.classList.add('d-flex');
 
-                        // Tự động dừng sau 5 phút để tiết kiệm tài nguyên
-                        setTimeout(() => clearInterval(checkInterval), 300000);
+                                // Bắt đầu kiểm tra trạng thái tự động mỗi 3 giây
+                                const checkInterval = setInterval(() => {
+                                    fetch('{{ route("checkout.checkStatus", $order->MaDH) }}')
+                                        .then(res => res.json())
+                                        .then(data => {
+                                            if (data.is_paid) {
+                                                clearInterval(checkInterval);
+                                                overlay.innerHTML = `
+                                                    <i class="fa-solid fa-circle-check text-success fs-1 mb-2"></i>
+                                                    <div class="small fw-bold text-success">GIAO DỊCH ĐÃ ĐƯỢC GHI NHẬN!</div>
+                                                `;
+                                                btn.innerHTML = '<i class="fa-solid fa-check me-1"></i> GIAO DỊCH HOÀN TẤT';
+                                                btn.className = 'btn btn-sm btn-success text-white rounded-pill px-4 fw-bold extra-small';
+                                                
+                                                setTimeout(() => location.reload(), 2000);
+                                            }
+                                        });
+                                }, 3000);
+
+                                setTimeout(() => clearInterval(checkInterval), 300000);
+                            } else {
+                                alert('Có lỗi xảy ra: ' + data.message);
+                                btn.disabled = false;
+                                btn.innerHTML = '<i class="fa-solid fa-paper-plane me-1"></i> TÔI ĐÃ CHUYỂN KHOẢN';
+                            }
+                        })
+                        .catch(err => {
+                            console.error(err);
+                            btn.disabled = false;
+                            btn.innerHTML = '<i class="fa-solid fa-paper-plane me-1"></i> TÔI ĐÃ CHUYỂN KHOẢN';
+                        });
                     }
-
-                    // Tự động chạy confirmPayment nếu muốn khách hàng không cần bấm
-                    // window.onload = confirmPayment;
                 </script>
                 @endpush
             @endif

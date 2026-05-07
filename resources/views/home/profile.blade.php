@@ -130,6 +130,7 @@
                                         <td>
                                             @php
                                                 $s = match($order->TrangThai) {
+                                                    'ChoThanhToan' => ['#fef2f2', '#991b1b', 'Chờ thanh toán'],
                                                     'ChoXacNhan' => ['#fffbeb', '#92400e', 'Chờ xác nhận'],
                                                     'DaXacNhan'  => ['#eff6ff', '#1e40af', 'Đã xác nhận'],
                                                     'DangGiao'   => ['#f0f9ff', '#0369a1', 'Đang giao'],
@@ -141,7 +142,7 @@
                                         <td class="text-center">
                                             <div class="d-flex justify-content-center gap-2">
                                                 <button onclick="viewOrderDetail({{ $order->MaDH }})" class="btn btn-sm btn-dark rounded-pill px-3 py-1 fw-bold extra-small ls-1">CHI TIẾT</button>
-                                                @if($order->TrangThai === 'ChoXacNhan')
+                                                @if(in_array($order->TrangThai, ['ChoThanhToan', 'ChoXacNhan']))
                                                     <form action="{{ route('orders.cancel', $order->MaDH) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này?')" class="no-barba">
                                                         @csrf
                                                         <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1 fw-bold extra-small ls-1">HỦY</button>
@@ -347,7 +348,7 @@
             .then(order => {
                 const date = new Date(order.NgayDat).toLocaleString('vi-VN');
                 const statusMap = {
-                    'ChoXacNhan': 'Chờ xác nhận', 'DaXacNhan': 'Đã xác nhận', 'DangGiao': 'Đang giao', 'DaGiao': 'Đã giao', 'DaHuy': 'Đã hủy'
+                    'ChoThanhToan': 'Chờ thanh toán', 'ChoXacNhan': 'Chờ xác nhận', 'DaXacNhan': 'Đã xác nhận', 'DangGiao': 'Đang giao', 'DaGiao': 'Đã giao', 'DaHuy': 'Đã hủy'
                 };
                 
                 let html = `
@@ -457,7 +458,7 @@
                     </div>
                     <div class="modal-footer border-0 p-4 pt-2 bg-white">
                         <button class="btn btn-light rounded-pill px-4 fw-bold small ls-1 border" data-bs-dismiss="modal">ĐÓNG</button>
-                        ${order.TrangThai === 'ChoXacNhan' ? `
+                        ${['ChoThanhToan', 'ChoXacNhan'].includes(order.TrangThai) ? `
                             <form action="/orders/cancel/${order.MaDH}" method="POST" onsubmit="return confirm('Hành động này không thể hoàn tác. Bạn chắc chắn muốn hủy đơn hàng?')" class="no-barba">
                                 <input type="hidden" name="_token" value="${document.querySelector('meta[name="csrf-token"]').getAttribute('content')}">
                                 <button type="submit" class="btn btn-outline-danger rounded-pill px-4 fw-bold small ls-1">HỦY ĐƠN HÀNG</button>

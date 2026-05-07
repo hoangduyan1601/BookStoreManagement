@@ -53,12 +53,13 @@ class CheckoutController extends Controller
                     $cart[$item->MaSP] = [
                         'id'    => $item->MaSP,
                         'name'  => $item->sanPham->TenSP,
-                        'price' => $item->sanPham->DonGia,
+                        'price' => $item->sanPham->gia_hien_tai,
+                        'original_price' => $item->sanPham->DonGia,
                         'qty'   => $item->SoLuong,
                         'image' => $item->sanPham->HinhAnh,
                         'ma_dm' => $item->sanPham->MaDM
                     ];
-                    $totalPrice += $item->sanPham->DonGia * $item->SoLuong;
+                    $totalPrice += $item->sanPham->gia_hien_tai * $item->SoLuong;
                 }
             }
         }
@@ -255,11 +256,55 @@ class CheckoutController extends Controller
         $order = DonHang::find($id);
         if (!$order) return response()->json(['status' => 'error'], 404);
         
+        // Đã thanh toán nếu trạng thái không phải là ChoThanhToan
         return response()->json([
             'order_id' => $order->MaDH,
             'status' => $order->TrangThai,
-            'is_paid' => $order->TrangThai !== 'ChoXacNhan'
+            'is_paid' => !in_array($order->TrangThai, ['ChoThanhToan'])
         ]);
+    }
+
+    public function confirmBankTransfer($id)
+    {
+        $order = DonHang::findOrFail($id);
+        $user = Auth::user();
+        $khachHang = KhachHang::where('MaTK', $user->MaTK)->first();
+
+        // Kiểm tra quyền sở hữu đơn hàng (dùng so sánh không nghiêm ngặt để tránh lỗi kiểu dữ liệu)
+        if (!$khachHang || $order->MaKH != $khachHang->MaKH) {
+            return response()->json(['status' => 'error', 'message' => 'Bạn không có quyền xác nhận đơn hàng này.'], 403);
+        }
+
+        // Nếu đã xác nhận rồi hoặc đã thanh toán rồi thì trả về thành công luôn
+        if (in_array($order->TrangThai, ['ChoXacNhan', 'DaXacNhan', 'DaGiao'])) {
+            return response()->json(['status' => 'success']);
+        }
+
+        if ($order->TrangThai !== 'ChoThanhToan') {
+            return response()->json(['status' => 'error', 'message' => 'Trạng thái đơn hàng không hợp lệ để xác nhận.'], 400);
+        }
+
+        DB::beginTransaction();
+        try {
+            $order->update([
+                'TrangThai' => 'ChoXacNhan',
+                'SoTienDaThanhToan' => $order->TongTien 
+            ]);
+
+            // Gửi thông báo cho Admin
+            try {
+                Notification::route('mail', config('mail.from.address'))
+                    ->notify(new NewOrderNotification($order->load('khachHang')));
+            } catch (\Exception $e) {
+                \Log::error('Lỗi gửi email xác nhận chuyển khoản: ' . $e->getMessage());
+            }
+
+            DB::commit();
+            return response()->json(['status' => 'success']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
+        }
     }
 
     public function applyPromotion(Request $request)

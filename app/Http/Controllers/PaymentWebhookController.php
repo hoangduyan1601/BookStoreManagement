@@ -51,7 +51,10 @@ class PaymentWebhookController extends Controller
                             DB::beginTransaction();
                             try {
                                 // 4. Cập nhật trạng thái đơn hàng
-                                $order->update(['TrangThai' => 'DaXacNhan']); // Chuyển sang Đã xác nhận
+                                $order->update([
+                                    'TrangThai' => 'DaXacNhan',
+                                    'SoTienDaThanhToan' => $amount
+                                ]); // Chuyển sang Đã xác nhận
 
                                 // 5. Tạo thông báo cho khách hàng (Hệ thống)
                                 ThongBao::create([

@@ -176,7 +176,12 @@
                     <div class="p-3 d-flex flex-column flex-grow-1">
                         <a href="{{ route('sanpham.detail', $sp->MaSP) }}" class="product-name text-decoration-none fw-bold mb-2" style="font-size: 14px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 40px;">{{ $sp->TenSP }}</a>
                         <div class="mt-auto">
-                            <div class="fw-bold fs-5 mb-3" style="color: var(--gold-light);">{{ number_format($sp->DonGia,0,',','.') }}₫</div>
+                            @if($sp->khuyen_mai_active)
+                                <div class="text-muted extra-small text-decoration-line-through">{{ number_format($sp->DonGia, 0, ',', '.') }}₫</div>
+                                <div class="fw-bold fs-5 mb-3" style="color: var(--gold-light);">{{ number_format($sp->gia_hien_tai, 0, ',', '.') }}₫</div>
+                            @else
+                                <div class="fw-bold fs-5 mb-3" style="color: var(--gold-light);">{{ number_format($sp->DonGia, 0, ',', '.') }}₫</div>
+                            @endif
                             <a href="{{ route('sanpham.detail', $sp->MaSP) }}" class="btn btn-outline-light w-100 py-2 fs-6" style="border-color: rgba(255,255,255,0.2);">Xem ngay</a>
                         </div>
                     </div>

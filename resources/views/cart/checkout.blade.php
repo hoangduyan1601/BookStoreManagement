@@ -99,7 +99,12 @@
                                 </div>
                                 <div class="ms-3 flex-grow-1">
                                     <div class="fw-bold text-dark text-truncate small" style="max-width: 200px;">{{ $item['name'] }}</div>
-                                    <small class="text-muted extra-small">{{ number_format($item['price'], 0, ',', '.') }}₫</small>
+                                    @if($item['price'] < $item['original_price'])
+                                        <small class="text-muted extra-small text-decoration-line-through">{{ number_format($item['original_price'], 0, ',', '.') }}₫</small>
+                                        <small class="text-danger fw-bold extra-small ms-1">{{ number_format($item['price'], 0, ',', '.') }}₫</small>
+                                    @else
+                                        <small class="text-muted extra-small">{{ number_format($item['price'], 0, ',', '.') }}₫</small>
+                                    @endif
                                 </div>
                                 <div class="fw-bold text-dark small">{{ number_format($item['price'] * $item['qty'], 0, ',', '.') }}₫</div>
                             </div>
@@ -186,62 +191,68 @@
     .hover-bg-light:hover { background-color: var(--bg-soft); }
 </style>
 
-@push('scripts')
 <script>
-function usePromo(code) {
-    document.getElementById('promo-code').value = code;
-    applyPromotion();
-}
-
-function applyPromotion() {
-    const promoCode = document.getElementById('promo-code').value;
-    const errorDiv = document.getElementById('promo-error');
-    const successDiv = document.getElementById('promo-success');
-    const discountRow = document.getElementById('discount-row');
-    const discountAmountSpan = document.getElementById('discount-amount');
-    const totalPriceSpan = document.getElementById('total-price');
-
-    errorDiv.textContent = '';
-    successDiv.textContent = '';
-
-    if (!promoCode) return;
-
-    fetch('{{ route("checkout.applyPromotion") }}', {
-        method: 'POST',
-        headers: { 
-            'Content-Type': 'application/json', 
-            'X-CSRF-TOKEN': '{{ csrf_token() }}', 
-            'X-Requested-With': 'XMLHttpRequest' 
-        },
-        body: JSON.stringify({ promo_code: promoCode })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.status === 'success') {
-            successDiv.textContent = data.message;
-            
-            // Cập nhật giao diện
-            if (discountRow) {
-                discountRow.style.setProperty('display', 'flex', 'important');
+    (function() {
+        window.usePromo = function(code) {
+            const promoInput = document.getElementById('promo-code');
+            if (promoInput) {
+                promoInput.value = code;
+                applyPromotion();
             }
+        };
+
+        window.applyPromotion = function() {
+            const promoCodeInput = document.getElementById('promo-code');
+            if (!promoCodeInput) return;
             
-            if (discountAmountSpan) {
-                discountAmountSpan.textContent = '-' + Math.round(data.discount_amount).toLocaleString('vi-VN') + '₫';
-            }
-            
-            if (totalPriceSpan) {
-                totalPriceSpan.textContent = Math.round(data.new_total).toLocaleString('vi-VN') + '₫';
-            }
-        } else {
-            errorDiv.textContent = data.message;
-            if (discountRow) discountRow.style.display = 'none';
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        errorDiv.textContent = 'Có lỗi xảy ra, vui lòng thử lại.';
-    });
-}
+            const promoCode = promoCodeInput.value;
+            const errorDiv = document.getElementById('promo-error');
+            const successDiv = document.getElementById('promo-success');
+            const discountRow = document.getElementById('discount-row');
+            const discountAmountSpan = document.getElementById('discount-amount');
+            const totalPriceSpan = document.getElementById('total-price');
+
+            if (errorDiv) errorDiv.textContent = '';
+            if (successDiv) successDiv.textContent = '';
+
+            if (!promoCode) return;
+
+            fetch('{{ route("checkout.applyPromotion") }}', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json', 
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}', 
+                    'X-Requested-With': 'XMLHttpRequest' 
+                },
+                body: JSON.stringify({ promo_code: promoCode })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    if (successDiv) successDiv.textContent = data.message;
+                    
+                    // Cập nhật giao diện
+                    if (discountRow) {
+                        discountRow.style.setProperty('display', 'flex', 'important');
+                    }
+                    
+                    if (discountAmountSpan) {
+                        discountAmountSpan.textContent = '-' + Math.round(data.discount_amount).toLocaleString('vi-VN') + '₫';
+                    }
+                    
+                    if (totalPriceSpan) {
+                        totalPriceSpan.textContent = Math.round(data.new_total).toLocaleString('vi-VN') + '₫';
+                    }
+                } else {
+                    if (errorDiv) errorDiv.textContent = data.message;
+                    if (discountRow) discountRow.style.display = 'none';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                if (errorDiv) errorDiv.textContent = 'Có lỗi xảy ra, vui lòng thử lại.';
+            });
+        };
+    })();
 </script>
-@endpush
 @endsection

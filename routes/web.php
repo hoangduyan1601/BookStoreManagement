@@ -60,6 +60,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/checkout', [CheckoutController::class, 'process'])->name('checkout.process');
     Route::get('/checkout/success/{id}', [CheckoutController::class, 'success'])->name('checkout.success');
     Route::get('/checkout/check-status/{id}', [CheckoutController::class, 'checkStatus'])->name('checkout.checkStatus');
+    Route::post('/checkout/confirm-bank-transfer/{id}', [CheckoutController::class, 'confirmBankTransfer'])->name('checkout.confirmBankTransfer');
     Route::post('/checkout/change-method/{id}', [CheckoutController::class, 'changePaymentMethod'])->name('checkout.changeMethod');
     Route::post('/checkout/apply-promotion', [CheckoutController::class, 'applyPromotion'])->name('checkout.applyPromotion');
 
@@ -83,6 +84,8 @@ Route::match(['get', 'post'], '/vnpay-ipn', [VNPayController::class, 'vnpayIPN']
 // Chatbot AI (Cho phép cả khách vãng lai)
 Route::post('/chatbot/chat', [\App\Http\Controllers\ChatbotController::class, 'chat'])->name('chatbot.chat');
 Route::get('/chatbot/history', [\App\Http\Controllers\ChatbotController::class, 'getHistory'])->name('chatbot.history');
+Route::get('/chatbot/unread', [\App\Http\Controllers\ChatbotController::class, 'checkUnread'])->name('chatbot.unread');
+Route::post('/chatbot/mark-read', [\App\Http\Controllers\ChatbotController::class, 'markAsRead'])->name('chatbot.mark-read');
 
 // Admin routes
 Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(function () {

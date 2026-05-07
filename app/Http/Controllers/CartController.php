@@ -41,11 +41,12 @@ class CartController extends Controller
                     $cart[$ct->MaSP] = [
                         'id'    => $ct->MaSP,
                         'name'  => $ct->sanPham->TenSP,
-                        'price' => $ct->sanPham->DonGia,
+                        'price' => $ct->sanPham->gia_hien_tai,
+                        'original_price' => $ct->sanPham->DonGia,
                         'image' => $ct->sanPham->HinhAnh,
                         'qty'   => $ct->SoLuong
                     ];
-                    $totalPrice += $ct->sanPham->DonGia * $ct->SoLuong;
+                    $totalPrice += $ct->sanPham->gia_hien_tai * $ct->SoLuong;
                 }
             }
         }
@@ -167,31 +168,36 @@ class CartController extends Controller
             $gioHang = GioHang::where('MaKH', $khachHang->MaKH)->first();
             if ($gioHang) {
                 if ($qty <= 0) {
-                    DB::table('chitietgiohang')->where('MaGH', $gioHang->MaGH)->where('MaSP', $id)->delete();
+                    ChiTietGioHang::where('MaGH', $gioHang->MaGH)->where('MaSP', $id)->delete();
                 } else {
-                    DB::table('chitietgiohang')->where('MaGH', $gioHang->MaGH)->where('MaSP', $id)->update(['SoLuong' => $qty]);
+                    ChiTietGioHang::where('MaGH', $gioHang->MaGH)->where('MaSP', $id)->update(['SoLuong' => $qty]);
                 }
 
-                $items = DB::table('chitietgiohang')
-                    ->join('sanpham', 'chitietgiohang.MaSP', '=', 'sanpham.MaSP')
-                    ->where('chitietgiohang.MaGH', $gioHang->MaGH)
-                    ->select('chitietgiohang.*', 'sanpham.DonGia')
-                    ->get();
+                $items = ChiTietGioHang::where('MaGH', $gioHang->MaGH)->with('sanPham')->get();
 
                 $totalPrice = 0;
                 $cartCount = 0;
-                foreach ($items as $item) {
-                    $totalPrice += $item->DonGia * $item->SoLuong;
-                    $cartCount += $item->SoLuong;
-                }
+                $currentItemTotal = 0;
+                $currentItemUnitPrice = 0;
 
-                $currentItem = $items->where('MaSP', $id)->first();
+                foreach ($items as $item) {
+                    if ($item->sanPham) {
+                        $price = $item->sanPham->gia_hien_tai;
+                        $totalPrice += $price * $item->SoLuong;
+                        $cartCount += $item->SoLuong;
+                        if ($item->MaSP == $id) {
+                            $currentItemTotal = $price * $item->SoLuong;
+                            $currentItemUnitPrice = $price;
+                        }
+                    }
+                }
 
                 return response()->json([
                     'status' => 'success',
                     'totalPrice' => number_format($totalPrice, 0, ',', '.') . '₫',
                     'cartCount' => (int)$cartCount,
-                    'itemTotal' => $currentItem ? number_format($currentItem->DonGia * $qty, 0, ',', '.') . '₫' : '0₫'
+                    'itemTotal' => number_format($currentItemTotal, 0, ',', '.') . '₫',
+                    'unitPrice' => $currentItemUnitPrice
                 ]);
             }
         }
@@ -207,19 +213,17 @@ class CartController extends Controller
         if ($khachHang) {
             $gioHang = GioHang::where('MaKH', $khachHang->MaKH)->first();
             if ($gioHang) {
-                DB::table('chitietgiohang')->where('MaGH', $gioHang->MaGH)->where('MaSP', $id)->delete();
+                ChiTietGioHang::where('MaGH', $gioHang->MaGH)->where('MaSP', $id)->delete();
 
-                $items = DB::table('chitietgiohang')
-                    ->join('sanpham', 'chitietgiohang.MaSP', '=', 'sanpham.MaSP')
-                    ->where('chitietgiohang.MaGH', $gioHang->MaGH)
-                    ->select('chitietgiohang.*', 'sanpham.DonGia')
-                    ->get();
+                $items = ChiTietGioHang::where('MaGH', $gioHang->MaGH)->with('sanPham')->get();
 
                 $totalPrice = 0;
                 $cartCount = 0;
                 foreach ($items as $item) {
-                    $totalPrice += $item->DonGia * $item->SoLuong;
-                    $cartCount += $item->SoLuong;
+                    if ($item->sanPham) {
+                        $totalPrice += $item->sanPham->gia_hien_tai * $item->SoLuong;
+                        $cartCount += $item->SoLuong;
+                    }
                 }
 
                 return response()->json([
