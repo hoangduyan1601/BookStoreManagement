@@ -1,0 +1,99 @@
+### BẢNG TỔNG HỢP ACTOR VÀ USE CASE DỰ ÁN BOOKSTORE (ĐẦY ĐỦ THEO MODELS)
+
+| STT | Actor | Use Case | Đối tượng Model liên quan | Mô tả chi tiết |
+|:---:|:---:|:---|:---|:---|
+| **1** | **Khách hàng** | Xem danh mục sách | `DanhMuc` | Xem sách theo thể loại. |
+| | | Tìm kiếm & Xem chi tiết | `SanPham`, `TacGia`, `NhaXuatBan`, `HinhAnhSanPham` | Tìm kiếm và xem thông tin đầy đủ về sách, tác giả, NXB. |
+| | | Quản lý giỏ hàng | `GioHang`, `ChiTietGioHang` | Thêm/Sửa/Xóa sản phẩm trong giỏ hàng. |
+| | | Đặt hàng & Thanh toán | `DonHang`, `ChiTietDonHang` | Tạo đơn hàng và thực hiện thanh toán. |
+| | | Theo dõi đơn hàng | `DonHang` | Xem trạng thái đơn hàng. |
+| | | Quản lý tài khoản | `TaiKhoan`, `User`, `KhachHang` | Cập nhật thông tin cá nhân và mật khẩu. |
+| | | Quản lý yêu thích | `YeuThich` | Lưu danh sách sách yêu thích. |
+| | | Xem thông báo | `ThongBao` | Nhận thông báo về đơn hàng hoặc khuyến mãi. |
+| | | Chat hỗ trợ/AI | `ChatMessage` | Gửi tin nhắn hỗ trợ hoặc chat với AI. |
+| **2** | **Admin** | Quản lý danh mục | `DanhMuc` | Quản lý các thể loại sách. |
+| | | Quản lý sách | `SanPham`, `ChiTietSanPham`, `HinhAnhSanPham` | Quản lý kho sách và thông tin kỹ thuật của sách. |
+| | | Quản lý Tác giả & NXB | `TacGia`, `NhaXuatBan` | Quản lý thông tin tác giả và nhà xuất bản. |
+| | | Quản lý đơn hàng | `DonHang`, `ChiTietDonHang` | Tiếp nhận và xử lý đơn hàng. |
+| | | Quản lý nhập hàng | `LichSuNhapHang`, `ChiTietNhapHang`, `NhaCungCap` | Quản lý phiếu nhập và nhà cung cấp. |
+| | | Quản lý khuyến mãi | `KhuyenMai` | Quản lý các chương trình ưu đãi, mã giảm giá. |
+| | | Quản lý khách hàng | `KhachHang`, `TaiKhoan` | Quản lý dữ liệu người dùng hệ thống. |
+| | | Quản lý bài viết | `BaiViet` | Quản lý nội dung blog/tin tức. |
+| | | Thống kê doanh thu | `DoanhThu` | Xem báo cáo tài chính và hiệu quả kinh doanh. |
+| | | Quản lý thông báo | `ThongBao` | Gửi thông báo hệ thống đến người dùng. |
+| **3** | **Hệ thống** | Đăng nhập / Đăng ký | `User`, `TaiKhoan` | Xác thực và phân quyền người dùng. |
+
+
+
+---
+
+### MÃ VẼ USE CASE (PLANTUML) - TOÀN DIỆN
+
+```plantuml
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+actor "Khách hàng" as KH
+actor "Admin" as AD
+
+rectangle "Hệ thống quản lý website bán sách" {
+    
+    usecase "Đăng nhập" as Login
+    
+    ' Use Cases Khách hàng
+    usecase "Xem danh mục & Sách" as KH_UC1
+    usecase "Quản lý giỏ hàng" as KH_UC2
+    usecase "Đặt hàng & Thanh toán" as KH_UC3
+    usecase "Theo dõi đơn hàng" as KH_UC4
+    usecase "Quản lý hồ sơ & Yêu thích" as KH_UC5
+    usecase "Xem thông báo" as KH_UC6
+    usecase "Chat hỗ trợ" as KH_UC7
+
+    ' Use Cases Admin
+    usecase "Quản lý Sản phẩm & Danh mục" as AD_UC1
+    usecase "Quản lý Tác giả & NXB" as AD_UC2
+    usecase "Quản lý Đơn hàng" as AD_UC3
+    usecase "Quản lý Nhập hàng & NCC" as AD_UC4
+    usecase "Quản lý Khuyến mãi" as AD_UC5
+    usecase "Quản lý Bài viết" as AD_UC6
+    usecase "Báo cáo doanh thu" as AD_UC7
+    usecase "Quản lý Khách hàng" as AD_UC8
+
+    ' Kết nối Khách hàng
+    KH -- KH_UC1
+    KH -- KH_UC2
+    KH -- KH_UC3
+    KH -- KH_UC4
+    KH -- KH_UC5
+    KH -- KH_UC6
+    KH -- KH_UC7
+
+    ' Includes Khách hàng
+    KH_UC2 ..> Login : <<include>>
+    KH_UC3 ..> Login : <<include>>
+    KH_UC4 ..> Login : <<include>>
+    KH_UC5 ..> Login : <<include>>
+
+    ' Kết nối Admin
+    AD_UC1 -- AD
+    AD_UC2 -- AD
+    AD_UC3 -- AD
+    AD_UC4 -- AD
+    AD_UC5 -- AD
+    AD_UC6 -- AD
+    AD_UC7 -- AD
+    AD_UC8 -- AD
+
+    ' Includes Admin
+    AD_UC1 ..> Login : <<include>>
+    AD_UC2 ..> Login : <<include>>
+    AD_UC3 ..> Login : <<include>>
+    AD_UC4 ..> Login : <<include>>
+    AD_UC5 ..> Login : <<include>>
+    AD_UC6 ..> Login : <<include>>
+    AD_UC7 ..> Login : <<include>>
+    AD_UC8 ..> Login : <<include>>
+}
+@enduml
+```

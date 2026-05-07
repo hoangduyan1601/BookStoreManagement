@@ -6,6 +6,7 @@ use App\Http\Controllers\SanPhamController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\VNPayController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\AdminDanhMucController;
 use App\Http\Controllers\Admin\AdminTacGiaController;
@@ -62,6 +63,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/checkout/change-method/{id}', [CheckoutController::class, 'changePaymentMethod'])->name('checkout.changeMethod');
     Route::post('/checkout/apply-promotion', [CheckoutController::class, 'applyPromotion'])->name('checkout.applyPromotion');
 
+    // VNPay (Return can stay inside auth for user session, but IPN must be outside)
+    Route::post('/vnpay-payment/{orderId}', [VNPayController::class, 'createPayment'])->name('vnpay.payment');
+    Route::get('/vnpay-return', [VNPayController::class, 'vnpayReturn'])->name('vnpay.return');
+
     // Thông báo & Đơn hàng cho người dùng
     Route::post('/notifications/mark-as-read/{id}', [HomeController::class, 'markNotificationRead']);
     Route::post('/notifications/mark-all-read', [HomeController::class, 'markAllRead']);
@@ -72,6 +77,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/favorites', [YeuThichController::class, 'index'])->name('favorites.index');
     Route::post('/favorites/toggle', [YeuThichController::class, 'toggle'])->name('favorites.toggle');
 });
+
+Route::match(['get', 'post'], '/vnpay-ipn', [VNPayController::class, 'vnpayIPN'])->name('vnpay.ipn');
 
 // Chatbot AI (Cho phép cả khách vãng lai)
 Route::post('/chatbot/chat', [\App\Http\Controllers\ChatbotController::class, 'chat'])->name('chatbot.chat');

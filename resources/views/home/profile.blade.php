@@ -115,10 +115,16 @@
                                         <td class="ps-4 py-4 fw-bold">#{{ $order->MaDH }}</td>
                                         <td class="small text-muted">{{ date('d/m/Y H:i', strtotime($order->NgayDat)) }}</td>
                                         <td class="fw-bold text-dark">
-                                            @if($order->PhuongThucThanhToan === 'ChuyenKhoan')
-                                                <span class="text-success">0₫</span> <small class="text-muted" style="font-size: 0.6rem;">(Đã CK)</small>
+                                            @php
+                                                $soTienCanThu = max(0, $order->TongTien - ($order->SoTienDaThanhToan ?? 0));
+                                            @endphp
+                                            @if($soTienCanThu == 0)
+                                                <span class="text-success">0₫</span> 
+                                                <small class="text-muted" style="font-size: 0.6rem;">
+                                                    ({{ $order->PhuongThucThanhToan === 'VNPay' ? 'Đã thanh toán VNPay' : 'Đã CK' }})
+                                                </small>
                                             @else
-                                                {{ number_format($order->TongTien, 0, ',', '.') }}₫
+                                                {{ number_format($soTienCanThu, 0, ',', '.') }}₫
                                             @endif
                                         </td>
                                         <td>
@@ -183,10 +189,16 @@
                                         <td class="ps-4 py-4 fw-bold">#{{ $order->MaDH }}</td>
                                         <td class="small text-muted">{{ date('d/m/Y H:i', strtotime($order->NgayDat)) }}</td>
                                         <td class="fw-bold text-dark">
-                                            @if($order->PhuongThucThanhToan === 'ChuyenKhoan')
-                                                <span class="text-success">0₫</span> <small class="text-muted" style="font-size: 0.6rem;">(Đã CK)</small>
+                                            @php
+                                                $soTienCanThu = max(0, $order->TongTien - ($order->SoTienDaThanhToan ?? 0));
+                                            @endphp
+                                            @if($soTienCanThu == 0)
+                                                <span class="text-success">0₫</span> 
+                                                <small class="text-muted" style="font-size: 0.6rem;">
+                                                    ({{ $order->PhuongThucThanhToan === 'VNPay' ? 'Đã thanh toán VNPay' : 'Đã CK' }})
+                                                </small>
                                             @else
-                                                {{ number_format($order->TongTien, 0, ',', '.') }}₫
+                                                {{ number_format($soTienCanThu, 0, ',', '.') }}₫
                                             @endif
                                         </td>
                                         <td>
@@ -371,7 +383,10 @@
                             <div class="col-md-6">
                                 <div class="p-4 bg-light rounded-4 h-100 border-0 shadow-sm">
                                     <h6 class="fw-bold mb-3 text-dark small text-uppercase ls-1">Thanh toán & Vận chuyển</h6>
-                                    <div class="fw-bold text-dark mb-1">${order.PhuongThucThanhToan === 'TienMat' ? 'Thanh toán tiền mặt (COD)' : 'Chuyển khoản ngân hàng'}</div>
+                                    <div class="fw-bold text-dark mb-1">
+                                        ${order.PhuongThucThanhToan === 'TienMat' ? 'Thanh toán tiền mặt (COD)' : 
+                                          (order.PhuongThucThanhToan === 'VNPay' ? 'Thanh toán online qua VNPay' : 'Chuyển khoản ngân hàng')}
+                                    </div>
                                     <div class="text-secondary small">Hình thức: Giao hàng tiêu chuẩn</div>
                                     <div class="text-success small fw-bold mt-2">Phí vận chuyển: Miễn phí</div>
                                 </div>
@@ -423,24 +438,20 @@
                             <div class="pt-3 border-top border-secondary mt-2">
                                 <div class="d-flex justify-content-between mb-2">
                                     <span class="fw-bold text-uppercase ls-1 small opacity-75">Thanh toán</span>
-                                    <span class="fw-bold">${order.PhuongThucThanhToan === 'TienMat' ? 'Tại nhà (COD)' : 'Chuyển khoản'}</span>
+                                    <span class="fw-bold">
+                                        ${order.PhuongThucThanhToan === 'TienMat' ? 'Tại nhà (COD)' : 
+                                          (order.PhuongThucThanhToan === 'VNPay' ? 'VNPay Online' : 'Chuyển khoản')}
+                                    </span>
                                 </div>
                                 
-                                ${order.PhuongThucThanhToan === 'ChuyenKhoan' ? `
-                                    <div class="d-flex justify-content-between mb-2 text-success">
-                                        <span class="fw-bold text-uppercase ls-1 small">Đã thanh toán</span>
-                                        <span class="fw-bold">${Number(order.TongTien).toLocaleString('vi-VN')}₫</span>
-                                    </div>
-                                    <div class="d-flex justify-content-between">
-                                        <span class="fw-bold text-uppercase ls-1">Cần trả thêm</span>
-                                        <span class="fw-bold fs-3 text-warning">0₫</span>
-                                    </div>
-                                ` : `
-                                    <div class="d-flex justify-content-between">
-                                        <span class="fw-bold text-uppercase ls-1">Cần trả thêm</span>
-                                        <span class="fw-bold fs-3 text-warning">${Number(order.TongTien).toLocaleString('vi-VN')}₫</span>
-                                    </div>
-                                `}
+                                <div class="d-flex justify-content-between mb-2 text-success">
+                                    <span class="fw-bold text-uppercase ls-1 small">Đã thanh toán</span>
+                                    <span class="fw-bold">${Number(order.SoTienDaThanhToan || 0).toLocaleString('vi-VN')}₫</span>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span class="fw-bold text-uppercase ls-1">Cần trả thêm</span>
+                                    <span class="fw-bold fs-3 text-warning">${Math.max(0, Number(order.TongTien) - Number(order.SoTienDaThanhToan || 0)).toLocaleString('vi-VN')}₫</span>
+                                </div>
                             </div>
                         </div>
                     </div>

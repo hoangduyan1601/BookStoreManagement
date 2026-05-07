@@ -131,7 +131,7 @@ class CheckoutController extends Controller
 
         DB::beginTransaction();
         try {
-            $initialStatus = ($pttt === 'ChuyenKhoan') ? 'ChoThanhToan' : 'ChoXacNhan';
+            $initialStatus = ($pttt === 'ChuyenKhoan' || $pttt === 'VNPay') ? 'ChoThanhToan' : 'ChoXacNhan';
 
             $donHang = DonHang::create([
                 'NgayDat' => now(),
@@ -169,6 +169,11 @@ class CheckoutController extends Controller
 
             session()->forget('cart_promotion');
             DB::commit();
+
+            // Nếu chọn VNPay, chuyển hướng trực tiếp đến trang thanh toán
+            if ($pttt === 'VNPay') {
+                return app(VNPayController::class)->createPayment($request, $donHang->MaDH);
+            }
 
             // Gửi thông báo email CHỈ khi thanh toán tiền mặt (COD)
             // Với Chuyển khoản, email sẽ được gửi sau khi Webhook xác nhận tiền về

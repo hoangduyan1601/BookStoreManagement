@@ -60,7 +60,7 @@ class PaymentWebhookController extends Controller
                                     'NoiDung' => "Đơn hàng #{$order->MaDH} đã được thanh toán tự động qua ngân hàng. Chúng tôi đang chuẩn bị giao hàng cho bạn.",
                                     'NgayGui' => now(),
                                     'TrangThaiDoc' => false,
-                                    'LoaiTB' => 'ThanhToan',
+                                    'LoaiTB' => 'DonHang',
                                     'LienKet' => "/profile"
                                 ]);
 

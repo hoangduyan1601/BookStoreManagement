@@ -5,18 +5,18 @@
     <div class="row justify-content-center">
         <div class="col-lg-6 text-center">
             <div class="mb-5" data-aos="zoom-in">
-                @if($order->PhuongThucThanhToan === 'ChuyenKhoan' && $order->TrangThai === 'ChoThanhToan')
+                @if(($order->PhuongThucThanhToan === 'ChuyenKhoan' || $order->PhuongThucThanhToan === 'VNPay') && $order->TrangThai === 'ChoThanhToan')
                     <div class="d-inline-flex align-items-center justify-content-center bg-warning bg-opacity-10 rounded-circle mb-4" style="width: 100px; height: 100px;" id="status-icon-box">
                         <i class="fa-solid fa-clock text-warning fs-1"></i>
                     </div>
                     <h1 class="font-luxury display-4 mb-3" id="success-title">Đang Chờ Thanh Toán...</h1>
-                    <p class="text-muted lead" id="success-msg">Mọi thứ đã sẵn sàng. Vui lòng quét mã QR bên dưới để hoàn tất tuyệt tác của bạn.</p>
+                    <p class="text-muted lead" id="success-msg">Mọi thứ đã sẵn sàng. Vui lòng hoàn tất thanh toán để chúng tôi bắt đầu giao tác phẩm đến bạn.</p>
                 @else
-                    <div class="d-inline-flex align-items-center justify-content-center bg-success bg-opacity-10 rounded-circle mb-4" style="width: 100px; height: 100px;">
+                    <div class="d-inline-flex align-items-center justify-content-center bg-success bg-opacity-10 rounded-circle mb-4" style="width: 100px; height: 100px;" id="status-icon-box">
                         <i class="fa-solid fa-check text-success fs-1"></i>
                     </div>
-                    <h1 class="font-luxury display-4 mb-3">Đặt Hàng Thành Công!</h1>
-                    <p class="text-muted lead">Cảm ơn bạn đã lựa chọn tri thức tại <span class="fw-bold text-dark">Luxury Bookstore</span>. Tuyệt tác của bạn đang được chuẩn bị.</p>
+                    <h1 class="font-luxury display-4 mb-3" id="success-title">Đặt Hàng Thành Công!</h1>
+                    <p class="text-muted lead" id="success-msg">Cảm ơn bạn đã lựa chọn tri thức tại <span class="fw-bold text-dark">Luxury Bookstore</span>. Tuyệt tác của bạn đang được chuẩn bị.</p>
                 @endif
             </div>
 
@@ -32,7 +32,7 @@
                         <i class="fa-solid fa-circle-exclamation fs-4 me-3"></i>
                         <div>
                             <strong>Lưu ý:</strong> Đơn hàng sẽ chỉ được gửi đến hệ thống sau khi bạn thanh toán thành công.
-                            Nếu gặp sự cố khi thanh toán, bạn có thể chuyển sang trả tiền mặt.
+                            Nếu gặp sự cố, bạn có thể chuyển sang trả tiền mặt.
                         </div>
                     </div>
                     <form action="{{ route('checkout.changeMethod', $order->MaDH) }}" method="POST" class="mt-3 text-end no-barba">
@@ -80,14 +80,14 @@
                         <span class="text-muted small fw-bold text-uppercase ls-1">Tổng giá trị đơn hàng:</span>
                         <span class="fw-bold text-dark fs-5">{{ number_format($order->TongTien, 0, ',', '.') }}₫</span>
                     </div>
-                    @if($order->PhuongThucThanhToan === 'ChuyenKhoan')
+                    @if($order->PhuongThucThanhToan === 'ChuyenKhoan' || $order->PhuongThucThanhToan === 'VNPay')
                     <div class="d-flex justify-content-between pt-2 border-top mt-2" style="border-top: 2px dashed #eee !important;">
                         <span class="text-muted small fw-bold text-uppercase ls-1 text-success">Số tiền đã thanh toán:</span>
-                        <span class="fw-bold text-success fs-5">{{ number_format($order->TongTien, 0, ',', '.') }}₫</span>
+                        <span class="fw-bold text-success fs-5">{{ number_format($order->SoTienDaThanhToan ?? 0, 0, ',', '.') }}₫</span>
                     </div>
                     <div class="d-flex justify-content-between pt-2">
                         <span class="text-muted small fw-bold text-uppercase ls-1">Số tiền cần thanh toán tại nhà:</span>
-                        <span class="fw-bold text-dark fs-5">0₫</span>
+                        <span class="fw-bold text-dark fs-5">{{ number_format(max(0, $order->TongTien - ($order->SoTienDaThanhToan ?? 0)), 0, ',', '.') }}₫</span>
                     </div>
                     @else
                     <div class="d-flex justify-content-between pt-2 border-top mt-2" style="border-top: 2px dashed #eee !important;">
@@ -105,7 +105,13 @@
                     <div class="d-flex justify-content-between">
                         <span class="text-muted small">Phương thức:</span>
                         <span class="small text-dark">
-                            {{ $order->PhuongThucThanhToan === 'TienMat' ? 'Thanh toán khi nhận hàng' : 'Chuyển khoản ngân hàng' }}
+                            @if($order->PhuongThucThanhToan === 'TienMat')
+                                Thanh toán khi nhận hàng
+                            @elseif($order->PhuongThucThanhToan === 'VNPay')
+                                Thanh toán online qua VNPay
+                            @else
+                                Chuyển khoản ngân hàng
+                            @endif
                         </span>
                     </div>
                 </div>
@@ -191,6 +197,22 @@
                     // window.onload = confirmPayment;
                 </script>
                 @endpush
+            @endif
+
+            @if($order->PhuongThucThanhToan === 'VNPay' && $order->TrangThai === 'ChoThanhToan')
+                <div class="alert alert-primary rounded-4 border-0 p-4 mb-5 text-center" style="background: #eef2ff; color: #3730a3;">
+                    <h6 class="fw-bold mb-3"><i class="fa-solid fa-credit-card me-2"></i>Thanh toán qua cổng VNPay</h6>
+                    <p class="small mb-4">Bạn sẽ được chuyển hướng đến cổng thanh toán VNPay để hoàn tất giao dịch một cách an toàn.</p>
+                    <form action="{{ route('vnpay.payment', $order->MaDH) }}" method="POST" class="no-barba">
+                        @csrf
+                        <button type="submit" class="btn btn-primary rounded-pill px-5 py-3 fw-bold text-uppercase ls-1 shadow-sm">
+                            <i class="fa-solid fa-shield-halved me-2"></i> THANH TOÁN NGAY VỚI VNPAY
+                        </button>
+                    </form>
+                    <div class="mt-3 extra-small text-muted italic">
+                        <i class="fa-solid fa-lock me-1"></i> Kết nối bảo mật SSL 256-bit
+                    </div>
+                </div>
             @endif
 
             <div class="d-flex flex-column flex-md-row gap-3 justify-content-center" data-aos="fade-up" data-aos-delay="400">

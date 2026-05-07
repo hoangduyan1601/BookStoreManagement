@@ -62,6 +62,16 @@
                                 </div>
                             </label>
                         </div>
+                        <div class="form-check p-3 rounded-4 border mb-3 position-relative transition-all" style="background: white; cursor: pointer;">
+                            <input class="form-check-input ms-0 me-3 mt-1" type="radio" name="payment_method" id="pay3" value="VNPay">
+                            <label class="form-check-label d-flex align-items-center" for="pay3" style="cursor: pointer;">
+                                <div class="bg-light p-2 rounded-3 me-3 text-primary"><i class="fa-solid fa-credit-card"></i></div>
+                                <div>
+                                    <span class="fw-bold d-block text-dark">Thanh toán qua VNPay</span>
+                                    <small class="text-muted">Ví điện tử, Thẻ ATM nội địa, Thẻ quốc tế Visa/Master</small>
+                                </div>
+                            </label>
+                        </div>
                     </div>
 
                     <div class="d-flex justify-content-between align-items-center mt-5">

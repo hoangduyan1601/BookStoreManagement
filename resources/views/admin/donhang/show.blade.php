@@ -61,18 +61,20 @@
                     <label class="admin-form-label mb-1">Trạng thái</label>
                     @php
                         $statusClass = match($order->TrangThai) {
-                            'ChoXacNhan' => 'bg-warning text-dark',
-                            'DangGiao'   => 'bg-info text-white',
-                            'DaGiao'     => 'bg-success text-white',
-                            'DaHuy'      => 'bg-danger text-white',
-                            default      => 'bg-secondary text-white'
+                            'ChoThanhToan' => 'bg-secondary text-white',
+                            'ChoXacNhan'   => 'bg-warning text-dark',
+                            'DangGiao'     => 'bg-info text-white',
+                            'DaGiao'       => 'bg-success text-white',
+                            'DaHuy'        => 'bg-danger text-white',
+                            default        => 'bg-light text-dark'
                         };
                         $statusText = match($order->TrangThai) {
-                            'ChoXacNhan' => 'Chờ xác nhận',
-                            'DangGiao'   => 'Đang giao',
-                            'DaGiao'     => 'Đã giao',
-                            'DaHuy'      => 'Đã hủy',
-                            default      => $order->TrangThai
+                            'ChoThanhToan' => 'Chờ thanh toán',
+                            'ChoXacNhan'   => 'Chờ xác nhận',
+                            'DangGiao'     => 'Đang giao',
+                            'DaGiao'       => 'Đã giao',
+                            'DaHuy'        => 'Đã hủy',
+                            default        => $order->TrangThai
                         };
                     @endphp
                     <span class="badge {{ $statusClass }} py-2 px-3 w-100 rounded-pill">{{ $statusText }}</span>
@@ -80,7 +82,13 @@
                 <div class="col-sm-6 col-md-3">
                     <label class="admin-form-label mb-1">Thanh toán</label>
                     <span class="badge bg-light text-dark py-2 px-3 w-100 rounded-pill border">
-                        {{ $order->PhuongThucThanhToan === 'ChuyenKhoan' ? 'Chuyển khoản' : 'Tiền mặt (COD)' }}
+                        @if($order->PhuongThucThanhToan === 'ChuyenKhoan')
+                            Chuyển khoản
+                        @elseif($order->PhuongThucThanhToan === 'VNPay')
+                            VNPay Online
+                        @else
+                            Tiền mặt (COD)
+                        @endif
                     </span>
                 </div>
                 <div class="col-md-6">
@@ -89,6 +97,7 @@
                         <div class="flex-grow-1" style="max-width: 200px;">
                             <label class="admin-form-label mb-1">Cập nhật trạng thái</label>
                             <select name="status" class="form-select form-control-luxury py-2">
+                                <option value="ChoThanhToan" {{ $order->TrangThai == 'ChoThanhToan' ? 'selected' : '' }}>Chờ thanh toán</option>
                                 <option value="ChoXacNhan" {{ $order->TrangThai == 'ChoXacNhan' ? 'selected' : '' }}>Chờ xác nhận</option>
                                 <option value="DangGiao" {{ $order->TrangThai == 'DangGiao' ? 'selected' : '' }}>Đang giao</option>
                                 <option value="DaGiao" {{ $order->TrangThai == 'DaGiao' ? 'selected' : '' }}>Đã giao</option>
@@ -158,21 +167,22 @@
                                 <span class="fw-bold">Tổng giá trị:</span>
                                 <span class="fw-bold text-primary">{{ number_format($order->TongTien, 0, ',', '.') }}₫</span>
                             </div>
-                            @if($order->PhuongThucThanhToan === 'ChuyenKhoan')
+                            @php
+                                $soTienDaThanhToan = $order->SoTienDaThanhToan ?? 0;
+                                $soTienCanThu = max(0, $order->TongTien - $soTienDaThanhToan);
+                            @endphp
+                            @if($soTienDaThanhToan > 0)
                             <div class="d-flex justify-content-between align-items-center mb-2 text-success">
-                                <span class="small fw-bold">Đã thanh toán qua ngân hàng:</span>
-                                <span class="fw-bold">-{{ number_format($order->TongTien, 0, ',', '.') }}₫</span>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center border-top pt-2">
-                                <span class="h5 mb-0 fw-bold">Số tiền cần thu COD:</span>
-                                <span class="h4 mb-0 fw-bold text-dark">0₫</span>
-                            </div>
-                            @else
-                            <div class="d-flex justify-content-between align-items-center border-top pt-2">
-                                <span class="h5 mb-0 fw-bold">Số tiền cần thu COD:</span>
-                                <span class="h4 mb-0 fw-bold text-primary">{{ number_format($order->TongTien, 0, ',', '.') }}₫</span>
+                                <span class="small fw-bold">Đã thanh toán ({{ $order->PhuongThucThanhToan }}):</span>
+                                <span class="fw-bold">-{{ number_format($soTienDaThanhToan, 0, ',', '.') }}₫</span>
                             </div>
                             @endif
+                            <div class="d-flex justify-content-between align-items-center border-top pt-2">
+                                <span class="h5 mb-0 fw-bold">Số tiền cần thu COD:</span>
+                                <span class="h4 mb-0 fw-bold {{ $soTienCanThu == 0 ? 'text-success' : 'text-primary' }}">
+                                    {{ number_format($soTienCanThu, 0, ',', '.') }}₫
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
