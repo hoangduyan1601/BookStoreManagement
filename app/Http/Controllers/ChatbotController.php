@@ -80,13 +80,13 @@ class ChatbotController extends Controller
 
         $messages = ChatMessage::where(function($q) use ($maKH, $sessionId) {
             if ($maKH) $q->where('MaKH', $maKH);
-            else $q->where('session_id', $sessionId);
+            if ($sessionId) $q->orWhere('session_id', $sessionId);
         })->orderBy('created_at', 'asc')->get();
 
         // Đánh dấu là đã đọc khi lấy lịch sử
         ChatMessage::where(function($q) use ($maKH, $sessionId) {
             if ($maKH) $q->where('MaKH', $maKH);
-            else $q->where('session_id', $sessionId);
+            if ($sessionId) $q->orWhere('session_id', $sessionId);
         })->whereIn('sender', ['ai', 'admin'])->update(['is_read' => true]);
 
         return response()->json($messages);
@@ -103,7 +103,7 @@ class ChatbotController extends Controller
 
         $count = ChatMessage::where(function($q) use ($maKH, $sessionId) {
             if ($maKH) $q->where('MaKH', $maKH);
-            else $q->where('session_id', $sessionId);
+            if ($sessionId) $q->orWhere('session_id', $sessionId);
         })->whereIn('sender', ['ai', 'admin'])
           ->where('is_read', false)
           ->count();
@@ -122,7 +122,7 @@ class ChatbotController extends Controller
 
         ChatMessage::where(function($q) use ($maKH, $sessionId) {
             if ($maKH) $q->where('MaKH', $maKH);
-            else $q->where('session_id', $sessionId);
+            if ($sessionId) $q->orWhere('session_id', $sessionId);
         })->whereIn('sender', ['ai', 'admin'])->update(['is_read' => true]);
 
         return response()->json(['success' => true]);

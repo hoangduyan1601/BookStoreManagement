@@ -83,11 +83,41 @@ class GeminiService
             }
 
             Log::error('Gemini API Error: ' . $response->body());
-            return "Xin lỗi, tôi gặp chút gián đoạn khi kết nối với máy chủ AI. Quý khách vui lòng thử lại sau.";
+            
+            // FALLBACK: Nếu AI bận, sử dụng dữ liệu thô từ Database để trả lời cơ bản
+            return $this->generateFallbackResponse($message, $contextData);
         } catch (\Exception $e) {
             Log::error('Gemini Service Exception: ' . $e->getMessage());
-            return "Hệ thống AI đang được bảo trì để phục vụ Quý khách tốt hơn.";
+            return $this->generateFallbackResponse($message, $contextData);
         }
+    }
+
+    /**
+     * Tạo câu trả lời thay thế khi AI không khả dụng (Fallback Logic)
+     */
+    private function generateFallbackResponse($message, $contextData)
+    {
+        if (!$contextData || strlen($contextData) < 10) {
+            return "Hiện tại hệ thống AI đang quá tải. Quý khách vui lòng thử lại sau vài phút hoặc để lại lời nhắn, nhân viên chúng tôi sẽ hỗ trợ ngay!";
+        }
+
+        $msg = mb_strtolower($message);
+        
+        $response = "Rất tiếc, máy chủ AI của tôi đang bận xử lý nhiều yêu cầu. Tuy nhiên, tôi đã tra cứu được thông tin sau cho Quý khách:\n\n";
+
+        if (str_contains($msg, 'giảm giá') || str_contains($msg, 'khuyến mãi') || str_contains($msg, 'ưu đãi')) {
+            $response .= "--- THÔNG TIN ƯU ĐÃI ---\n" . $contextData;
+        } elseif (str_contains($msg, 'mới') || str_contains($msg, 'vừa về')) {
+            $response .= "--- SẢN PHẨM MỚI NHẤT ---\n" . $contextData;
+        } elseif (str_contains($msg, 'bán chạy') || str_contains($msg, 'hot')) {
+            $response .= "--- SẢN PHẨM ĐANG HOT ---\n" . $contextData;
+        } else {
+            $response .= $contextData;
+        }
+
+        $response .= "\n\nQuý khách có thể xem thêm chi tiết tại các danh mục sản phẩm trên website. Cảm ơn Quý khách đã thông cảm!";
+        
+        return $response;
     }
 
     /**

@@ -143,21 +143,33 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Chạy kiểm tra ngay khi load và mỗi 30s
+    // Chạy kiểm tra ngay khi load và mỗi 10s
     checkUnread();
-    setInterval(checkUnread, 30000);
+    setInterval(checkUnread, 10000);
 
-    async function loadHistory() {
-        if(msgBox.dataset.loaded === 'true') return;
+    // Tự động làm mới tin nhắn nếu đang mở cửa sổ chat
+    setInterval(async () => {
+        if(window.classList.contains('active')) {
+            await loadHistory(true);
+        }
+    }, 5000);
+
+    async function loadHistory(force = false) {
+        if(msgBox.dataset.loaded === 'true' && !force) return;
         
         try {
             const response = await fetch("{{ route('chatbot.history') }}");
             const messages = await response.json();
+            
             if(messages.length > 0) {
-                msgBox.innerHTML = ''; // Clear welcome message if history exists
-                messages.forEach(m => {
-                    appendMessage(m.message, m.sender === 'user' ? 'user' : 'bot');
-                });
+                const currentCount = msgBox.querySelectorAll('.msg-bubble').length;
+                if(msgBox.dataset.loaded !== 'true' || messages.length > currentCount) {
+                    msgBox.innerHTML = ''; 
+                    messages.forEach(m => {
+                        appendMessage(m.message, m.sender === 'user' ? 'user' : 'bot', true);
+                    });
+                    msgBox.scrollTop = msgBox.scrollHeight;
+                }
             }
             msgBox.dataset.loaded = 'true';
         } catch (error) {
@@ -204,15 +216,15 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    function appendMessage(text, side) {
+    function appendMessage(text, side, skipNotif = false) {
         const msg = document.createElement('div');
         msg.className = side === 'user' ? 'user-msg msg-bubble' : 'bot-msg msg-bubble';
         if(side === 'bot') {
             msg.style = 'align-self: flex-start; background: #fff; padding: 12px 16px; border-radius: 1rem 1rem 1rem 0; box-shadow: 0 2px 4px rgba(0,0,0,0.05); max-width: 85%; font-size: 0.9rem; border: 1px solid #e2e8f0;';
             msg.innerHTML = marked.parse(text);
 
-            // Hiển thị thông báo nếu cửa sổ chat đang đóng
-            if(!window.classList.contains('active')) {
+            // Hiển thị thông báo nếu cửa sổ chat đang đóng và không phải load lịch sử
+            if(!window.classList.contains('active') && !skipNotif) {
                 const notif = document.getElementById('bot-notif');
                 let count = parseInt(notif.textContent) || 0;
                 count++;
@@ -226,7 +238,7 @@ document.addEventListener('DOMContentLoaded', function() {
             msg.textContent = text;
         }
         msgBox.appendChild(msg);
-        msgBox.scrollTop = msgBox.scrollHeight;
+        if(!skipNotif) msgBox.scrollTop = msgBox.scrollHeight;
     }
 });
 </script>

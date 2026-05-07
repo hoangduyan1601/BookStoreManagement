@@ -263,7 +263,7 @@
     </div>
 </div>
 
-<!-- Modal Chi tiết đơn hàng chuyên nghiệp (Giữ nguyên logic cũ nhưng làm đẹp giao diện) -->
+<!-- Modal Chi tiết đơn hàng chuyên nghiệp -->
 <div class="modal fade" id="orderModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
@@ -316,8 +316,41 @@
     .info-icon { width: 32px; text-align: center; }
     .table tbody tr { transition: all 0.2s; }
     .table tbody tr:hover { background: #fbfbfb !important; }
-    .receipt-header { background: #1a1a1a; color: white; padding: 2.5rem; }
+    
+    .receipt-header { background: #1a1a1a; color: white; padding: 2.5rem; position: relative; overflow: hidden; }
     .order-item-img { width: 50px; height: 75px; object-fit: cover; border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    
+    /* Paid Stamp Effect */
+    .paid-stamp {
+        position: absolute;
+        top: 20px;
+        right: 60px;
+        width: 130px;
+        height: 130px;
+        border: 4px double #198754;
+        color: #198754;
+        border-radius: 50%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        font-weight: 900;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        transform: rotate(-20deg);
+        opacity: 0.8;
+        pointer-events: none;
+        z-index: 10;
+        background: rgba(255,255,255,0.1);
+        box-shadow: 0 0 0 5px rgba(25, 135, 84, 0.1);
+        animation: stampIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .paid-stamp i { font-size: 2rem; margin-bottom: 2px; }
+    
+    @keyframes stampIn {
+        from { transform: rotate(-20deg) scale(2); opacity: 0; }
+        to { transform: rotate(-20deg) scale(1); opacity: 0.8; }
+    }
 </style>
 
 <script>
@@ -351,8 +384,18 @@
                     'ChoThanhToan': 'Chờ thanh toán', 'ChoXacNhan': 'Chờ xác nhận', 'DaXacNhan': 'Đã xác nhận', 'DangGiao': 'Đang giao', 'DaGiao': 'Đã giao', 'DaHuy': 'Đã hủy'
                 };
                 
+                const isFullyPaid = Number(order.SoTienDaThanhToan) >= Number(order.TongTien);
+                const hasPaidSomething = Number(order.SoTienDaThanhToan) > 0;
+
                 let html = `
                     <div class="receipt-header">
+                        ${isFullyPaid ? `
+                            <div class="paid-stamp">
+                                <i class="fa-solid fa-certificate"></i>
+                                <span>ĐÃ THANH TOÁN</span>
+                                <small style="font-size: 0.5rem;">LUXURY BOOKSTORE</small>
+                            </div>
+                        ` : ''}
                         <div class="d-flex justify-content-between align-items-start">
                             <div>
                                 <h3 class="font-luxury fw-bold mb-1 text-uppercase ls-1">Hóa Đơn Chi Tiết</h3>
@@ -372,6 +415,16 @@
                         </div>
                     </div>
                     <div class="modal-body p-4 bg-white">
+                        ${hasPaidSomething ? `
+                            <div class="alert alert-success border-0 rounded-4 p-3 mb-4 d-flex align-items-center shadow-sm" style="background: #f0fdf4;">
+                                <i class="fa-solid fa-shield-check fs-4 me-3 text-success"></i>
+                                <div>
+                                    <div class="fw-bold text-success small">XÁC NHẬN THANH TOÁN</div>
+                                    <div class="extra-small text-muted">Hệ thống đã ghi nhận khoản thanh toán chuyển khoản trị giá <strong>${Number(order.SoTienDaThanhToan).toLocaleString('vi-VN')}₫</strong> cho đơn hàng này.</div>
+                                </div>
+                            </div>
+                        ` : ''}
+
                         <div class="row mb-5 g-4">
                             <div class="col-md-6">
                                 <div class="p-4 bg-light rounded-4 h-100 border-0 shadow-sm">

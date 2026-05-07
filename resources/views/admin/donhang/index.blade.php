@@ -198,6 +198,11 @@
                             </td>
                             <td class="text-end pe-4">
                                 <div class="d-flex justify-content-end gap-2">
+                                    @if(($r->PhuongThucThanhToan === 'ChuyenKhoan' || $r->PhuongThucThanhToan === 'VNPay') && ($r->SoTienDaThanhToan ?? 0) > 0)
+                                    <button onclick="viewOrderBill({{ $r->MaDH }})" class="btn-action-round bg-light text-success border-0" title="Xem biên lai thanh toán">
+                                        <i class="fas fa-receipt"></i>
+                                    </button>
+                                    @endif
                                     <a href="{{ route('admin.donhang.show', $r->MaDH) }}" class="btn-action-round bg-light text-primary" title="Xem chi tiết">
                                         <i class="fas fa-eye"></i>
                                     </a>
@@ -224,4 +229,148 @@
         </div>
     </div>
 </div>
+
+<!-- Modal Biên lai thanh toán -->
+<div class="modal fade" id="billModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <div id="billContent">
+                <!-- Load bằng AJAX -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .receipt-header { background: #1a1a1a; color: white; padding: 2.5rem; position: relative; overflow: hidden; }
+    .order-item-img { width: 50px; height: 75px; object-fit: cover; border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    
+    .paid-stamp {
+        position: absolute;
+        top: 20px;
+        right: 60px;
+        width: 130px;
+        height: 130px;
+        border: 4px double #198754;
+        color: #198754;
+        border-radius: 50%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        font-weight: 900;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        transform: rotate(-20deg);
+        opacity: 0.8;
+        pointer-events: none;
+        z-index: 10;
+        background: rgba(255,255,255,0.1);
+        box-shadow: 0 0 0 5px rgba(25, 135, 84, 0.1);
+        animation: stampIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .paid-stamp i { font-size: 2rem; margin-bottom: 2px; }
+    
+    @keyframes stampIn {
+        from { transform: rotate(-20deg) scale(2); opacity: 0; }
+        to { transform: rotate(-20deg) scale(1); opacity: 0.8; }
+    }
+    .extra-small { font-size: 0.65rem; }
+    .ls-1 { letter-spacing: 1px; }
+</style>
+
+<script>
+    function viewOrderBill(id) {
+        const modal = new bootstrap.Modal(document.getElementById('billModal'));
+        document.getElementById('billContent').innerHTML = '<div class="p-5 text-center"><div class="spinner-border text-dark" role="status"></div><p class="mt-3 small text-muted">Đang truy xuất biên lai từ ngân hàng...</p></div>';
+        modal.show();
+
+        fetch(`/orders/detail/${id}`)
+            .then(res => res.json())
+            .then(order => {
+                const date = new Date(order.NgayDat).toLocaleString('vi-VN');
+                const isFullyPaid = Number(order.SoTienDaThanhToan) >= Number(order.TongTien);
+                
+                let html = `
+                    <div class="receipt-header text-start">
+                        ${isFullyPaid ? `
+                            <div class="paid-stamp">
+                                <i class="fa-solid fa-certificate"></i>
+                                <span>ĐÃ THANH TOÁN</span>
+                                <small style="font-size: 0.5rem;">HỆ THỐNG KIỂM DUYỆT</small>
+                            </div>
+                        ` : ''}
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h3 class="fw-bold mb-1 text-uppercase ls-1" style="font-family: 'Playfair Display', serif;">Biên Lai Giao Dịch</h3>
+                                <p class="mb-0 opacity-75 small">Mã tra soát đơn hàng: #ORD-${order.MaDH}</p>
+                            </div>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="row mt-5">
+                            <div class="col-6">
+                                <small class="d-block opacity-50 text-uppercase fw-bold ls-1 mb-1" style="font-size:0.6rem;">Ngày thực hiện</small>
+                                <span class="fw-bold">${date}</span>
+                            </div>
+                            <div class="col-6 text-end">
+                                <small class="d-block opacity-50 text-uppercase fw-bold ls-1 mb-1" style="font-size:0.6rem;">Phương thức</small>
+                                <span class="badge bg-white text-dark fw-bold px-3 py-2 rounded-pill shadow-sm">
+                                    ${order.PhuongThucThanhToan === 'VNPay' ? 'VNPay Online' : 'Chuyển khoản'}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-body p-4 bg-white text-start">
+                        <div class="alert alert-success border-0 rounded-4 p-3 mb-4 d-flex align-items-center shadow-sm" style="background: #f0fdf4;">
+                            <i class="fas fa-check-circle fs-4 me-3 text-success"></i>
+                            <div>
+                                <div class="fw-bold text-success small">KIỂM DUYỆT THANH TOÁN THÀNH CÔNG</div>
+                                <div class="extra-small text-muted">Khoản tiền <strong>${Number(order.SoTienDaThanhToan).toLocaleString('vi-VN')}₫</strong> đã được đối soát khớp với giá trị đơn hàng.</div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-5 g-4">
+                            <div class="col-md-6">
+                                <div class="p-3 bg-light rounded-4 h-100 border-0">
+                                    <h6 class="fw-bold mb-2 text-dark small text-uppercase ls-1">Thông tin khách hàng</h6>
+                                    <div class="fw-bold text-dark mb-1 small">${order.khach_hang?.HoTen || 'N/A'}</div>
+                                    <div class="text-secondary extra-small"><i class="fas fa-phone me-1"></i> ${order.khach_hang?.SDT || 'N/A'}</div>
+                                    <div class="text-secondary extra-small"><i class="fas fa-envelope me-1"></i> ${order.khach_hang?.Email || 'N/A'}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 text-end">
+                                <h6 class="fw-bold mb-2 text-dark small text-uppercase ls-1">Ghi chú đối soát</h6>
+                                <p class="extra-small text-muted italic">Mã tham chiếu thanh toán khớp nội dung: <strong>CK ${order.MaDH}</strong></p>
+                                <p class="extra-small text-muted">Tự động duyệt bởi Webhook System</p>
+                            </div>
+                        </div>
+
+                        <div class="p-4 bg-dark text-white rounded-4 shadow-lg">
+                            <div class="d-flex justify-content-between mb-2 opacity-75 small">
+                                <span>Giá trị hàng hóa</span>
+                                <span>${Number(order.TongTien).toLocaleString('vi-VN')}₫</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2 text-success small">
+                                <span class="fw-bold">Số tiền đã ghi nhận</span>
+                                <span class="fw-bold">${Number(order.SoTienDaThanhToan).toLocaleString('vi-VN')}₫</span>
+                            </div>
+                            <div class="pt-3 border-top border-secondary mt-2">
+                                <div class="d-flex justify-content-between">
+                                    <span class="fw-bold text-uppercase ls-1">Số dư cần thu COD</span>
+                                    <span class="fw-bold fs-4 text-warning">${Math.max(0, Number(order.TongTien) - Number(order.SoTienDaThanhToan)).toLocaleString('vi-VN')}₫</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 p-4 pt-2 bg-white">
+                        <button class="btn btn-light rounded-pill px-4 fw-bold small ls-1 border" data-bs-dismiss="modal">ĐÓNG</button>
+                        <button class="btn btn-dark rounded-pill px-4 fw-bold small ls-1 shadow-sm" onclick="window.print()">
+                            <i class="fas fa-print me-2"></i> IN BẢN ĐỐI SOÁT
+                        </button>
+                    </div>
+                `;
+                document.getElementById('billContent').innerHTML = html;
+            });
+    }
+</script>
 @endsection
