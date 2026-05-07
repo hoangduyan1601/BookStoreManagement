@@ -6,10 +6,12 @@
 <style>
     .dashboard-header {
         background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-        padding: 2rem;
+        padding: 5rem 2.5rem 2.5rem 2.5rem;
         border-radius: 1.5rem;
         color: white;
         margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
     }
 
     .order-stat-card {
@@ -97,7 +99,7 @@
             <div class="col-lg-3 col-md-6">
                 <div class="input-group">
                     <span class="input-group-text bg-light border-0 rounded-start-pill"><i class="fas fa-search"></i></span>
-                    <input type="text" name="search" class="form-control bg-light border-0 rounded-end-pill" placeholder="Mã đơn, Tên KH, SĐT..." value="{{ request('search') }}">
+                    <input type="text" name="search" class="form-control bg-light border-0 rounded-end-pill" placeholder="Mã đơn, Tên KH, SĐT..." value="{{ request('search') }}" autocomplete="off" data-search-type="order">
                 </div>
             </div>
             <div class="col-lg-2 col-md-6">
@@ -279,6 +281,7 @@
     .ls-1 { letter-spacing: 1px; }
 </style>
 
+@push('scripts')
 <script>
     function viewOrderBill(id) {
         const modal = new bootstrap.Modal(document.getElementById('billModal'));

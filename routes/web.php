@@ -40,6 +40,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/san-pham', [SanPhamController::class, 'index'])->name('sanpham.index');
 Route::get('/san-pham/detail/{id}', [SanPhamController::class, 'detail'])->name('sanpham.detail');
 Route::get('/san-pham/search', [SanPhamController::class, 'search'])->name('sanpham.search');
+Route::get('/san-pham/suggestions', [SanPhamController::class, 'suggestions'])->name('sanpham.suggestions');
 Route::get('/danhmuc/{id}', [SanPhamController::class, 'index'])->name('danhmuc.show');
 
 // Trang cá nhân khách hàng - đặt trước nhóm Admin

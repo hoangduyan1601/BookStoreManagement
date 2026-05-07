@@ -12,6 +12,17 @@
     
     <style>
         /* Layout Specific Adjustments */
+        :root {
+            --sidebar-width: 260px;
+            --topbar-height: 70px;
+            --transition-speed: 0.3s;
+        }
+
+        body {
+            overflow-x: hidden;
+            background: var(--bg-main);
+        }
+
         .sidebar {
             position: fixed;
             top: 0;
@@ -19,53 +30,76 @@
             width: var(--sidebar-width);
             height: 100vh;
             background: var(--bg-sidebar);
-            z-index: 1040;
-            transition: all 0.3s ease;
+            z-index: 1100;
+            transition: transform var(--transition-speed) ease;
             overflow-y: auto;
         }
         
-        .sidebar.collapsed {
-            transform: translateX(-100%);
-        }
-
         .topbar {
             position: fixed;
             top: 0;
-            left: var(--sidebar-width);
+            left: var(--sidebar-width) !important;
             right: 0;
             height: var(--topbar-height);
+            width: calc(100% - var(--sidebar-width)) !important;
             background: var(--bg-topbar);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             border-bottom: 1px solid var(--border-color);
-            z-index: 1030;
+            z-index: 1080;
             display: flex;
             align-items: center;
             padding: 0 24px;
-            transition: all 0.3s ease;
+            transition: all var(--transition-speed) ease;
         }
 
         .main-content {
-            margin-left: var(--sidebar-width);
+            margin-left: var(--sidebar-width) !important;
+            width: calc(100% - var(--sidebar-width)) !important;
             padding-top: var(--topbar-height);
             min-height: 100vh;
-            transition: all 0.3s ease;
+            transition: all var(--transition-speed) ease;
+            background: var(--bg-main);
+            position: relative;
         }
 
-        .main-content.expanded {
-            margin-left: 0;
+        /* State: Sidebar Collapsed */
+        body.sidebar-collapsed .sidebar {
+            transform: translateX(-100%) !important;
+        }
+        body.sidebar-collapsed .topbar {
+            left: 0 !important;
+            width: 100% !important;
+        }
+        body.sidebar-collapsed .main-content {
+            margin-left: 0 !important;
+            width: 100% !important;
         }
 
-        @media (max-width: 992px) {
+        /* Mobile Adjustments */
+        @media (max-width: 991.98px) {
             .sidebar {
-                transform: translateX(-100%);
-            }
-            .sidebar.show {
-                transform: translateX(0);
+                transform: translateX(-100%) !important;
             }
             .topbar, .main-content {
-                left: 0;
-                margin-left: 0;
+                left: 0 !important;
+                margin-left: 0 !important;
+                width: 100% !important;
+            }
+
+            body.sidebar-mobile-open .sidebar {
+                transform: translateX(0) !important;
+            }
+
+            @media (min-width: 768px) {
+                body.sidebar-mobile-open .topbar {
+                    left: var(--sidebar-width) !important;
+                    width: calc(100% - var(--sidebar-width)) !important;
+                }
+                body.sidebar-mobile-open .main-content {
+                    margin-left: var(--sidebar-width) !important;
+                    width: calc(100% - var(--sidebar-width)) !important;
+                }
             }
         }
 
@@ -180,6 +214,15 @@
         <i class="fas fa-indent fs-5"></i>
     </button>
 
+    <!-- Global Search -->
+    <div class="d-none d-md-flex align-items-center ms-2" style="max-width: 400px; flex: 1;">
+        <div class="input-group position-relative" id="global-search-wrapper">
+            <span class="input-group-text bg-light border-0 rounded-start-pill text-muted"><i class="fas fa-search"></i></span>
+            <input type="text" id="global-search-input" class="form-control bg-light border-0 rounded-end-pill py-2" placeholder="Tìm sản phẩm, đơn hàng, khách hàng..." autocomplete="off">
+            <div id="global-search-suggestions" class="search-suggestions-admin" style="width: 500px;"></div>
+        </div>
+    </div>
+
     <div class="ms-auto d-flex align-items-center">
         <!-- Theme Toggle -->
         <button class="theme-toggle me-3" id="theme-toggle" title="Chuyển chế độ Sáng/Tối">
@@ -238,25 +281,6 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="{{ asset('assets/js/admin-theme.js') }}"></script>
 <script>
-    // Sidebar Mobile Toggle
-    const sidebarToggleMobile = document.getElementById('sidebar-toggle-mobile');
-    const sidebar = document.getElementById('sidebar');
-    
-    if (sidebarToggleMobile) {
-        sidebarToggleMobile.addEventListener('click', () => {
-            sidebar.classList.toggle('show');
-        });
-    }
-
-    // Close sidebar when clicking outside on mobile
-    document.addEventListener('click', (e) => {
-        if (window.innerWidth <= 992) {
-            if (sidebar && sidebarToggleMobile && !sidebar.contains(e.target) && !sidebarToggleMobile.contains(e.target)) {
-                sidebar.classList.remove('show');
-            }
-        }
-    });
-
     // AJAX update pending orders count
     function updatePendingOrdersCount() {
         fetch('{{ route('admin.donhang.count_pending') }}')
@@ -272,6 +296,156 @@
             })
             .catch(error => console.error('Error fetching order count:', error));
     }
+
+    // Unified Admin Search Suggestion
+    function initAdminSearch(inputId, suggestionsId, type = 'product', isAdmin = 1) {
+        const input = document.getElementById(inputId);
+        const container = document.getElementById(suggestionsId);
+        let debounceTimer;
+
+        if (!input || !container) return;
+
+        input.addEventListener('input', () => {
+            clearTimeout(debounceTimer);
+            const keyword = input.value.trim();
+
+            if (keyword.length < 2) {
+                container.classList.remove('active');
+                container.innerHTML = '';
+                return;
+            }
+
+            debounceTimer = setTimeout(() => {
+                fetch(`{{ route('sanpham.suggestions') }}?keyword=${encodeURIComponent(keyword)}&type=${type}&admin=${isAdmin}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.length > 0) {
+                            let html = '';
+                            data.forEach(item => {
+                                if (type === 'global') {
+                                    html += `
+                                        <a href="${item.Url}" class="suggestion-item-admin">
+                                            ${item.Img ? `<img src="${item.Img}" class="suggestion-img-admin">` : `<div class="suggestion-img-admin d-flex align-items-center justify-content-center bg-light text-muted"><i class="fas fa-search"></i></div>`}
+                                            <div class="suggestion-info-admin">
+                                                <div class="d-flex align-items-center justify-content-between">
+                                                    <span class="suggestion-title-admin text-truncate" style="max-width: 300px;">${item.Title}</span>
+                                                    <span class="suggestion-badge-admin ${item.BadgeClass} text-white">${item.Badge}</span>
+                                                </div>
+                                                <span class="suggestion-meta-admin">${item.Meta}</span>
+                                            </div>
+                                        </a>
+                                    `;
+                                } else if (type === 'product') {
+                                    html += `
+                                        <a href="${item.Url}" class="suggestion-item-admin">
+                                            <img src="${item.HinhAnh}" class="suggestion-img-admin">
+                                            <div class="suggestion-info-admin">
+                                                <span class="suggestion-title-admin">${item.TenSP}</span>
+                                                <span class="suggestion-meta-admin">Mã: #SP${item.MaSP} | Tồn: ${item.SoLuong} | <span class="text-success fw-bold">${item.GiaHienTai}</span></span>
+                                            </div>
+                                        </a>
+                                    `;
+                                } else if (type === 'order') {
+                                    html += `
+                                        <a href="${item.Url}" class="suggestion-item-admin">
+                                            <div class="suggestion-img-admin d-flex align-items-center justify-content-center bg-light text-primary"><i class="fas fa-shopping-bag"></i></div>
+                                            <div class="suggestion-info-admin">
+                                                <span class="suggestion-title-admin">Đơn hàng #${item.MaDH}</span>
+                                                <span class="suggestion-meta-admin">${item.HoTen} | <span class="text-primary fw-bold">${item.TongTien}</span> | Trạng thái: ${item.TrangThai}</span>
+                                            </div>
+                                        </a>
+                                    `;
+                                } else if (type === 'customer') {
+                                    html += `
+                                        <a href="${item.Url}" class="suggestion-item-admin">
+                                            <div class="suggestion-img-admin d-flex align-items-center justify-content-center bg-light text-info"><i class="fas fa-user"></i></div>
+                                            <div class="suggestion-info-admin">
+                                                <span class="suggestion-title-admin">${item.HoTen}</span>
+                                                <span class="suggestion-meta-admin">SĐT: ${item.SDT} | Email: ${item.Email}</span>
+                                            </div>
+                                        </a>
+                                    `;
+                                } else if (type === 'article') {
+                                    html += `
+                                        <a href="${item.Url}" class="suggestion-item-admin">
+                                            <img src="${item.HinhAnh}" class="suggestion-img-admin">
+                                            <div class="suggestion-info-admin">
+                                                <span class="suggestion-title-admin">${item.TieuDe}</span>
+                                                <span class="suggestion-meta-admin">ID: #BV${item.MaBV} | Click để sửa bài</span>
+                                            </div>
+                                        </a>
+                                    `;
+                                } else if (type === 'category') {
+                                    html += `
+                                        <a href="${item.Url}" class="suggestion-item-admin">
+                                            <div class="suggestion-img-admin d-flex align-items-center justify-content-center bg-light text-warning"><i class="fas fa-layer-group"></i></div>
+                                            <div class="suggestion-info-admin">
+                                                <span class="suggestion-title-admin">${item.TenDM}</span>
+                                                <span class="suggestion-meta-admin">Danh mục sản phẩm | ID: #DM${item.MaDM}</span>
+                                            </div>
+                                        </a>
+                                    `;
+                                } else if (type === 'author') {
+                                    html += `
+                                        <a href="${item.Url}" class="suggestion-item-admin">
+                                            <div class="suggestion-img-admin d-flex align-items-center justify-content-center bg-light text-success"><i class="fas fa-pen-nib"></i></div>
+                                            <div class="suggestion-info-admin">
+                                                <span class="suggestion-title-admin">${item.TenTacGia}</span>
+                                                <span class="suggestion-meta-admin">Tác giả | ID: #TG${item.MaTacGia}</span>
+                                            </div>
+                                        </a>
+                                    `;
+                                }
+                            });
+                            container.innerHTML = html;
+                            container.classList.add('active');
+                        } else {
+                            container.classList.remove('active');
+                            container.innerHTML = '';
+                        }
+                    });
+            }, 300);
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!input.contains(e.target) && !container.contains(e.target)) {
+                container.classList.remove('active');
+            }
+        });
+
+        input.addEventListener('focus', () => {
+            if (container.innerHTML.trim() !== '') {
+                container.classList.add('active');
+            }
+        });
+    }
+
+    // Initialize searches
+    document.addEventListener('DOMContentLoaded', () => {
+        // Global search
+        initAdminSearch('global-search-input', 'global-search-suggestions', 'global');
+
+        // Auto-initialize any input with data-search-type
+        document.querySelectorAll('[data-search-type]').forEach(el => {
+            const type = el.getAttribute('data-search-type');
+            const wrapper = el.closest('.input-group');
+            if (wrapper) {
+                wrapper.classList.add('position-relative');
+                let suggestions = wrapper.querySelector('.search-suggestions-admin');
+                if (!suggestions) {
+                    suggestions = document.createElement('div');
+                    suggestions.className = 'search-suggestions-admin';
+                    wrapper.appendChild(suggestions);
+                }
+                
+                // Ensure ID for initAdminSearch
+                if (!el.id) el.id = 'search-input-' + Math.random().toString(36).substr(2, 9);
+                if (!suggestions.id) suggestions.id = 'suggestions-' + Math.random().toString(36).substr(2, 9);
+                
+                initAdminSearch(el.id, suggestions.id, type);
+            }
+        });
+    });
 
     // Run immediately and then every 30 seconds
     updatePendingOrdersCount();

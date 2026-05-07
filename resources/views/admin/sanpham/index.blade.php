@@ -63,6 +63,39 @@
         border: 2px solid #fff;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
+
+    /* Search Suggestions for Admin */
+    .admin-search-wrapper { position: relative; }
+    .search-suggestions {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border-radius: 12px;
+        margin-top: 5px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        z-index: 1000;
+        overflow: hidden;
+        display: none;
+        border: 1px solid #e2e8f0;
+    }
+    .search-suggestions.active { display: block; }
+    .suggestion-item {
+        display: flex;
+        align-items: center;
+        padding: 10px 15px;
+        text-decoration: none !important;
+        color: #334155;
+        transition: all 0.2s;
+        border-bottom: 1px solid #f1f5f9;
+    }
+    .suggestion-item:last-child { border-bottom: none; }
+    .suggestion-item:hover { background: #f8fafc; }
+    .suggestion-img { width: 35px; height: 45px; object-fit: cover; border-radius: 4px; margin-right: 12px; }
+    .suggestion-info { flex: 1; }
+    .suggestion-name { font-weight: 600; font-size: 0.85rem; display: block; }
+    .suggestion-meta { font-size: 0.75rem; color: #64748b; }
 </style>
 
 <div class="container-fluid p-0">
@@ -123,7 +156,7 @@
                 <label class="small fw-bold text-muted mb-2">TÌM KIẾM SẢN PHẨM</label>
                 <div class="input-group">
                     <span class="input-group-text bg-white border-end-0 rounded-start-pill text-muted"><i class="fas fa-search"></i></span>
-                    <input type="text" name="search" class="form-control border-start-0 rounded-end-pill" placeholder="Tên sách, mã SP..." value="{{ request('search') }}">
+                    <input type="text" name="search" class="form-control border-start-0 rounded-end-pill" placeholder="Tên sách, mã SP..." value="{{ request('search') }}" autocomplete="off" data-search-type="product">
                 </div>
             </div>
             <div class="col-lg-2 col-md-6">

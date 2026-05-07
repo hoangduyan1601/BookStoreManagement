@@ -34,10 +34,10 @@
 
     <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
         <form method="get" action="{{ route('admin.tacgia.index') }}" class="row g-3">
-            <div class="col-md-9">
+            <div class="col-md-10">
                 <div class="input-group">
                     <span class="input-group-text bg-light border-0 rounded-start-pill"><i class="fas fa-search"></i></span>
-                    <input type="text" name="search" class="form-control bg-light border-0 rounded-end-pill" placeholder="Tìm tên tác giả, quốc tịch..." value="{{ request('search') }}">
+                    <input type="text" name="search" class="form-control bg-light border-0 rounded-end-pill" placeholder="Tìm tên tác giả, quốc tịch..." value="{{ request('search') }}" autocomplete="off" data-search-type="author">
                 </div>
             </div>
             <div class="col-md-3">

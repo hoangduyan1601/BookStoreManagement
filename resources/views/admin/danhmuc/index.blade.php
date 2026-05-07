@@ -35,10 +35,10 @@
 
     <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
         <form method="get" action="{{ route('admin.danhmuc.index') }}" class="row g-3">
-            <div class="col-md-8">
+            <div class="col-md-10">
                 <div class="input-group">
                     <span class="input-group-text bg-light border-0 rounded-start-pill"><i class="fas fa-search"></i></span>
-                    <input type="text" name="search" class="form-control bg-light border-0 rounded-end-pill" placeholder="Tìm tên danh mục..." value="{{ request('search') }}">
+                    <input type="text" name="search" class="form-control bg-light border-0 rounded-end-pill" placeholder="Tìm tên danh mục..." value="{{ request('search') }}" autocomplete="off" data-search-type="category">
                 </div>
             </div>
             <div class="col-md-4">

@@ -90,6 +90,40 @@
             border-radius: 20px;
         }
         .auth-nav-btn:hover { background: rgba(175, 146, 69, 0.08); color: var(--gold-primary); }
+
+        /* Search Suggestions */
+        .search-wrapper { position: relative; z-index: 1070; }
+        .search-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 15px;
+            margin-top: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            z-index: 1100;
+            overflow: hidden;
+            display: none;
+            border: 1px solid rgba(175, 146, 69, 0.1);
+        }
+        .search-suggestions.active { display: block; }
+        .suggestion-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            text-decoration: none !important;
+            color: #333;
+            transition: all 0.2s;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        .suggestion-item:last-child { border-bottom: none; }
+        .suggestion-item:hover { background: rgba(175, 146, 69, 0.05); }
+        .suggestion-img { width: 45px; height: 60px; object-fit: cover; border-radius: 4px; margin-right: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .suggestion-info { flex: 1; }
+        .suggestion-name { font-weight: 600; font-size: 0.9rem; margin-bottom: 2px; display: block; }
+        .suggestion-price { font-size: 0.8rem; color: var(--gold-primary); font-weight: 700; }
+        .suggestion-old-price { font-size: 0.75rem; text-decoration: line-through; color: #999; margin-left: 8px; font-weight: 400; }
     </style>
 </head>
 <body data-barba="wrapper" class="prank-{{ cache()->get('prank_mode', 'none') }}">
@@ -117,9 +151,10 @@
                 <div class="col-lg-5 col-md-5">
                     <form action="{{ route('sanpham.search') }}" method="GET" class="search-wrapper">
                         <div class="d-flex align-items-center">
-                            <input type="text" name="keyword" value="{{ request('keyword') }}" class="search-input" placeholder="Tìm kiếm tinh hoa tri thức...">
+                            <input type="text" name="keyword" value="{{ request('keyword') }}" class="search-input" autocomplete="off" placeholder="Tìm kiếm tinh hoa tri thức...">
                             <button type="submit" class="search-btn"><i class="fa-solid fa-magnifying-glass"></i></button>
                         </div>
+                        <div id="search-suggestions" class="search-suggestions"></div>
                     </form>
                 </div>
 
@@ -275,6 +310,65 @@
                 document.addEventListener('click', (e) => {
                     if (!notiPanel.contains(e.target) && !notiTrigger.contains(e.target)) {
                         notiPanel.classList.remove('active');
+                    }
+                });
+            }
+
+            // Search Suggestions Logic
+            const searchInput = document.querySelector('.search-input');
+            const suggestionsContainer = document.getElementById('search-suggestions');
+            let debounceTimer;
+
+            if (searchInput && suggestionsContainer) {
+                searchInput.addEventListener('input', () => {
+                    clearTimeout(debounceTimer);
+                    const keyword = searchInput.value.trim();
+
+                    if (keyword.length < 2) {
+                        suggestionsContainer.classList.remove('active');
+                        suggestionsContainer.innerHTML = '';
+                        return;
+                    }
+
+                    debounceTimer = setTimeout(() => {
+                        fetch(`{{ route('sanpham.suggestions') }}?keyword=${encodeURIComponent(keyword)}`)
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.length > 0) {
+                                    let html = '';
+                                    data.forEach(item => {
+                                        html += `
+                                            <a href="${item.Url}" class="suggestion-item no-barba" data-barba-prevent>
+                                                <img src="${item.HinhAnh}" class="suggestion-img" alt="${item.TenSP}">
+                                                <div class="suggestion-info">
+                                                    <span class="suggestion-name">${item.TenSP}</span>
+                                                    <div class="d-flex align-items-center">
+                                                        <span class="suggestion-price">${item.GiaHienTai}</span>
+                                                        ${item.CoGiamGia ? `<span class="suggestion-old-price">${item.DonGia}</span>` : ''}
+                                                    </div>
+                                                </div>
+                                            </a>
+                                        `;
+                                    });
+                                    suggestionsContainer.innerHTML = html;
+                                    suggestionsContainer.classList.add('active');
+                                } else {
+                                    suggestionsContainer.classList.remove('active');
+                                    suggestionsContainer.innerHTML = '';
+                                }
+                            });
+                    }, 300);
+                });
+
+                document.addEventListener('click', (e) => {
+                    if (!searchInput.contains(e.target) && !suggestionsContainer.contains(e.target)) {
+                        suggestionsContainer.classList.remove('active');
+                    }
+                });
+
+                searchInput.addEventListener('focus', () => {
+                    if (suggestionsContainer.innerHTML.trim() !== '') {
+                        suggestionsContainer.classList.add('active');
                     }
                 });
             }
