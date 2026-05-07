@@ -71,6 +71,21 @@ class SanPhamController extends Controller
         return view('sanpham.list', compact('products', 'categories', 'pageTitle', 'totalRecords', 'keyword'));
     }
 
+    public function suggest(Request $request)
+    {
+        $keyword = $request->query('keyword', '');
+        if (empty($keyword)) {
+            return response()->json([]);
+        }
+
+        $suggestions = SanPham::where('TenSP', 'like', "%{$keyword}%")
+            ->select('MaSP', 'TenSP', 'DonGia', 'HinhAnh')
+            ->take(8)
+            ->get();
+
+        return response()->json($suggestions);
+    }
+
     public function detail(Request $request, $id)
     {
         $product = SanPham::with(['danhmuc', 'nhaxuatban', 'tacgias', 'hinhanhsanpham'])->findOrFail($id);

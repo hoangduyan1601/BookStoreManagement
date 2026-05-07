@@ -90,6 +90,57 @@
             border-radius: 20px;
         }
         .auth-nav-btn:hover { background: rgba(175, 146, 69, 0.08); color: var(--gold-primary); }
+
+        /* Search Suggestions */
+        .search-wrapper { position: relative; z-index: 1060; }
+        .search-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 15px;
+            margin-top: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            z-index: 9999;
+            overflow: hidden;
+            display: none;
+            border: 1px solid rgba(175, 146, 69, 0.1);
+        }
+        .search-suggestions.active { display: block; }
+        .suggestion-item {
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: all 0.2s;
+            text-decoration: none !important;
+            color: #333 !important;
+            border-bottom: 1px solid rgba(0,0,0,0.03);
+        }
+        .suggestion-item:last-child { border-bottom: none; }
+        .suggestion-item:hover { background: rgba(175, 146, 69, 0.05); }
+        .suggestion-img {
+            width: 40px;
+            height: 55px;
+            object-fit: cover;
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .suggestion-info { flex: 1; min-width: 0; }
+        .suggestion-title {
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .suggestion-price {
+            font-size: 0.8rem;
+            color: #af9245; /* Gold primary fallback */
+            font-weight: 700;
+        }
     </style>
 </head>
 <body data-barba="wrapper" class="prank-{{ cache()->get('prank_mode', 'none') }}">
@@ -117,9 +168,10 @@
                 <div class="col-lg-5 col-md-5">
                     <form action="{{ route('sanpham.search') }}" method="GET" class="search-wrapper">
                         <div class="d-flex align-items-center">
-                            <input type="text" name="keyword" value="{{ request('keyword') }}" class="search-input" placeholder="Tìm kiếm tinh hoa tri thức...">
+                            <input type="text" name="keyword" value="{{ request('keyword') }}" id="main-search-input" class="search-input" placeholder="Tìm kiếm tinh hoa tri thức..." autocomplete="off">
                             <button type="submit" class="search-btn"><i class="fa-solid fa-magnifying-glass"></i></button>
                         </div>
+                        <div id="search-suggestions" class="search-suggestions"></div>
                     </form>
                 </div>
 
@@ -290,6 +342,69 @@
                 else location.reload();
             });
         }
+
+        // Search Suggestions Logic
+        document.addEventListener('DOMContentLoaded', () => {
+            const searchInput = document.getElementById('main-search-input');
+            const suggestionsPanel = document.getElementById('search-suggestions');
+
+            if (searchInput && suggestionsPanel) {
+                let debounceTimer;
+                searchInput.addEventListener('input', (e) => {
+                    clearTimeout(debounceTimer);
+                    const keyword = e.target.value.trim();
+
+                    if (keyword.length < 2) {
+                        suggestionsPanel.classList.remove('active');
+                        return;
+                    }
+
+                    debounceTimer = setTimeout(() => {
+                        fetch(`/san-pham/suggest?keyword=${encodeURIComponent(keyword)}`)
+                            .then(res => res.json())
+                            .then(data => {
+                                if (data.length > 0) {
+                                    suggestionsPanel.innerHTML = data.map(item => {
+                                        const imgUrl = item.HinhAnh ? 
+                                            (item.HinhAnh.startsWith('http') ? item.HinhAnh : `/assets/images/products/${item.HinhAnh}`) : 
+                                            'https://via.placeholder.com/400x600';
+                                        
+                                        const formattedPrice = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.DonGia);
+                                        
+                                        return `
+                                            <a href="/san-pham/detail/${item.MaSP}" class="suggestion-item no-barba" data-barba-prevent>
+                                                <img src="${imgUrl}" class="suggestion-img" alt="${item.TenSP}">
+                                                <div class="suggestion-info">
+                                                    <div class="suggestion-title">${item.TenSP}</div>
+                                                    <div class="suggestion-price">${formattedPrice}</div>
+                                                </div>
+                                            </a>
+                                        `;
+                                    }).join('');
+                                    suggestionsPanel.classList.add('active');
+                                } else {
+                                    suggestionsPanel.classList.remove('active');
+                                }
+                            })
+                            .catch(err => console.error('Search suggestion error:', err));
+                    }, 300);
+                });
+
+                // Close suggestions when clicking outside
+                document.addEventListener('click', (e) => {
+                    if (!searchInput.contains(e.target) && !suggestionsPanel.contains(e.target)) {
+                        suggestionsPanel.classList.remove('active');
+                    }
+                });
+
+                // Re-show suggestions when clicking back into input if it has value
+                searchInput.addEventListener('click', () => {
+                    if (suggestionsPanel.innerHTML.trim() !== '' && searchInput.value.trim().length >= 2) {
+                        suggestionsPanel.classList.add('active');
+                    }
+                });
+            }
+        });
     </script>
     @stack('scripts')
     <!-- Chatbot AI System -->
