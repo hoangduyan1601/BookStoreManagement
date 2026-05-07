@@ -54,7 +54,8 @@ class RealisticDataSeeder extends Seeder
                 ]);
 
                 $tongTienNhap = 0;
-                $spNhap = $sanphams->random(rand(5, 10));
+                $numToPick = rand(2, min(8, $sanphams->count()));
+                $spNhap = $sanphams->random($numToPick);
                 foreach ($spNhap as $sp) {
                     $slNhap = rand(20, 50);
                     $giaNhap = $sp->DonGia * 0.6; // Giá nhập bằng 60% giá bán

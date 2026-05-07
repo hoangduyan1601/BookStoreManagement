@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\View;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -22,12 +24,12 @@ class AppServiceProvider extends ServiceProvider
         \Illuminate\Pagination\Paginator::useBootstrapFive();
 
         // Chia sẻ danh mục, số lượng thông báo & giỏ hàng cho tất cả các view
-        view()->composer('*', function ($view) {
+        View::composer('*', function ($view) {
             $categories = \App\Models\DanhMuc::all();
             $view->with('headerCategories', $categories);
 
-            if (auth()->check()) {
-                $user = auth()->user();
+            if (Auth::check()) {
+                $user = Auth::user();
                 $khachHang = \App\Models\KhachHang::where('MaTK', $user->MaTK)->first();
                 if ($khachHang) {
                     $unreadCount = \App\Models\ThongBao::where('MaKH', $khachHang->MaKH)
