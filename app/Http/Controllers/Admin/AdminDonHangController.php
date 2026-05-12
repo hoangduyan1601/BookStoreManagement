@@ -69,6 +69,13 @@ class AdminDonHangController extends Controller
 
         $orders = $query->paginate(10)->withQueryString();
 
+        // Nếu yêu cầu xuất Excel
+        if ($request->has('export')) {
+            // Lấy toàn bộ danh sách theo filter (không paginate)
+            $exportOrders = $query->get();
+            return $this->exportToExcel($exportOrders);
+        }
+
         $stats = [
             'tong' => DonHang::count(),
             'unpaid' => DonHang::where('TrangThai', 'ChoThanhToan')->count(),
@@ -81,10 +88,87 @@ class AdminDonHangController extends Controller
         return view('admin.donhang.index', compact('orders', 'stats', 'status', 'sort'));
     }
 
+    private function exportToExcel($orders)
+    {
+        $fileName = 'Danh_Sach_Don_Hang_' . date('d_m_Y_H_i') . '.xls';
+
+        $headers = [
+            "Content-type"        => "application/vnd.ms-excel; charset=UTF-8",
+            "Content-Disposition" => "attachment; filename=$fileName",
+            "Pragma"              => "no-cache",
+            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
+            "Expires"             => "0"
+        ];
+
+        $callback = function() use ($orders) {
+            $file = fopen('php://output', 'w');
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF)); // BOM cho UTF-8
+            
+            $html = '
+            <style>
+                .title { font-size: 18px; font-weight: bold; text-align: center; }
+                .header { background-color: #f2f2f2; font-weight: bold; border: 1px solid #000; }
+                .number { text-align: right; }
+            </style>
+            <table border="1">
+                <tr><th colspan="10" class="title">DANH SÁCH ĐƠN HÀNG CHI TIẾT</th></tr>
+                <tr><th colspan="10">Ngày xuất: ' . date('d/m/Y H:i') . '</th></tr>
+                <tr><td colspan="10"></td></tr>
+                <tr class="header">
+                    <th>Mã ĐH</th>
+                    <th>Ngày Đặt</th>
+                    <th>Khách Hàng</th>
+                    <th>Số Điện Thoại</th>
+                    <th>Địa Chỉ Giao Hàng</th>
+                    <th>Tổng Tiền</th>
+                    <th>Giảm Giá</th>
+                    <th>Đã Thanh Toán</th>
+                    <th>Phương Thức</th>
+                    <th>Trạng Thái</th>
+                </tr>';
+
+            $trangThaiLabels = [
+                'ChoThanhToan' => 'Chờ thanh toán',
+                'ChoXacNhan' => 'Chờ xác nhận',
+                'DangGiao' => 'Đang giao',
+                'DaGiao' => 'Đã giao',
+                'DaHuy' => 'Đã hủy',
+            ];
+
+            foreach ($orders as $order) {
+                $html .= '<tr>
+                    <td>#' . $order->MaDH . '</td>
+                    <td>' . date('d/m/Y H:i', strtotime($order->NgayDat)) . '</td>
+                    <td>' . ($order->khachHang->HoTen ?? 'Khách vãng lai') . '</td>
+                    <td>' . ($order->khachHang->SDT ?? '-') . '</td>
+                    <td>' . $order->DiaChiGiaoHang . '</td>
+                    <td class="number">' . number_format($order->TongTien) . '</td>
+                    <td class="number">' . number_format($order->SoTienGiam ?? 0) . '</td>
+                    <td class="number">' . number_format($order->SoTienDaThanhToan ?? 0) . '</td>
+                    <td>' . $order->PhuongThucThanhToan . '</td>
+                    <td>' . ($trangThaiLabels[$order->TrangThai] ?? $order->TrangThai) . '</td>
+                </tr>';
+            }
+
+            $html .= '</table>';
+            
+            echo $html;
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
     public function show($id)
     {
         $order = DonHang::with(['khachHang', 'chiTietDonHangs.sanPham', 'khuyenMai'])->findOrFail($id);
         return view('admin.donhang.show', compact('order'));
+    }
+
+    public function getBillJson($id)
+    {
+        $order = DonHang::with('khachHang')->findOrFail($id);
+        return response()->json($order);
     }
 
     public function updateStatus(Request $request, $id)

@@ -43,7 +43,9 @@
             <p class="mb-0 text-white-50">Giám sát quy trình vận hành và thực hiện đơn hàng</p>
         </div>
         <div class="mt-3 mt-md-0 d-flex gap-2">
-            <button class="btn btn-light rounded-pill px-4"><i class="fas fa-file-download me-2"></i> Xuất Excel</button>
+            <a href="{{ request()->fullUrlWithQuery(['export' => 1]) }}" class="btn btn-light rounded-pill px-4">
+                <i class="fas fa-file-download me-2"></i> Xuất Excel
+            </a>
         </div>
     </div>
 
@@ -203,9 +205,12 @@
                                         <i class="fas fa-receipt"></i>
                                     </button>
                                     @endif
-                                    <a href="{{ route('admin.donhang.show', $r->MaDH) }}" class="btn-action-round bg-light text-primary" title="Xem chi tiết">
+                                    <a href="{{ route('admin.donhang.show', $r->MaDH) }}" class="btn-action-round bg-light text-primary" title="Xem chi tiết & In hóa đơn">
                                         <i class="fas fa-eye"></i>
                                     </a>
+                                    <button onclick="printOrderInvoice({{ $r->MaDH }})" class="btn-action-round bg-light text-dark border-0" title="In nhanh hóa đơn">
+                                        <i class="fas fa-print"></i>
+                                    </button>
                                     <div class="dropdown">
                                         <button class="btn-action-round bg-light text-dark border-0" data-bs-toggle="dropdown">
                                             <i class="fas fa-cog"></i>
@@ -289,12 +294,17 @@
 </style>
 
 <script>
+    function printOrderInvoice(id) {
+        const printUrl = `{{ route('admin.donhang.show', ':id') }}?print=1`.replace(':id', id);
+        window.open(printUrl, '_blank');
+    }
+
     function viewOrderBill(id) {
         const modal = new bootstrap.Modal(document.getElementById('billModal'));
         document.getElementById('billContent').innerHTML = '<div class="p-5 text-center"><div class="spinner-border text-dark" role="status"></div><p class="mt-3 small text-muted">Đang truy xuất biên lai từ ngân hàng...</p></div>';
         modal.show();
 
-        fetch(`/orders/detail/${id}`)
+        fetch(`/admin/donhang/${id}/bill-json`)
             .then(res => res.json())
             .then(order => {
                 const date = new Date(order.NgayDat).toLocaleString('vi-VN');
