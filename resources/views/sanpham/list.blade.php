@@ -46,10 +46,10 @@
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb extra-small text-uppercase ls-1 mb-2">
                             <li class="breadcrumb-item"><a href="{{ route('home') }}" class="text-decoration-none text-muted">Trang chủ</a></li>
-                            <li class="breadcrumb-item active text-dark fw-bold" aria-current="page">Cửa hàng</li>
+                            <li class="breadcrumb-item active text-dark fw-bold" aria-current="page">{{ $pageTitle }}</li>
                         </ol>
                     </nav>
-                    <h2 class="font-luxury fw-bold text-dark mb-1">Tất cả sách</h2>
+                    <h2 class="font-luxury fw-bold text-dark mb-1">{{ $pageTitle }}</h2>
                     <p class="text-muted small mb-0 opacity-75">Khám phá bộ sưu tập tri thức tuyển chọn ({{ $totalRecords }} đầu sách)</p>
                 </div>
                 <div class="d-flex gap-3 align-items-center">

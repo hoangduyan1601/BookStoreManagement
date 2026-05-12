@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('chi_tiet_san_pham', function (Blueprint $table) {
             $table->engine = 'InnoDB';
-            $table->integer('MaSP')->primary();
+            $table->unsignedInteger('MaSP')->primary();
             $table->integer('SoTrang')->nullable();
             $table->string('KichThuoc')->nullable();
             $table->string('LoaiBia')->nullable();

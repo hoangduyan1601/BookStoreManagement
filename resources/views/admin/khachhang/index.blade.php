@@ -109,7 +109,7 @@
                                 </button>
                                 <form action="{{ route('admin.khachhang.destroy', $row->MaKH) }}" method="POST" class="d-inline">
                                     @csrf @method('DELETE')
-                                    <button class="btn btn-sm btn-light rounded-pill px-3 text-danger" onclick="return confirm('Xác nhận xóa?')">
+                                    <button type="submit" class="btn btn-sm btn-light rounded-pill px-3 text-danger" onclick="return confirm('Xác nhận xóa khách hàng này?')">
                                         <i class="fas fa-user-minus"></i> Xóa
                                     </button>
                                 </form>

@@ -17,4 +17,9 @@ class TacGia extends Model
         'MoTa',
         'AnhDaiDien',
     ];
+
+    public function sanphams()
+    {
+        return $this->belongsToMany(SanPham::class, 'sanpham_tacgia', 'MaTacGia', 'MaSP')->withPivot('VaiTro');
+    }
 }

@@ -14,4 +14,9 @@ class DanhMuc extends Model
         'TenDM',
         'MoTa',
     ];
+
+    public function sanphams()
+    {
+        return $this->hasMany(SanPham::class, 'MaDM', 'MaDM');
+    }
 }

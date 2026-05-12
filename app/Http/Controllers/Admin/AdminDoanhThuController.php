@@ -217,69 +217,111 @@ class AdminDoanhThuController extends Controller
             "Expires"             => "0"
         ];
 
-        $callback = function() use ($data) {
+        // Lấy thêm dữ liệu cho báo cáo chuyên nghiệp
+        $revenueByCategory = DB::table('chitietdonhang')
+            ->join('donhang', 'chitietdonhang.MaDH', '=', 'donhang.MaDH')
+            ->join('sanpham', 'chitietdonhang.MaSP', '=', 'sanpham.MaSP')
+            ->join('danhmuc', 'sanpham.MaDM', '=', 'danhmuc.MaDM')
+            ->select('danhmuc.TenDM', DB::raw('SUM(chitietdonhang.SoLuong * chitietdonhang.DonGia) as DoanhThu'), DB::raw('SUM(chitietdonhang.SoLuong) as SoLuong'))
+            ->where('donhang.TrangThai', 'DaGiao');
+
+        if ($tu_ngay && $den_ngay) {
+            $revenueByCategory->whereBetween('donhang.NgayDat', [$tu_ngay, $den_ngay . ' 23:59:59']);
+        } else {
+            $revenueByCategory->whereYear('donhang.NgayDat', $nam);
+            if ($thang) $revenueByCategory->whereMonth('donhang.NgayDat', $thang);
+        }
+        $revenueByCategory = $revenueByCategory->groupBy('danhmuc.TenDM')->get();
+
+        $callback = function() use ($data, $revenueByCategory) {
             $file = fopen('php://output', 'w');
-            // Thêm BOM
             fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
             
             $html = '
             <style>
-                .title { font-size: 18px; font-weight: bold; text-align: center; }
-                .header { background-color: #f2f2f2; font-weight: bold; border: 1px solid #000; }
-                .kpi-row { font-weight: bold; color: #0070c0; }
+                .title { font-size: 20px; font-weight: bold; text-align: center; color: #1a1a1a; }
+                .sub-title { font-size: 14px; text-align: center; color: #666; }
+                .header { background-color: #E2E8F0; font-weight: bold; border: 1px solid #000; text-transform: uppercase; }
+                .section-header { background-color: #1a202c; color: #ffffff; font-weight: bold; }
+                .kpi-row { font-weight: bold; background-color: #f7fafc; }
                 .number { text-align: right; }
-                .border { border: 1px solid #000; }
+                .border { border: 1px solid #e2e8f0; }
+                .text-success { color: #2f855a; }
+                .text-danger { color: #c53030; }
             </style>
             <table border="1">
-                <tr><th colspan="6" class="title">BÁO CÁO PHÂN TÍCH KINH DOANH</th></tr>
-                <tr><th colspan="6">Thời gian: ' . ($data['tu_ngay'] ? "Từ {$data['tu_ngay']} đến {$data['den_ngay']}" : ($data['thang'] ? "Tháng {$data['thang']}/{$data['nam']}" : "Năm {$data['nam']}")) . '</th></tr>
-                <tr><td colspan="6"></td></tr>
+                <tr><th colspan="7" class="title">BÁO CÁO PHÂN TÍCH HOẠT ĐỘNG KINH DOANH CHI TIẾT</th></tr>
+                <tr><th colspan="7" class="sub-title">Thời gian báo cáo: ' . ($data['tu_ngay'] ? "Từ {$data['tu_ngay']} đến {$data['den_ngay']}" : ($data['thang'] ? "Tháng {$data['thang']}/{$data['nam']}" : "Năm {$data['nam']}")) . '</th></tr>
+                <tr><th colspan="7" class="sub-title">Ngày kết xuất: ' . date('d/m/Y H:i') . '</th></tr>
+                <tr><td colspan="7"></td></tr>
                 
-                <tr class="header"><th colspan="6">1. TỔNG QUAN KPI</th></tr>
+                <tr class="section-header"><th colspan="7">I. CHỈ SỐ TÀI CHÍNH TRỌNG YẾU (KPIs)</th></tr>
                 <tr class="kpi-row">
-                    <td colspan="2">Tổng Doanh Thu:</td>
-                    <td colspan="4" class="number">' . number_format($data['tong_doanh_thu']) . ' ₫</td>
+                    <td colspan="3">1. Tổng Doanh Thu (Hóa đơn đã hoàn tất):</td>
+                    <td colspan="4" class="number text-success">' . number_format($data['tong_doanh_thu']) . ' ₫</td>
                 </tr>
                 <tr class="kpi-row">
-                    <td colspan="2">Vốn Nhập Hàng:</td>
+                    <td colspan="3">2. Tổng Chi Phí Nhập Hàng (Vốn hàng bán):</td>
                     <td colspan="4" class="number">' . number_format($data['tong_nhap']) . ' ₫</td>
                 </tr>
-                <tr class="kpi-row" style="color: #c00000;">
-                    <td colspan="2">Lợi Nhuận Gộp:</td>
-                    <td colspan="4" class="number">' . number_format($data['loi_nhuan']) . ' ₫</td>
+                <tr class="kpi-row">
+                    <td colspan="3">3. Lợi Nhuận Gộp Mục Tiêu:</td>
+                    <td colspan="4" class="number ' . ($data['loi_nhuan'] >= 0 ? 'text-success' : 'text-danger') . '">' . number_format($data['loi_nhuan']) . ' ₫</td>
                 </tr>
-                <tr><td colspan="6"></td></tr>
+                <tr class="kpi-row">
+                    <td colspan="3">4. Tỷ Suất Lợi Nhuận / Doanh Thu:</td>
+                    <td colspan="4" class="number">' . ($data['tong_doanh_thu'] > 0 ? round(($data['loi_nhuan'] / $data['tong_doanh_thu']) * 100, 2) : 0) . '%</td>
+                </tr>
+                <tr><td colspan="7"></td></tr>
 
-                <tr class="header"><th colspan="6">2. HIỆU SUẤT SẢN PHẨM</th></tr>
+                <tr class="section-header"><th colspan="7">II. PHÂN TÍCH DOANH THU THEO DANH MỤC</th></tr>
+                <tr class="header">
+                    <th colspan="3">Tên Danh Mục</th>
+                    <th colspan="2">Số Lượng Đã Bán</th>
+                    <th colspan="2">Doanh Thu Chiếm Tỷ Trọng</th>
+                </tr>';
+
+            foreach ($revenueByCategory as $cat) {
+                $percent = $data['tong_doanh_thu'] > 0 ? round(($cat->DoanhThu / $data['tong_doanh_thu']) * 100, 1) : 0;
+                $html .= '<tr>
+                    <td colspan="3">' . $cat->TenDM . '</td>
+                    <td colspan="2" class="number">' . number_format($cat->SoLuong) . '</td>
+                    <td colspan="2" class="number">' . number_format($cat->DoanhThu) . ' ₫ (' . $percent . '%)</td>
+                </tr>';
+            }
+
+            $html .= '<tr><td colspan="7"></td></tr>
+                <tr class="section-header"><th colspan="7">III. HIỆU SUẤT SẢN PHẨM (TOP SALES)</th></tr>
                 <tr class="header">
                     <th>Mã SP</th>
-                    <th>Tên Sản Phẩm</th>
+                    <th colspan="2">Tên Sản Phẩm</th>
                     <th>Danh Mục</th>
-                    <th>Đơn Giá</th>
-                    <th>Số Lượng Bán</th>
-                    <th>Tổng Doanh Thu</th>
+                    <th>Giá Bán TB</th>
+                    <th>Số Lượng</th>
+                    <th>Doanh Thu</th>
                 </tr>';
 
             foreach ($data['sold_list'] as $row) {
                 $html .= '<tr>
                     <td>#' . $row->MaSP . '</td>
-                    <td>' . $row->TenSP . '</td>
+                    <td colspan="2">' . $row->TenSP . '</td>
                     <td>' . ($row->TenDM ?? 'N/A') . '</td>
                     <td class="number">' . number_format($row->DonGia) . '</td>
                     <td class="number">' . number_format($row->TongSoLuong) . '</td>
-                    <td class="number">' . number_format($row->TongDoanhThu) . '</td>
+                    <td class="number">' . number_format($row->TongDoanhThu) . ' ₫</td>
                 </tr>';
             }
 
-            $html .= '<tr><td colspan="6"></td></tr>
-                <tr class="header"><th colspan="6">3. CHI TIẾT DANH SÁCH ĐƠN HÀNG</th></tr>
+            $html .= '<tr><td colspan="7"></td></tr>
+                <tr class="section-header"><th colspan="7">IV. NHẬT KÝ GIAO DỊCH CHI TIẾT (HÓA ĐƠN)</th></tr>
                 <tr class="header">
                     <th>Mã ĐH</th>
-                    <th>Ngày Đặt</th>
+                    <th>Thời Gian</th>
                     <th>Khách Hàng</th>
-                    <th>SĐT</th>
+                    <th>Số Điện Thoại</th>
+                    <th>Phương Thức</th>
                     <th>Giảm Giá</th>
-                    <th>Tổng Thanh Toán</th>
+                    <th>Thanh Toán</th>
                 </tr>';
 
             foreach ($data['order_list'] as $order) {
@@ -288,12 +330,15 @@ class AdminDoanhThuController extends Controller
                     <td>' . date('d/m/Y H:i', strtotime($order->NgayDat)) . '</td>
                     <td>' . ($order->khachHang->HoTen ?? 'Khách vãng lai') . '</td>
                     <td>' . ($order->khachHang->SDT ?? '-') . '</td>
+                    <td>' . $order->PhuongThucThanhToan . '</td>
                     <td class="number">' . number_format($order->SoTienGiam) . '</td>
-                    <td class="number">' . number_format($order->TongTien) . '</td>
+                    <td class="number fw-bold">' . number_format($order->TongTien) . ' ₫</td>
                 </tr>';
             }
 
-            $html .= '</table>';
+            $html .= '</table>
+            <br>
+            <p><i>Lưu ý: Báo cáo này được kết xuất tự động từ hệ thống quản trị Luxury Store. Mọi số liệu dựa trên các đơn hàng đã xác nhận "Đã Giao".</i></p>';
             
             echo $html;
             fclose($file);

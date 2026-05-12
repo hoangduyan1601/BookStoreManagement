@@ -246,7 +246,7 @@
                                     <li><a class="dropdown-item py-2" href="{{ route('admin.sanpham.assign_author', $sp->MaSP) }}"><i class="fas fa-user-tag me-2 text-info"></i> Tác giả</a></li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li>
-                                        <form action="{{ route('admin.sanpham.destroy', $sp->MaSP) }}" method="POST" onsubmit="return confirm('Xác nhận xóa?')">
+                                        <form action="{{ route('admin.sanpham.destroy', $sp->MaSP) }}" method="POST" onsubmit="return confirm('Xác nhận xóa sản phẩm này?')">
                                             @csrf @method('DELETE')
                                             <button type="submit" class="dropdown-item py-2 text-danger"><i class="fas fa-trash me-2"></i> Xóa sản phẩm</button>
                                         </form>

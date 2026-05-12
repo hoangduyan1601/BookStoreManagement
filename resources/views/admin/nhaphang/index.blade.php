@@ -95,9 +95,17 @@
                                 <span class="fw-bold text-dark">{{ number_format($r->TongTienNhap) }}₫</span>
                             </td>
                             <td class="pe-4 text-end">
-                                <a href="{{ route('admin.nhaphang.show', $r->MaNhap) }}" class="btn btn-sm btn-light rounded-pill px-4">
-                                    Xem <i class="fas fa-arrow-right ms-1"></i>
-                                </a>
+                                <div class="d-flex justify-content-end gap-2">
+                                    <a href="{{ route('admin.nhaphang.show', $r->MaNhap) }}" class="btn btn-sm btn-light rounded-pill px-3">
+                                        <i class="fas fa-eye text-primary"></i>
+                                    </a>
+                                    <form action="{{ route('admin.nhaphang.destroy', $r->MaNhap) }}" method="POST" onsubmit="return confirm('Xác nhận xóa phiếu nhập hàng này?')">
+                                        @csrf @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-light rounded-pill px-3 text-danger">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                     @endforeach

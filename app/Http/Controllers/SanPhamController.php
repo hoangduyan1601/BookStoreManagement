@@ -8,9 +8,9 @@ use Illuminate\Http\Request;
 
 class SanPhamController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request, $id = 0)
     {
-        $categoryId = $request->query('id', 0);
+        $categoryId = $id > 0 ? $id : $request->query('id', 0);
         $sort = $request->query('sort', 'latest');
         $categories = DanhMuc::all();
         

@@ -36,7 +36,7 @@ class AdminNhaXuatBanController extends Controller
 
         NhaXuatBan::create($request->all());
 
-        return redirect()->route('admin.nhaxuatban.index')->with('success', 'Thêm nhà xuất bản thành công!');
+        return redirect()->route('admin.nxb.index')->with('success', 'Thêm nhà xuất bản thành công!');
     }
 
     public function edit($id)
@@ -54,7 +54,7 @@ class AdminNhaXuatBanController extends Controller
         $nxb = NhaXuatBan::findOrFail($id);
         $nxb->update($request->all());
 
-        return redirect()->route('admin.nhaxuatban.index')->with('success', 'Cập nhật nhà xuất bản thành công!');
+        return redirect()->route('admin.nxb.index')->with('success', 'Cập nhật nhà xuất bản thành công!');
     }
 
     public function destroy($id)

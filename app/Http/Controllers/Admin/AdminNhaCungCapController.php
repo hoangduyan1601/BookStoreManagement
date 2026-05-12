@@ -36,7 +36,7 @@ class AdminNhaCungCapController extends Controller
 
         NhaCungCap::create($request->all());
 
-        return redirect()->route('admin.nhacungcap.index')->with('success', 'Thêm nhà cung cấp thành công!');
+        return redirect()->route('admin.ncc.index')->with('success', 'Thêm nhà cung cấp thành công!');
     }
 
     public function edit($id)
@@ -54,7 +54,7 @@ class AdminNhaCungCapController extends Controller
         $ncc = NhaCungCap::findOrFail($id);
         $ncc->update($request->all());
 
-        return redirect()->route('admin.nhacungcap.index')->with('success', 'Cập nhật nhà cung cấp thành công!');
+        return redirect()->route('admin.ncc.index')->with('success', 'Cập nhật nhà cung cấp thành công!');
     }
 
     public function destroy($id)

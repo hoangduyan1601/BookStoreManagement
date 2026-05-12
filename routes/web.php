@@ -112,6 +112,7 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(fun
     
     // Don Hang
     Route::get('donhang/count-pending', [AdminDonHangController::class, 'countPending'])->name('donhang.count_pending');
+    Route::get('donhang/{id}/bill-json', [AdminDonHangController::class, 'getBillJson'])->name('donhang.bill_json');
     Route::resource('donhang', AdminDonHangController::class);
     Route::post('donhang/{id}/status', [AdminDonHangController::class, 'updateStatus'])->name('donhang.update_status');
 

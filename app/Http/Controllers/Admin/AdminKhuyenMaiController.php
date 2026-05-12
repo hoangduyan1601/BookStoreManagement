@@ -155,9 +155,13 @@ class AdminKhuyenMaiController extends Controller
 
     public function destroy($id)
     {
-        $km = KhuyenMai::findOrFail($id);
-        $km->delete();
+        try {
+            $km = KhuyenMai::findOrFail($id);
+            $km->delete();
 
-        return redirect()->route('admin.khuyenmai.index')->with('success', 'Xóa khuyến mãi thành công!');
+            return redirect()->route('admin.khuyenmai.index')->with('success', 'Xóa khuyến mãi thành công!');
+        } catch (\Exception $e) {
+            return redirect()->route('admin.khuyenmai.index')->with('error', 'Lỗi hệ thống khi xóa khuyến mãi: ' . $e->getMessage());
+        }
     }
 }

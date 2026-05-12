@@ -97,7 +97,7 @@
                                     <td class="pe-4 text-end">
                                         <form action="{{ route('admin.thongbao.destroy', $tb->MaTB) }}" method="POST">
                                             @csrf @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-light rounded-pill px-3 text-danger" onclick="return confirm('Xóa lịch sử thông báo này?')">
+                                            <button type="submit" class="btn btn-sm btn-light rounded-pill px-3 text-danger" onclick="return confirm('Xác nhận xóa lịch sử thông báo này?')">
                                                 <i class="fas fa-trash-alt"></i>
                                             </button>
                                         </form>

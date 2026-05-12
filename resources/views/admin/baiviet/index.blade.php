@@ -77,7 +77,7 @@
                             </a>
                             <form action="{{ route('admin.baiviet.destroy', $bv->MaBV) }}" method="POST" class="d-inline">
                                 @csrf @method('DELETE')
-                                <button type="submit" class="btn btn-sm btn-light rounded-pill px-3 text-danger" onclick="return confirm('Xóa bài viết?')">
+                                <button type="submit" class="btn btn-sm btn-light rounded-pill px-3 text-danger" onclick="return confirm('Xác nhận xóa bài viết?')">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </form>

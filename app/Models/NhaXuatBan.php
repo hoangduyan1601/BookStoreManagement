@@ -16,4 +16,9 @@ class NhaXuatBan extends Model
         'SDT',
         'Email',
     ];
+
+    public function sanphams()
+    {
+        return $this->hasMany(SanPham::class, 'MaNXB', 'MaNXB');
+    }
 }

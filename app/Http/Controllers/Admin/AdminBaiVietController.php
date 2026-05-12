@@ -98,14 +98,18 @@ class AdminBaiVietController extends Controller
 
     public function destroy($id)
     {
-        $article = BaiViet::findOrFail($id);
-        
-        // Xóa ảnh vật lý nếu có
-        if ($article->HinhAnh && file_exists(public_path($article->HinhAnh))) {
-            unlink(public_path($article->HinhAnh));
-        }
+        try {
+            $article = BaiViet::findOrFail($id);
+            
+            // Xóa ảnh vật lý nếu có
+            if ($article->HinhAnh && file_exists(public_path($article->HinhAnh))) {
+                @unlink(public_path($article->HinhAnh));
+            }
 
-        $article->delete();
-        return redirect()->route('admin.baiviet.index')->with('success', 'Xóa bài viết thành công!');
+            $article->delete();
+            return redirect()->route('admin.baiviet.index')->with('success', 'Xóa bài viết thành công!');
+        } catch (\Exception $e) {
+            return redirect()->route('admin.baiviet.index')->with('error', 'Lỗi hệ thống khi xóa bài viết: ' . $e->getMessage());
+        }
     }
 }
