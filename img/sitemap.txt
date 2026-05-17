@@ -1,0 +1,254 @@
+### HỆ THỐNG SƠ ĐỒ TRANG DỰ ÁN NHÀ SÁCH (BỐ CỤC NGANG - 100% TIẾNG VIỆT)
+
+Dưới đây là các sơ đồ đã được thiết kế lại theo bố cục từ Trái sang Phải (Horizontal) giúp tối ưu hóa không gian hiển thị trên draw.io.
+
+---
+
+#### 1. SƠ ĐỒ TỔNG QUAN HỆ THỐNG
+```mermaid
+graph LR
+    classDef root fill:#2c3e50,stroke:#34495e,stroke-width:2px,color:#fff;
+    classDef module fill:#3498db,stroke:#2980b9,stroke-width:2px,color:#fff;
+    
+    Root["HỆ THỐNG NHÀ SÁCH"]:::root
+    
+    Root --> CongKhai["PHÂN HỆ CÔNG KHAI"]:::module
+    Root --> KhachHang["PHÂN HỆ KHÁCH HÀNG"]:::module
+    Root --> QuanTri["PHÂN HỆ QUẢN TRỊ VIÊN"]:::module
+    
+    CongKhai -.->|"Đăng nhập"| KhachHang
+    KhachHang -.->|"Cấp quyền"| QuanTri
+```
+
+---
+
+#### 2. PHÂN HỆ CÔNG KHAI (CHI TIẾT)
+```mermaid
+graph LR
+    classDef main fill:#3498db,stroke:#2980b9,stroke-width:2px,color:#fff;
+    classDef sub fill:#ecf0f1,stroke:#bdc3c7,stroke-width:1px,color:#2c3e50;
+    
+    CongKhai["PHÂN HỆ CÔNG KHAI"]:::main
+    
+    %% Nhánh Trang Chủ
+    CongKhai --> TrangChu["Trang Chủ"]:::sub
+    TrangChu --> TC1["Biển Quảng Cáo / Slider"]:::sub
+    TrangChu --> TC2["Sách Mới Nhất"]:::sub
+    TrangChu --> TC3["Sách Bán Chạy"]:::sub
+    
+    %% Nhánh Sản Phẩm
+    CongKhai --> SanPham["Danh Mục & Sản Phẩm"]:::sub
+    SanPham --> SP1["Bộ Lọc (Giá, Thể loại, Tác giả)"]:::sub
+    SanPham --> SP2["Tìm Kiếm & Gợi Ý"]:::sub
+    SanPham --> SP3["Trang Chi Tiết Sách"]:::sub
+    SP3 --> SP3_1["Sách Cùng Thể Loại"]:::sub
+    SP3 --> SP3_2["Đánh Giá & Nhận Xét"]:::sub
+    
+    %% Nhánh Tin Tức
+    CongKhai --> BaiViet["Tin Tức & Blog"]:::sub
+    BaiViet --> BV1["Danh Sách Bài Viết"]:::sub
+    BaiViet --> BV2["Nội Dung Bài Viết"]:::sub
+    
+    %% Nhánh Tài Khoản
+    CongKhai --> XacThuc["Tài Khoản & Xác Thực"]:::sub
+    XacThuc --> XT1["Đăng Nhập"]:::sub
+    XT1 --> XT1_1["Quên Mật Khẩu"]:::sub
+    XacThuc --> XT2["Đăng Ký Tài Khoản"]:::sub
+    
+    %% Nhánh Hỗ Trợ
+    CongKhai --> HoTro["Hỗ Trợ Trực Tuyến"]:::sub
+    HoTro --> HT1["Trợ Lý Ảo AI (Gemini)"]:::sub
+```
+
+---
+
+#### 3. PHÂN HỆ KHÁCH HÀNG
+```mermaid
+graph LR
+    classDef main fill:#2ecc71,stroke:#27ae60,stroke-width:2px,color:#fff;
+    classDef sub fill:#ecf0f1,stroke:#bdc3c7,stroke-width:1px,color:#2c3e50;
+    
+    KhachHang["PHÂN HỆ KHÁCH HÀNG"]:::main
+    
+    %% Nhánh Mua Hàng
+    KhachHang --> MuaHang["Quy Trình Mua Hàng"]:::sub
+    MuaHang --> MH1["Giỏ Hàng Của Tôi"]:::sub
+    MH1 --> MH1_1["Cập Nhật Số Lượng / Xóa"]:::sub
+    MuaHang --> MH2["Tiến Hành Thanh Toán"]:::sub
+    MH2 --> MH2_1["Thông Tin Nhận Hàng"]:::sub
+    MH2 --> MH2_2["Nhập Mã Khuyến Mãi"]:::sub
+    MH2 --> MH2_3["Chọn Phương Thức Thanh Toán"]:::sub
+    MH2 --> MH2_4["Kết Quả Giao Dịch"]:::sub
+    
+    %% Nhánh Cá Nhân
+    KhachHang --> CaNhan["Quản Lý Cá Nhân"]:::sub
+    CaNhan --> CN1["Cập Nhật Thông Tin Cá Nhân"]:::sub
+    CaNhan --> CN2["Đổi Mật Khẩu"]:::sub
+    
+    %% Nhánh Tương Tác
+    KhachHang --> TuongTac["Lịch Sử & Thông Báo"]:::sub
+    TuongTac --> LS1["Lịch Sử Đơn Hàng"]:::sub
+    LS1 --> LS1_1["Chi Tiết & Trạng Thái Đơn"]:::sub
+    LS1 --> LS1_2["Yêu Cầu Hủy Đơn Hàng"]:::sub
+    TuongTac --> LS2["Danh Sách Yêu Thích"]:::sub
+    TuongTac --> LS3["Trung Tâm Thông Báo"]:::sub
+```
+
+---
+
+#### 4. PHÂN HỆ QUẢN TRỊ VIÊN
+```mermaid
+graph LR
+    classDef main fill:#e74c3c,stroke:#c0392b,stroke-width:2px,color:#fff;
+    classDef sub fill:#ecf0f1,stroke:#bdc3c7,stroke-width:1px,color:#2c3e50;
+    
+    QuanTri["PHÂN HỆ QUẢN TRỊ VIÊN"]:::main
+    
+    %% Nhánh Điều Khiển
+    QuanTri --> DieuKhien["Bảng Điều Khiển"]:::sub
+    DieuKhien --> DK1["Thống Kê Nhanh"]:::sub
+    DieuKhien --> DK2["Biểu Đồ Doanh Thu & Đơn Hàng"]:::sub
+    
+    %% Nhánh Kho Hàng
+    QuanTri --> KhoHang["Quản Lý Sản Phẩm & Kho"]:::sub
+    KhoHang --> KH1["Quản Lý Đầu Sách"]:::sub
+    KH1 --> KH1_1["Quản Lý Hình Ảnh / Tác Giả"]:::sub
+    KhoHang --> KH2["Quản Lý Thể Loại"]:::sub
+    KhoHang --> KH3["Quản Lý Nhập Kho"]:::sub
+    KH3 --> KH3_1["Thông Tin Nhà Cung Cấp"]:::sub
+    
+    %% Nhánh Kinh Doanh
+    QuanTri --> KinhDoanh["Quản Lý Kinh Doanh"]:::sub
+    KinhDoanh --> KD1["Xử Lý Đơn Hàng"]:::sub
+    KinhDoanh --> KD2["Chương Trình Khuyến Mãi"]:::sub
+    KinhDoanh --> KD3["Quản Lý Khách Hàng"]:::sub
+    
+    %% Nhánh Nội Dung
+    QuanTri --> NoiDung["Nội Dung & Tương Tác"]:::sub
+    NoiDung --> ND1["Quản Lý Bài Viết"]:::sub
+    NoiDung --> ND2["Gửi Thông Báo Hệ Thống"]:::sub
+    NoiDung --> ND3["Hỗ Trợ Trực Tuyến"]:::sub
+    
+    %% Nhánh Hệ Thống
+    QuanTri --> HeThong["Hệ Thống & Báo Cáo"]:::sub
+    HeThong --> HT1["Báo Cáo Tài Chính"]:::sub
+    HeThong --> HT2["Tài Khoản Quản Trị"]:::sub
+    HeThong --> HT3["Cấu Hình Hệ Thống"]:::sub
+```
+
+---
+
+### 2.3 WIREFRAME (BẢN PHÁC THẢO GIAO DIỆN)
+
+#### 1. WIREFRAME TRANG CHỦ (HOMEPAGE)
+```mermaid
+graph TD
+    subgraph Trang_Chu ["Cấu trúc: Trang Chủ"]
+        direction TB
+        Header["Header: Logo - Tìm kiếm - Giỏ hàng"]
+        Nav["Menu: Trang chủ - Danh mục - Tin tức - Khuyến mãi"]
+        Hero["Banner chính: Slider ảnh quảng cáo"]
+        
+        subgraph Sections ["Các khối nội dung"]
+            direction TB
+            S1["SÁCH MỚI NHẤT (Hàng ngang 5 sản phẩm)"]
+            S2["SÁCH BÁN CHẠY (Hàng ngang 5 sản phẩm)"]
+            S3["GỢI Ý HÔM NAY (Lưới sản phẩm)"]
+        end
+        
+        Footer["Chân trang: Liên hệ - Chính sách - Mạng xã hội"]
+        
+        Header --> Nav --> Hero --> Sections --> Footer
+    end
+```
+
+---
+
+#### 2. WIREFRAME TRANG CHI TIẾT SẢN PHẨM
+```mermaid
+graph TD
+    subgraph Chi_Tiet ["Cấu trúc: Chi Tiết Sản Phẩm"]
+        direction TB
+        Top["Đường dẫn: Trang chủ > Thể loại > Tên sách"]
+        
+        subgraph Main_CT ["Thông tin chính"]
+            direction LR
+            Gallery["Ảnh sách lớn & Album ảnh nhỏ"]
+            subgraph Purchase ["Khu vực mua hàng"]
+                Title["Tên sách (Cỡ chữ lớn)"]
+                Info["Tác giả - NXB - Năm XB"]
+                Price["Giá bán: Nổi bật kèm % Giảm"]
+                Qty["Chọn số lượng: [ - ] [ 1 ] [ + ]"]
+                Btns["Nút: THÊM GIỎ HÀNG & MUA NGAY"]
+            end
+        end
+        
+        subgraph Content_Tab ["Chi tiết nội dung"]
+            direction TB
+            Desc["Mô tả: Tóm tắt nội dung sách"]
+            Specs["Thông số: Số trang - Khối lượng - Loại bìa"]
+        end
+        
+        Review["Nhận xét: Sao đánh giá & Bình luận khách hàng"]
+        
+        Top --> Main_CT --> Content_Tab --> Review
+    end
+```
+
+---
+
+#### 3. WIREFRAME GIỎ HÀNG & THANH TOÁN
+```mermaid
+graph TD
+    subgraph Cart_UI ["Cấu trúc: Giỏ hàng & Thanh toán"]
+        direction TB
+        subgraph Table_List ["Danh sách sản phẩm"]
+            direction TB
+            H["Ảnh - Tên sách - Đơn giá - Số lượng - Thành tiền"]
+            I1["Sách A - 100k - x2 - 200k"]
+            I2["Sách B - 50k  - x1 - 50k"]
+        end
+        
+        subgraph Payment_Flow ["Quy trình thanh toán"]
+            direction LR
+            Info["Thông tin nhận hàng (Họ tên, Địa chỉ, SĐT)"]
+            Method["Thanh toán: VNPAY hoặc Tiền mặt"]
+            Summary["Tổng cộng: 250,000đ"]
+        end
+        
+        Confirm["Nút: XÁC NHẬN ĐẶT HÀNG"]
+        
+        Table_List --> Payment_Flow --> Confirm
+    end
+```
+
+---
+
+#### 4. WIREFRAME QUẢN TRỊ (ADMIN)
+```mermaid
+graph TD
+    subgraph Admin_UI ["Cấu trúc: Bảng điều khiển Quản trị"]
+        direction LR
+        subgraph Sidebar ["Menu trái"]
+            M1["Tổng quan"]
+            M2["Sản phẩm"]
+            M3["Đơn hàng"]
+            M4["Khách hàng"]
+            M5["Tin tức"]
+        end
+        
+        subgraph Work_Area ["Vùng làm việc"]
+            direction TB
+            TopBar["Chào Admin - Đăng xuất"]
+            subgraph Dash_Stats ["Thống kê nhanh"]
+                direction LR
+                C1["Doanh thu ngày"]
+                C2["Đơn hàng mới"]
+                C3["Sách sắp hết"]
+            end
+            Table["Bảng dữ liệu: Danh sách & Nút Sửa/Xóa"]
+        end
+        
+        Sidebar --- Work_Area
+    end
+```

@@ -1,0 +1,129 @@
+### HỆ THỐNG WIREFRAME GIAO DIỆN NHÀ SÁCH (BẢN PHÁC THẢO CHI TIẾT)
+
+Tài liệu này mô tả chi tiết bố cục và các thành phần giao diện của hệ thống, được thiết kế dựa trên cấu trúc thực tế của chương trình.
+
+---
+
+#### 1. CHI TIẾT GIAO DIỆN TRANG CHỦ (HOMEPAGE)
+**Mô tả chức năng:**
+- **Thanh tiêu đề (Header):** Điểm nhấn là thanh tìm kiếm trung tâm hỗ trợ tìm theo tên sách hoặc tác giả. Cụm tiện ích bên phải hiển thị số lượng sản phẩm trong giỏ hàng và trạng thái đăng nhập.
+- **Thanh điều hướng (Nav):** Phân loại rõ ràng các nhóm sách (Văn học, Kỹ năng, Thiếu nhi...) giúp khách hàng truy cập nhanh.
+- **Khu vực nổi bật:** Slider tự động chuyển động hiển thị các đầu sách "Luxury" hoặc các chương trình Flash Sale đang diễn ra.
+- **Khối sản phẩm:** Hiển thị dưới dạng lưới (Grid 5 cột). Mỗi thẻ sản phẩm bao gồm: Ảnh bìa, Tên sách, Giá niêm yết, Giá khuyến mãi và nhãn "Sách mới".
+- **Chân trang:** Chứa liên kết mạng xã hội và thông tin pháp lý của nhà sách.
+
+```mermaid
+graph TD
+    subgraph Trang_Chu ["Bố cục: Trang Chủ"]
+        direction TB
+        subgraph Header ["Khối Header"]
+            direction LR
+            Logo["LOGO NHÀ SÁCH"] --- Search["[ Ô tìm kiếm sách... ]"] --- User["Giỏ hàng / Tài khoản"]
+        end
+        
+        subgraph Nav ["Thanh Điều Hướng"]
+            direction LR
+            M1["Trang chủ"] --- M2["Danh mục sách"] --- M3["Tin tức"] --- M4["Khuyến mãi"] --- M5["Liên hệ"]
+        end
+        
+        subgraph Hero ["Vùng Nổi Bật"]
+            Slider["[ Banner: Slider ảnh khuyến mãi / Sách Luxury ]"]
+        end
+        
+        subgraph Content ["Nội dung chính"]
+            direction TB
+            Section1["Khối: SÁCH MỚI NHẤT (Lưới 5 cột)"]
+            Section2["Khối: SÁCH BÁN CHẠY (Lưới 5 cột)"]
+        end
+        
+        subgraph Footer ["Khối Chân Trang"]
+            direction LR
+            F1["Thông tin liên hệ"] --- F2["Chính sách & Quy định"] --- F3["Kết nối mạng xã hội"]
+        end
+        
+        Header --> Nav --> Hero --> Content --> Footer
+    end
+```
+
+---
+
+#### 2. CHI TIẾT GIAO DIỆN TRANG CHI TIẾT SẢN PHẨM (PRODUCT DETAIL)
+**Mô tả chức năng:**
+- **Khu vực hình ảnh:** Cột trái hiển thị ảnh bìa chính (có tính năng zoom) và danh sách ảnh chi tiết bên dưới.
+- **Thông tin bán hàng:** Cột phải tập trung vào giá cả và các nút hành động. Hiển thị rõ các thông tin từ DB như: Tác giả, Nhà xuất bản, Số lượng tồn kho.
+- **Phần khuyến mãi:** Hiển thị các mã giảm giá áp dụng riêng cho đầu sách này (lấy từ bảng `khuyenmai`).
+- **Tab thông tin:** Phân tách giữa "Mô tả nội dung" (dạng long-text) và "Thông số kỹ thuật" (lấy từ bảng `chi_tiet_san_pham` như Số trang, Cân nặng, Loại bìa).
+- **Đánh giá:** Hiển thị điểm sao trung bình và các nhận xét chi tiết từ người mua.
+
+```mermaid
+graph TD
+    subgraph Chi_Tiet ["Bố cục: Chi Tiết Sản Phẩm"]
+        direction TB
+        Header_UI["Header & Thanh điều hướng"]
+        
+        subgraph Main_Area ["Khu vực chính"]
+            direction LR
+            subgraph Left_Col ["Ảnh & Gallery"]
+                BigImg["Ảnh bìa chính"]
+                Thumbnails["Album ảnh nhỏ"]
+            end
+            
+            subgraph Right_Col ["Thông tin & Đặt hàng"]
+                T["Tên sách: Cỡ chữ tiêu đề lớn"]
+                Meta["Tác giả - Nhà xuất bản - Năm XB"]
+                Price["Giá: [ 150.000đ ] (Giảm 20%)"]
+                Stock["Trạng thái: Còn hàng / Sắp hết"]
+                Actions["Nút: THÊM GIỎ HÀNG | MUA NGAY"]
+            end
+        end
+        
+        subgraph Bottom_Area ["Thông tin chi tiết & Đánh giá"]
+            direction TB
+            Tabs["Tab: Giới thiệu sách | Tab: Thông số kỹ thuật"]
+            Comments["Danh sách bình luận & Xếp hạng sao"]
+        end
+        
+        Header_UI --> Main_Area --> Bottom_Area
+    end
+```
+
+---
+
+#### 3. CHI TIẾT GIAO DIỆN QUẢN TRỊ (ADMIN DASHBOARD)
+**Mô tả chức năng:**
+- **Sidebar (Trái):** Hệ thống menu dọc phân cấp giúp quản lý toàn bộ dữ liệu (Sản phẩm, Đơn hàng, Khách hàng, Bài viết).
+- **Thống kê nhanh (Top):** Các thẻ (Card) hiển thị số liệu thực tế từ DB như: Tổng doanh thu (bảng `doanhthu`), Số đơn hàng mới, Khách hàng đăng ký mới.
+- **Bảng dữ liệu (Center):** Hiển thị danh sách đối tượng (ví dụ: Sản phẩm) với các cột thông tin quan trọng và các nút tác vụ (Sửa, Xóa, Xem chi tiết).
+- **Thanh trạng thái (Topbar):** Hiển thị thông tin Admin đang đăng nhập và nút đăng xuất.
+
+```mermaid
+graph TD
+    subgraph Admin_UI ["Bố cục: Quản Trị Hệ Thống"]
+        direction LR
+        subgraph Sidebar ["Menu dọc (Nav)"]
+            S1["Dashboard (Tổng quan)"]
+            S2["Quản lý Sản phẩm"]
+            S3["Quản lý Đơn hàng"]
+            S4["Quản lý Tin tức"]
+            S5["Cài đặt hệ thống"]
+        end
+        
+        subgraph Main_Work ["Vùng làm việc chính"]
+            direction TB
+            TopBar["Thanh điều hướng: Chào Admin - Đăng xuất"]
+            
+            subgraph Stats_Cards ["Thống kê nhanh"]
+                direction LR
+                Card1["[ Doanh thu ]"] --- Card2["[ Đơn hàng ]"] --- Card3["[ Khách hàng ]"]
+            end
+            
+            subgraph Table_Section ["Bảng quản lý dữ liệu"]
+                TableHeader["[ Tên | Giá | Kho | Hành động ]"]
+                Row1["[ Sách A | 100k | 50 | Sửa/Xóa ]"]
+                Row2["[ Sách B | 200k | 10 | Sửa/Xóa ]"]
+            end
+        end
+        
+        Sidebar --- Main_Work
+    end
+```

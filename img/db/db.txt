@@ -1,0 +1,254 @@
+classDiagram
+    direction LR
+
+    %% --- NHÓM QUẢN TRỊ VÀ ĐỐI TÁC ---
+    class DanhMuc {
+        -int MaDM
+        -string TenDM
+        -text MoTa
+        +danhmucs()
+        +khuyenmais()
+    }
+
+    class NhaXuatBan {
+        -int MaNXB
+        -string TenNXB
+        -string DiaChi
+        -string SDT
+        -string Email
+        +sanphams()
+    }
+
+    class TacGia {
+        -int MaTacGia
+        -string TenTacGia
+        -date NgaySinh
+        -string QuocTich
+        -text MoTa
+        -string AnhDaiDien
+        +sanphams()
+    }
+
+    class NhaCungCap {
+        -int MaNCC
+        -string TenNCC
+        -string SDT
+        -string DiaChi
+        -string Email
+        +lichSuNhapHangs()
+    }
+
+    %% --- NHÓM SẢN PHẨM ---
+    class SanPham {
+        <<Sách>>
+        -int MaSP
+        -string TenSP
+        -decimal DonGia
+        -int SoLuong
+        -text MoTa
+        -string HinhAnh
+        -int MaDM
+        -int MaNXB
+        -datetime NgayCapNhat
+        -int SoLuongDaBan
+        +danhmuc()
+        +nhaxuatban()
+        +tacgias()
+        +hinhanhsanpham()
+        +chiTiet()
+        +chiTietDonHangs()
+        +chiTietNhapHangs()
+        +chiTietGioHangs()
+        +favorites()
+    }
+
+    class ChiTietSanPham {
+        -int MaSP
+        -int SoTrang
+        -string KichThuoc
+        -string LoaiBia
+        -string TrongLuong
+        -int NamXuatBan
+        -text NoiDungChiTiet
+        +sanpham()
+    }
+
+    class HinhAnhSanPham {
+        -int MaHinh
+        -int MaSP
+        -string DuongDan
+        -boolean LaAnhChinh
+    }
+
+    %% --- NHÓM GIAO DỊCH ---
+    class GioHang {
+        -int MaGH
+        -int MaKH
+        -datetime NgayTao
+        +khachHang()
+        +chiTietGioHangs()
+    }
+
+    class ChiTietGioHang {
+        -int MaGH
+        -int MaSP
+        -int SoLuong
+        -decimal DonGiaTamTinh
+        +gioHang()
+        +sanPham()
+    }
+
+    class DonHang {
+        -int MaDH
+        -datetime NgayDat
+        -decimal TongTien
+        -decimal SoTienDaThanhToan
+        -string TrangThai
+        -string PhuongThucThanhToan
+        -int MaKH
+        -string DiaChiGiaoHang
+        -int MaKM
+        -decimal SoTienGiam
+        +chiTietDonHangs()
+        +khachHang()
+        +khuyenMai()
+    }
+
+    class ChiTietDonHang {
+        -int MaDH
+        -int MaSP
+        -int SoLuong
+        -decimal DonGia
+        -decimal ThanhTien
+        +donHang()
+        +sanPham()
+    }
+
+    class LichSuNhapHang {
+        -int MaNhap
+        -datetime NgayNhap
+        -int MaNCC
+        -decimal TongTienNhap
+        +nhaCungCap()
+        +chiTietNhapHangs()
+    }
+
+    class ChiTietNhapHang {
+        -int MaNhap
+        -int MaSP
+        -int SoLuongNhap
+        -decimal DonGiaNhap
+        +lichSuNhapHang()
+        +sanPham()
+    }
+
+    %% --- NHÓM NGƯỜI DÙNG VÀ HỆ THỐNG ---
+    class KhachHang {
+        -int MaKH
+        -string HoTen
+        -string Email
+        -string SDT
+        -string DiaChi
+        -datetime NgayDangKy
+        -int MaTK
+        +taiKhoan()
+        +donHangs()
+        +favorites()
+    }
+
+    class TaiKhoan {
+        -int MaTK
+        -string TenDangNhap
+        -string MatKhau
+        -string VaiTro
+        -int TrangThai
+        +getAuthPassword()
+        +getAuthIdentifierName()
+        +khachHang()
+    }
+
+    class KhuyenMai {
+        -int MaKM
+        -string TenKM
+        -decimal PhanTramGiam
+        -datetime NgayBatDau
+        -datetime NgayKetThuc
+        -text DieuKien
+        -string LoaiKM
+        -int MaDM
+        -decimal DieuKienToiThieu
+        -string MaGiamGia
+        +danhMuc()
+    }
+
+    class DoanhThu {
+        -int MaBC
+        -int Thang
+        -int Nam
+        -decimal TongDoanhThu
+        -decimal LoiNhuan
+    }
+
+    class ThongBao {
+        -int MaTB
+        -int MaKH
+        -string TieuDe
+        -string NoiDung
+        -datetime NgayGui
+        -boolean TrangThaiDoc
+        -string LoaiTB
+        -string LienKet
+        -boolean DaDoc
+        +khachHang()
+    }
+
+    %% --- NHÓM TÍNH NĂNG PHỤ ---
+    class BaiViet {
+        -int MaBV
+        -string TieuDe
+        -string Slug
+        -text TomTat
+        -text NoiDung
+        -string HinhAnh
+        -datetime NgayDang
+        -string TrangThai
+        -int MaTK
+        +taiKhoan()
+    }
+
+    class ChatMessage {
+        -int id
+        -int MaKH
+        -string session_id
+        -text message
+        -string sender
+        -boolean is_read
+        +khachHang()
+    }
+
+    %% --- MỐI QUAN HỆ ---
+    DanhMuc "1" -- "N" SanPham
+    NhaXuatBan "1" -- "N" SanPham
+    TacGia "N" -- "N" SanPham
+    SanPham "1" -- "1" ChiTietSanPham
+    SanPham "1" -- "N" HinhAnhSanPham
+
+    KhachHang "1" -- "1" TaiKhoan
+    KhachHang "1" -- "N" DonHang
+    KhachHang "1" -- "1" GioHang
+    KhachHang "1" -- "N" ThongBao
+    KhachHang "1" -- "N" ChatMessage
+    
+    DonHang "1" -- "N" ChiTietDonHang
+    DonHang "N" -- "0..1" KhuyenMai
+    SanPham "1" -- "N" ChiTietDonHang
+    
+    GioHang "1" -- "N" ChiTietGioHang
+    SanPham "1" -- "N" ChiTietGioHang
+
+    NhaCungCap "1" -- "N" LichSuNhapHang
+    LichSuNhapHang "1" -- "N" ChiTietNhapHang
+    SanPham "1" -- "N" ChiTietNhapHang
+
+    TaiKhoan "1" -- "N" BaiViet
+    KhachHang "N" -- "N" SanPham : Yêu thích

@@ -23,6 +23,11 @@ class AppServiceProvider extends ServiceProvider
     {
         \Illuminate\Pagination\Paginator::useBootstrapFive();
 
+        // Ép HTTPS nếu đang chạy qua ngrok để VNPay IPN hoạt động chuẩn
+        if (str_contains(request()->getHost(), 'ngrok-free.app') || str_contains(request()->getHost(), 'ngrok-free.dev')) {
+            \Illuminate\Support\Facades\URL::forceScheme('https');
+        }
+
         // Chia sẻ danh mục, số lượng thông báo & giỏ hàng cho tất cả các view
         View::composer('*', function ($view) {
             $categories = \App\Models\DanhMuc::all();

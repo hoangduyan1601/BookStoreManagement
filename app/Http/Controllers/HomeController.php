@@ -4,18 +4,28 @@ namespace App\Http\Controllers;
 
 use App\Models\SanPham;
 use App\Models\DanhMuc;
+use App\Models\BaiViet;
+use App\Models\KhachHang;
+use App\Models\DonHang;
+use App\Models\ThongBao;
+use App\Models\ChiTietDonHang;
+use App\Models\TaiKhoan;
+use App\Notifications\OrderStatusNotification;
 use Illuminate\Http\Request;
-
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Log;
+use Exception;
 
 class HomeController extends Controller
 {
     public function index()
     {
-        $sanphams = \App\Models\SanPham::orderBy('NgayCapNhat', 'desc')->paginate(10, ['*'], 'p');
-        $danhmucs = \App\Models\DanhMuc::all();
-        $bestSellers = \App\Models\SanPham::orderBy('SoLuongDaBan', 'desc')->take(8)->get();
-        $latestArticles = \App\Models\BaiViet::where('TrangThai', true)
+        $sanphams = SanPham::orderBy('NgayCapNhat', 'desc')->paginate(10, ['*'], 'p');
+        $danhmucs = DanhMuc::all();
+        $bestSellers = SanPham::orderBy('SoLuongDaBan', 'desc')->take(8)->get();
+        $latestArticles = BaiViet::where('TrangThai', true)
             ->orderBy('NgayDang', 'desc')
             ->take(3)
             ->get();
@@ -25,35 +35,35 @@ class HomeController extends Controller
 
     public function profile()
     {
-        /** @var \App\Models\TaiKhoan $user */
+        /** @var TaiKhoan $user */
         $user = Auth::user();
         
         // Lấy khách hàng liên kết với tài khoản này
-        $customer = \App\Models\KhachHang::where('MaTK', $user->MaTK)->first();
+        $customer = KhachHang::where('MaTK', $user->MaTK)->first();
 
         if (!$customer) {
             // Tự động tạo bản ghi khách hàng nếu thiếu để tránh lỗi điều hướng
-            $customer = \App\Models\KhachHang::create([
+            $customer = KhachHang::create([
                 'MaTK' => $user->MaTK,
-                'HoTen' => $user->TenDN ?? 'Người dùng mới',
-                'Email' => $user->Email ?? 'user@example.com',
+                'HoTen' => $user->TenDangNhap ?? 'Người dùng mới',
+                'Email' => 'user' . $user->MaTK . '@example.com',
                 'SDT' => '0000000000',
                 'DiaChi' => 'Chưa cập nhật'
             ]);
         }
 
         // Phân loại đơn hàng
-        $ordersInProgress = \App\Models\DonHang::where('MaKH', $customer->MaKH)
+        $ordersInProgress = DonHang::where('MaKH', $customer->MaKH)
             ->whereIn('TrangThai', ['ChoThanhToan', 'ChoXacNhan', 'DaXacNhan', 'DangGiao'])
             ->orderBy('NgayDat', 'desc')
             ->get();
 
-        $ordersCompleted = \App\Models\DonHang::where('MaKH', $customer->MaKH)
+        $ordersCompleted = DonHang::where('MaKH', $customer->MaKH)
             ->whereIn('TrangThai', ['DaGiao', 'DaHuy'])
             ->orderBy('NgayDat', 'desc')
             ->get();
 
-        $unreadCount = \App\Models\ThongBao::where('MaKH', $customer->MaKH)
+        $unreadCount = ThongBao::where('MaKH', $customer->MaKH)
             ->where('TrangThaiDoc', false)
             ->count();
             
@@ -62,8 +72,9 @@ class HomeController extends Controller
 
     public function updateProfile(Request $request)
     {
+        /** @var TaiKhoan $user */
         $user = Auth::user();
-        $customer = \App\Models\KhachHang::where('MaTK', $user->MaTK)->first();
+        $customer = KhachHang::where('MaTK', $user->MaTK)->first();
 
         if (!$customer) {
             return back()->with('error', 'Không tìm thấy thông tin khách hàng.');
@@ -86,18 +97,18 @@ class HomeController extends Controller
 
     public function markNotificationRead($id)
     {
-        $tb = \App\Models\ThongBao::findOrFail($id);
+        $tb = ThongBao::findOrFail($id);
         $tb->update(['TrangThaiDoc' => true]);
         return response()->json(['status' => 'success']);
     }
 
     public function markAllRead()
     {
-        /** @var \App\Models\TaiKhoan $user */
+        /** @var TaiKhoan $user */
         $user = Auth::user();
-        $khachHang = \App\Models\KhachHang::where('MaTK', $user->MaTK)->first();
+        $khachHang = KhachHang::where('MaTK', $user->MaTK)->first();
         if ($khachHang) {
-            \App\Models\ThongBao::where('MaKH', $khachHang->MaKH)
+            ThongBao::where('MaKH', $khachHang->MaKH)
                 ->where('TrangThaiDoc', false)
                 ->update(['TrangThaiDoc' => true]);
         }
@@ -106,14 +117,16 @@ class HomeController extends Controller
 
     public function orderDetail($id)
     {
-        $order = \App\Models\DonHang::with(['khachHang', 'chiTietDonHangs.sanPham'])->findOrFail($id);
+        $order = DonHang::with(['khachHang', 'chiTietDonHangs.sanPham'])->findOrFail($id);
         
         // Kiểm tra quyền (chỉ chủ đơn hàng hoặc admin mới được xem)
-        /** @var \App\Models\TaiKhoan $user */
+        /** @var TaiKhoan $user */
         $user = Auth::user();
-        $khachHang = \App\Models\KhachHang::where('MaTK', $user->MaTK)->first();
+        $khachHang = KhachHang::where('MaTK', $user->MaTK)->first();
         
-        if ($user->VaiTro !== 'Admin' && strtolower($user->VaiTro) !== 'quanly' && (!$khachHang || $order->MaKH !== $khachHang->MaKH)) {
+        $isAdmin = in_array($user->VaiTro, ['Admin', 'quanly', 'QuanLy']);
+        
+        if (!$isAdmin && (!$khachHang || $order->MaKH !== $khachHang->MaKH)) {
             return response()->json(['status' => 'error', 'message' => 'Bạn không có quyền xem đơn hàng này.'], 403);
         }
 
@@ -122,9 +135,10 @@ class HomeController extends Controller
 
     public function cancelOrder($id)
     {
-        $order = \App\Models\DonHang::findOrFail($id);
+        $order = DonHang::findOrFail($id);
+        /** @var TaiKhoan $user */
         $user = Auth::user();
-        $khachHang = \App\Models\KhachHang::where('MaTK', $user->MaTK)->first();
+        $khachHang = KhachHang::where('MaTK', $user->MaTK)->first();
 
         // Kiểm tra quyền sở hữu
         if (!$khachHang || $order->MaKH !== $khachHang->MaKH) {
@@ -136,34 +150,34 @@ class HomeController extends Controller
             return back()->with('error', 'Đơn hàng này không thể hủy ở trạng thái hiện tại.');
         }
 
-        \Illuminate\Support\Facades\DB::beginTransaction();
+        DB::beginTransaction();
         try {
             // 1. Cập nhật trạng thái
             $order->update(['TrangThai' => 'DaHuy']);
 
             // 2. Hoàn trả số lượng vào kho
-            $details = \App\Models\ChiTietDonHang::where('MaDH', $id)->get();
+            $details = ChiTietDonHang::where('MaDH', $id)->get();
             foreach ($details as $item) {
-                $product = \App\Models\SanPham::find($item->MaSP);
+                $product = SanPham::find($item->MaSP);
                 if ($product) {
                     $product->increment('SoLuong', $item->SoLuong);
                     $product->decrement('SoLuongDaBan', $item->SoLuong);
                 }
             }
 
-            \Illuminate\Support\Facades\DB::commit();
+            DB::commit();
 
             // Gửi thông báo email cho Admin về việc hủy đơn
             try {
-                \Illuminate\Support\Facades\Notification::route('mail', config('mail.from.address'))
-                    ->notify(new \App\Notifications\OrderStatusNotification($order->load('khachHang')));
-            } catch (\Exception $e) {
-                \Log::error('Lỗi gửi email thông báo hủy đơn hàng: ' . $e->getMessage());
+                Notification::route('mail', config('mail.from.address'))
+                    ->notify(new OrderStatusNotification($order->load('khachHang')));
+            } catch (Exception $e) {
+                Log::error('Lỗi gửi email thông báo hủy đơn hàng: ' . $e->getMessage());
             }
 
             return back()->with('success', 'Đã hủy đơn hàng #' . $id . ' thành công.');
-        } catch (\Exception $e) {
-            \Illuminate\Support\Facades\DB::rollBack();
+        } catch (Exception $e) {
+            DB::rollBack();
             return back()->with('error', 'Lỗi khi hủy đơn hàng: ' . $e->getMessage());
         }
     }

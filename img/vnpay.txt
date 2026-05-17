@@ -1,0 +1,43 @@
+ Bước 1: Chạy lại ngrok
+  Mở terminal và gõ lại lệnh:
+   1 ngrok http 8000
+
+  Bước 2: Cập nhật lại file .env
+  Sau khi chạy, bạn sẽ thấy một link mới ở dòng Forwarding (ví dụ: https://abcd-123.ngrok-free.app). Hãy copy link này và cập nhật lại vào file .env:
+
+   1 VNP_RETURN_URL=https://abcd-123.ngrok-free.app/vnpay-return
+  (Lưu ý: /vnpay-return là route mà bạn đã viết trong Laravel để xử lý kết quả).
+
+  Bước 3: Xóa cache cấu hình của Laravel
+  Sau khi sửa .env, bạn phải chạy lệnh này để Laravel nhận link mới:
+   1 php artisan config:clear
+
+  Khi nào thì không cần chạy ngrok?
+   * Nếu bạn chỉ cần test đến bước: Bấm thanh toán -> Chuyển sang trang VNPay -> Nhập thẻ -> Thanh toán thành công -> Hiện trang kết quả. (Chỉ cần Return URL).
+   * Nếu bạn cần hệ thống Tự động cập nhật trạng thái đơn hàng trong Database ngay cả khi người dùng tắt trình duyệt (Đây là chức năng IPN). Lúc này bắt buộc
+     phải có ngrok đang chạy.
+
+  Lời khuyên: Trong quá trình test thanh toán, hãy luôn giữ cửa sổ Terminal chạy ngrok và php artisan serve mở song song, đừng tắt chúng đi cho đến khi bạn hoàn
+  thành việc chụp ảnh giao diện thành công đơn hàng cho báo cáo.
+
+
+  Tôi đã sửa code dự án của bạn xong rồi nhé! Bây giờ bạn có thể dùng chung cả ngrok và localhost mà không bị lỗi.
+
+  Các thay đổi đã thực hiện:
+   1. Trong VNPayController.php: Đã sửa đoạn gán vnp_ReturnUrl. Bây giờ hệ thống sẽ tự động ghép tên miền bạn đang truy cập (localhost hoặc ngrok) với đuôi
+      /vnpay-return.
+   2. Trong AppServiceProvider.php: Đã thêm cấu hình để nếu Laravel phát hiện truy cập qua domain ngrok-free.app, nó sẽ tự động ép dùng kết nối bảo mật https://.
+      Điều này giúp tránh bị VNPay từ chối giao dịch do lỗi tên miền.
+
+  Bước cuối cùng bạn cần làm:
+  Mở file .env của dự án và đổi dòng VNP_RETURN_URL (nếu có) thành như sau:
+
+   1 VNP_RETURN_URL=/vnpay-return
+
+  Sau khi sửa file .env, bạn hãy chạy lệnh xóa cache cấu hình:
+
+   1 php artisan config:clear
+
+  Từ bây giờ:
+   - Khi bật Web lên, bạn có thể tự do gõ http://localhost:8000 trên trình duyệt để lập trình và test bình thường.
+   - Khi cần test tự động thanh toán, bạn chỉ việc bật ngrok http 8000, lấy đường link của ngrok dán lên trình duyệt. Mọi thứ sẽ diễn ra trơn tru mà không cần

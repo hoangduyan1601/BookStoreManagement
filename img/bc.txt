@@ -1,56 +1,56 @@
-# MẪU BÁO CÁO CHI TIẾT MODULE DỰ ÁN
-DỰ ÁN: NHÀ SÁCH LUXURY
+# BÁO CÁO CHI TIẾT KỸ THUẬT & LUỒNG HOẠT ĐỘNG DỰ ÁN NHÀ SÁCH LUXURY
+
+Dự án Nhà Sách Luxury tích hợp các công nghệ hiện đại. Dưới đây là giải thích chi tiết về luồng xử lý (Workflow) của các module trọng tâm.
 
 ---
 
-## MODULE VÍ DỤ: QUẢN LÝ SẢN PHẨM (PRODUCT MANAGEMENT)
+## 1. AI CHATBOT (GEMINI AI ASSISTANT)
+**Luồng hoạt động (Activity Flow):**
+1. **Tiếp nhận:** Người dùng nhập tin nhắn vào khung chat.
+2. **Thu thập ngữ cảnh (Context Gathering):**
+   - Hệ thống truy vấn Database lấy: Tên khách hàng, lịch sử đơn hàng, các sách khách đã yêu thích (Wishlist).
+   - Tra cứu dữ liệu sản phẩm liên quan (RAG): Lấy thông tin sách mới, sách đang giảm giá.
+3. **Phân tích cảm xúc (Sentiment Analysis):** Kiểm tra xem khách hàng có đang bực bội hay không (dựa trên các từ khóa tiêu cực).
+4. **Gửi yêu cầu đến AI:** Tổng hợp "Ngữ cảnh + Lịch sử + Tin nhắn mới" thành một Prompt gửi đến Google Gemini API.
+5. **Xử lý phản hồi:** AI trả về văn bản. Hệ thống lọc và "đóng gói" các mã sản phẩm thành các Card giao diện (có ảnh, giá, nút mua hàng).
+6. **Hiển thị:** Phản hồi xuất hiện trên khung chat với giao diện chuyên nghiệp.
 
-### 1. Giới thiệu Module
-- **Chức năng:** Cho phép quản trị viên thêm, sửa, xóa và theo dõi danh sách sách trong hệ thống. Khách hàng có thể xem thông tin chi tiết của sách.
-- **Đối tượng sử dụng:** Admin (Quản lý), Khách hàng (Xem).
+## 2. THANH TOÁN ONLINE VNPAY & XỬ LÝ IPN
+**Luồng hoạt động (Activity Flow):**
+1. **Khởi tạo:** Khách hàng nhấn "Thanh toán VNPay". Backend tính tổng tiền và tạo mã đơn hàng duy nhất.
+2. **Tạo Link thanh toán:**
+   - Hệ thống gom các tham số (Số tiền, Mã đơn, IP, ReturnURL).
+   - Sử dụng thuật toán SHA512 phối hợp với `HashSecret` để tạo ra chữ ký bảo mật (vnp_SecureHash).
+   - Chuyển hướng người dùng sang Cổng VNPay.
+3. **Giao dịch:** Khách hàng thực hiện thanh toán trên môi trường VNPay (Nhập thẻ/Quét QR).
+4. **Phản hồi song song (Double Verification):**
+   - **Luồng 1 (Return URL):** VNPay đưa người dùng về trang "Thanh toán thành công" trên website để hiển thị thông báo UI.
+   - **Luồng 2 (IPN URL - Quan trọng):** Server VNPay gọi trực tiếp vào Server Website. Website kiểm tra lại chữ ký và số tiền. Nếu khớp, tự động cập nhật Database (Trạng thái: Đã thanh toán, Số tiền đã trả).
+   - *Lưu ý:* Luồng IPN giúp đảm bảo đơn hàng vẫn được cập nhật ngay cả khi khách hàng mất mạng hoặc đóng trình duyệt sau khi trả tiền.
 
-### 2. Thiết kế Cơ sở dữ liệu (Database)
-Các bảng liên quan trực tiếp:
-- `sanpham`: Lưu thông tin chính (Tên, giá, số lượng...).
-- `danhmuc`: Liên kết loại sách (Khóa ngoại `MaDM`).
-- `chi_tiet_san_pham`: Lưu mô tả kỹ thuật, số trang, kích thước.
-- `sanpham_tacgia`: Bảng trung gian lưu quan hệ với tác giả.
+## 3. ANALYTICS DASHBOARD (PHÂN TÍCH DOANH THU)
+**Luồng hoạt động (Activity Flow):**
+1. **Yêu cầu:** Admin truy cập trang Dashboard.
+2. **Truy vấn dữ liệu (Data Aggregation):**
+   - Backend thực hiện các lệnh `Sum`, `Count`, `GroupBy` trên bảng `donhang` và `chitietdonhang`.
+   - Lọc các đơn hàng theo thời gian (12 tháng gần nhất).
+3. **Chuyển đổi:** Dữ liệu thô từ Database được định dạng thành mảng JSON (Labels và Data).
+4. **Trực quan hóa:** Thư viện **Chart.js** nhận JSON và vẽ lên biểu đồ cột/đường.
+5. **Kết xuất (Export):** Nếu Admin nhấn "Xuất báo cáo", hệ thống khởi tạo một `Stream` dữ liệu, định dạng HTML/Excel và đẩy về trình duyệt dưới dạng file tải về (.xls).
 
-### 3. Cấu hình Router (`routes/web.php`)
-Các đường dẫn chính cho module này:
-```php
-// Phía Admin
-Route::resource('admin/sanpham', AdminSanPhamController::class);
+## 4. QUY TRÌNH XỬ LÝ ĐƠN HÀNG & KHO (E-COMMERCE)
+**Luồng hoạt động (Activity Flow):**
+1. **Đặt hàng:** Khách hàng chốt giỏ hàng -> Hệ thống tạo bản ghi `donhang` (Trạng thái: Chờ xác nhận).
+2. **Kiểm tra kho:** Hệ thống kiểm tra số lượng tồn (`SoLuong`) trong bảng `sanpham`.
+3. **Xác nhận:** Admin duyệt đơn -> Hệ thống tự động trừ số lượng trong kho và gửi Email/Thông báo cho khách hàng.
+4. **Hoàn tất:** Khi trạng thái chuyển sang "Đã giao", doanh thu mới chính thức được ghi nhận vào hệ thống báo cáo.
 
-// Phía Khách hàng
-Route::get('/san-pham', [SanPhamController::class, 'index'])->name('sanpham.index');
-Route::get('/san-pham/{id}', [SanPhamController::class, 'detail'])->name('sanpham.detail');
-```
-
-### 4. Xử lý Logic (Controller)
-File: `app/Http/Controllers/Admin/AdminSanPhamController.php`
-- `index()`: Lấy danh sách sản phẩm phân trang và truyền ra View.
-- `store()`: Nhận dữ liệu từ Form, validate hình ảnh, lưu vào bảng `sanpham` và `chi_tiet_san_pham`.
-- `update()`: Cập nhật thông tin sản phẩm và xử lý thay đổi ảnh cũ/mới.
-- `destroy()`: Xóa sản phẩm và các ràng buộc liên quan (ảnh phụ, chi tiết).
-
-### 5. Giao diện (View - Blade Template)
-Thư mục: `resources/views/admin/sanpham/`
-- `index.blade.php`: Hiển thị bảng danh sách sản phẩm với các nút chức năng (Sửa/Xóa).
-- `create.blade.php`: Form nhập liệu sử dụng `enctype="multipart/form-data"` để upload ảnh.
-- `edit.blade.php`: Đổ dữ liệu cũ vào Form để người dùng chỉnh sửa.
-
-### 6. Mô tả luồng hoạt động (Sequence)
-1. Admin truy cập vào menu "Sản phẩm".
-2. Router gọi hàm `index()` của `AdminSanPhamController`.
-3. Controller truy vấn Model `SanPham` lấy dữ liệu.
-4. Dữ liệu được trả về View `admin.sanpham.index` để hiển thị lên trình duyệt.
+## 5. TÌM KIẾM THÔNG MINH (SMART SEARCH)
+**Luồng hoạt động (Activity Flow):**
+1. **Nhập liệu:** Người dùng gõ từ khóa (ví dụ: "dac nhan tam").
+2. **Xử lý chuỗi:** Hệ thống loại bỏ các ký tự đặc biệt, chuẩn hóa chuỗi.
+3. **Truy vấn:** Sử dụng `LIKE %keyword%` tìm kiếm đồng thời trên `TenSP`, `MoTa` và tên `TacGia`.
+4. **Gợi ý nhanh:** Trả về kết quả JSON để hiển thị danh sách gợi ý ngay dưới thanh tìm kiếm (Live Suggestion).
 
 ---
-
-## GỢI Ý CÁC MODULE KHÁC CẦN TRÌNH BÀY TƯƠNG TỰ:
-1. Module Đăng nhập & Phân quyền (Auth).
-2. Module Giỏ hàng & Thanh toán (Cart & Checkout).
-3. Module Quản lý Đơn hàng (Order Management).
-4. Module Khuyến mãi (Promotion).
-5. Module Báo cáo Doanh thu (Statistics).
+*Tài liệu này giải thích cơ chế vận hành logic bên dưới lớp giao diện của hệ thống Nhà Sách Luxury.*
