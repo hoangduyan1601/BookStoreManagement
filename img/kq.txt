@@ -1,0 +1,48 @@
+PHẦN 3.2: ẢNH CHỤP GIAO DIỆN WEB (KẾT QUẢ THỰC HIỆN)
+---------------------------------------------------------
+Dưới đây là danh sách các màn hình cần chụp ảnh minh họa cho báo cáo, sắp xếp theo trình tự trải nghiệm người dùng.
+
+I. NHÓM TÀI KHOẢN & XÁC THỰC
+1. Trang Đăng nhập: 
+   - Mô tả: Giao diện cho phép người dùng nhập TenDangNhap và MatKhau. Có liên kết đến trang Đăng ký và Quên mật khẩu.
+2. Trang Đăng ký:
+   - Mô tả: Biểu mẫu đăng ký thành viên mới bao gồm các trường: Họ tên, Email, Số điện thoại, Địa chỉ và Mật khẩu.
+
+II. NHÓM GIAO DIỆN CÔNG KHAI (DÀNH CHO KHÁCH HÀNG)
+3. Trang Chủ:
+   - Mô tả: Hiển thị Banner khuyến mãi, danh sách Sách mới nhất, Sách bán chạy và menu danh mục.
+4. Trang Danh mục Sản phẩm:
+   - Mô tả: Hiển thị danh sách sách theo từng thể loại, có bộ lọc theo giá và tìm kiếm.
+5. Trang Chi tiết Sản phẩm:
+   - Mô tả: Thông tin chi tiết về cuốn sách (giá, tác giả, mô tả, thông số kỹ thuật). Hiển thị các sản phẩm cùng thể loại và phần bình luận/đánh giá.
+6. Trang Tin tức / Blog:
+   - Mô tả: Danh sách các bài viết chia sẻ về sách, tin tức bookstore.
+
+III. NHÓM CHỨC NĂNG NGƯỜI DÙNG (SAU KHI ĐĂNG NHẬP)
+7. Trang Giỏ hàng:
+   - Mô tả: Danh sách các sách đã chọn, cho phép thay đổi số lượng, xóa sản phẩm và áp dụng mã giảm giá.
+8. Trang Thanh toán:
+   - Mô tả: Nhập thông tin giao hàng, chọn phương thức thanh toán (COD hoặc VNPay) và hiển thị tổng tiền sau giảm giá.
+9. Trang Lịch sử Đơn hàng:
+   - Mô tả: Khách hàng theo dõi trạng thái các đơn hàng đã đặt (Chờ duyệt, Đang giao, Đã giao).
+10. Giao diện Trợ lý ảo AI (Gemini):
+    - Mô tả: Cửa sổ chat nơi khách hàng đặt câu hỏi và nhận tư vấn về sách từ AI.
+
+IV. NHÓM QUẢN TRỊ (ADMIN DASHBOARD)
+11. Trang Tổng quan (Dashboard):
+    - Mô tả: Biểu đồ thống kê doanh thu theo tháng/năm, số lượng đơn hàng mới và thông báo hệ thống.
+12. Quản lý Sản phẩm (CRUD):
+    - Mô tả: Danh sách sách hiện có. Minh họa các nút Thêm mới, Sửa thông tin và Xóa sách.
+13. Quản lý Đơn hàng:
+    - Mô tả: Danh sách tất cả đơn hàng từ khách hàng. Chức năng xác nhận đơn hàng hoặc cập nhật trạng thái giao hàng.
+14. Quản lý Danh mục/Tác giả/NXB:
+    - Mô tả: Các giao diện quản lý dữ liệu nền của hệ thống.
+15. Quản lý Nhập hàng:
+    - Mô tả: Giao diện tạo phiếu nhập hàng từ nhà cung cấp để cập nhật số lượng tồn kho.
+16. Quản lý Khuyến mãi:
+    - Mô tả: Thiết lập các chương trình giảm giá theo phần trăm hoặc mã giảm giá cụ thể.
+
+LƯU Ý KHI CHỤP ẢNH:
+- Nên sử dụng dữ liệu thật (tên sách thật, giá thật) để ảnh trông chuyên nghiệp.
+- Nếu trang quá dài, có thể dùng tính năng "Capture full size" của trình duyệt để lấy toàn bộ trang.
+- Đảm bảo ảnh rõ nét, không bị nhòe.

@@ -1,82 +1,234 @@
-# THIẾT KẾ CƠ SỞ DỮ LIỆU & SƠ ĐỒ LỚP - DỰ ÁN NHÀ SÁCH LUXURY
+DANH SÁCH CÁC BẢNG TRONG DATABASE
+----------------------------------
+1. danhmuc
+2. nhaxuatban
+3. tacgia
+4. nhacungcap
+5. taikhoan
+6. doanhthu
+7. khachhang
+8. khuyenmai
+9. sanpham
+10. sanpham_tacgia
+11. hinhanhsanpham
+12. donhang
+13. chitietdonhang
+14. giohang
+15. chitietgiohang
+16. lichsunhaphang
+17. chitietnhaphang
+18. thongbao
+19. baiviet
+20. yeuthich
+21. chi_tiet_san_pham
+22. chat_messages
+23. users
 
-## I. THIẾT KẾ CƠ SỞ DỮ LIỆU (DATABASE DESIGN - ERD)
+CHI TIẾT CÁC BẢNG DATABASE
+--------------------------
 
-Dưới đây là danh sách 20 bảng trong hệ thống được đánh số thứ tự:
+1. Bảng danhmuc (Danh mục sản phẩm)
+STT	| Tên cột	| Kiểu dữ liệu	| Ghi chú
+1	| MaDM	| int(10) unsigned	| Khóa chính, tự tăng
+2	| TenDM	| varchar(255)	| Tên danh mục
+3	| MoTa	| text	| Mô tả danh mục
 
-### 1. Nhóm Danh mục & Sản phẩm
-1. **danhmuc**: Lưu thông tin các loại sách (Văn học, Kinh tế, Kỹ năng...).
-   - MaDM (PK), TenDM, MoTa
-2. **nhaxuatban**: Thông tin các nhà xuất bản.
-   - MaNXB (PK), TenNXB, DiaChi, SDT, Email
-3. **tacgia**: Thông tin tác giả sách.
-   - MaTacGia (PK), TenTacGia, NgaySinh, QuocTich, MoTa, AnhDaiDien
-4. **sanpham**: Thông tin chính của sách.
-   - MaSP (PK), TenSP, DonGia, SoLuong, MoTa, HinhAnh, MaDM (FK), MaNXB (FK), NgayCapNhat, SoLuongDaBan
-5. **chi_tiet_san_pham**: Thông tin kỹ thuật bổ sung cho sách.
-   - MaSP (PK, FK), SoTrang, KichThuoc, LoaiBia, TrongLuong, NamXuatBan, NoiDungChiTiet
-6. **hinhanhsanpham**: Lưu trữ nhiều hình ảnh cho một sản phẩm.
-   - MaHinh (PK), MaSP (FK), DuongDan, LaAnhChinh
-7. **sanpham_tacgia**: Bảng trung gian nối Sản phẩm và Tác giả (Quan hệ N-N).
-   - MaSP (PK, FK), MaTacGia (PK, FK), VaiTro
+2. Bảng nhaxuatban (Nhà xuất bản)
+STT	| Tên cột	| Kiểu dữ liệu	| Ghi chú
+1	| MaNXB	| int(10) unsigned	| Khóa chính, tự tăng
+2	| TenNXB	| varchar(255)	| Tên nhà xuất bản
+3	| DiaChi	| varchar(255)	| Địa chỉ NXB
+4	| SDT	| varchar(255)	| Số điện thoại
+5	| Email	| varchar(255)	| Email liên hệ
 
-### 2. Nhóm Người dùng & Khách hàng
-8. **taikhoan**: Quản lý thông tin đăng nhập và phân quyền.
-   - MaTK (PK), TenDangNhap (Unique), MatKhau, VaiTro, TrangThai
-9. **khachhang**: Thông tin định danh của khách hàng.
-   - MaKH (PK), HoTen, Email, SDT, DiaChi, NgayDangKy, MaTK (FK)
-10. **yeuthich**: Danh sách sản phẩm khách hàng đánh dấu yêu thích.
-    - MaKH (PK, FK), MaSP (PK, FK), NgayThem
+3. Bảng tacgia (Tác giả)
+STT	| Tên cột	| Kiểu dữ liệu	| Ghi chú
+1	| MaTacGia	| int(10) unsigned	| Khóa chính, tự tăng
+2	| TenTacGia	| varchar(255)	| Tên tác giả
+3	| NgaySinh	| date	| Ngày sinh
+4	| QuocTich	| varchar(255)	| Quốc tịch
+5	| MoTa	| text	| Tiểu sử tác giả
+6	| AnhDaiDien	| varchar(255)	| Đường dẫn ảnh đại diện
 
-### 3. Nhóm Giao dịch & Đơn hàng
-11. **donhang**: Thông tin tổng quát của một đơn hàng.
-    - MaDH (PK), NgayDat, TongTien, TrangThai, PhuongThucThanhToan, MaKH (FK), DiaChiGiaoHang, MaKM (FK), SoTienGiam
-12. **chitietdonhang**: Danh sách các sản phẩm và số lượng trong đơn hàng.
-    - MaDH (PK, FK), MaSP (PK, FK), SoLuong, DonGia, ThanhTien
-13. **giohang**: Giỏ hàng hiện tại của khách hàng.
-    - MaGH (PK), MaKH (FK), NgayTao
-14. **chitietgiohang**: Các sản phẩm đang nằm trong giỏ hàng.
-    - MaGH (PK, FK), MaSP (PK, FK), SoLuong, DonGiaTamTinh
+4. Bảng nhacungcap (Nhà cung cấp)
+STT	| Tên cột	| Kiểu dữ liệu	| Ghi chú
+1	| MaNCC	| int(10) unsigned	| Khóa chính, tự tăng
+2	| TenNCC	| varchar(255)	| Tên nhà cung cấp
+3	| SDT	| varchar(255)	| Số điện thoại
+4	| DiaChi	| varchar(255)	| Địa chỉ
+5	| Email	| varchar(255)	| Email liên hệ
 
-### 4. Nhóm Nhập hàng & Nhà cung cấp
-15. **nhacungcap**: Thông tin các đơn vị cung cấp sách.
-    - MaNCC (PK), TenNCC, SDT, DiaChi, Email
-16. **lichsunhaphang**: Quản lý các đợt nhập hàng về kho.
-    - MaNhap (PK), NgayNhap, MaNCC (FK), TongTienNhap
-17. **chitietnhaphang**: Chi tiết số lượng và giá vốn của từng sản phẩm khi nhập.
-    - MaNhap (PK, FK), MaSP (PK, FK), SoLuongNhap, DonGiaNhap
+5. Bảng taikhoan (Tài khoản hệ thống)
+STT	| Tên cột	| Kiểu dữ liệu	| Ghi chú
+1	| MaTK	| int(10) unsigned	| Khóa chính, tự tăng
+2	| TenDangNhap	| varchar(255)	| Tên đăng nhập, duy nhất
+3	| MatKhau	| varchar(255)	| Mật khẩu (đã mã hóa)
+4	| VaiTro	| varchar(255)	| Vai trò (admin, khách hàng,...)
+5	| TrangThai	| int(11)	| Trạng thái tài khoản (1: hoạt động)
 
-### 5. Nhóm Khác
-18. **khuyenmai**: Quản lý các mã giảm giá và chương trình ưu đãi.
-    - MaKM (PK), TenKM, PhanTramGiam, NgayBatDau, NgayKetThuc, DieuKien, LoaiKM, MaDM (FK), MaGiamGia
-19. **baiviet**: Tin tức, blog hoặc bài giới thiệu sách.
-    - MaBV (PK), TieuDe, Slug, TomTat, NoiDung, HinhAnh, NgayDang, TrangThai, MaTK (FK)
-20. **thongbao**: Gửi thông báo đến khách hàng.
-    - MaTB (PK), MaKH (FK), TieuDe, NoiDung, NgayGui, DaDoc
-21. **doanhthu**: Bảng tổng hợp số liệu báo cáo.
-    - MaBC (PK), Thang, Nam, TongDoanhThu, LoiNhuan
+6. Bảng doanhthu (Báo cáo doanh thu)
+STT	| Tên cột	| Kiểu dữ liệu	| Ghi chú
+1	| MaBC	| int(10) unsigned	| Khóa chính, tự tăng
+2	| Thang	| int(11)	| Tháng báo cáo
+3	| Nam	| int(11)	| Năm báo cáo
+4	| TongDoanhThu	| decimal(15,2)	| Tổng doanh thu
+5	| LoiNhuan	| decimal(15,2)	| Lợi nhuận
 
----
+7. Bảng khachhang (Khách hàng)
+STT	| Tên cột	| Kiểu dữ liệu	| Ghi chú
+1	| MaKH	| int(10) unsigned	| Khóa chính, tự tăng
+2	| HoTen	| varchar(255)	| Họ và tên khách hàng
+3	| Email	| varchar(255)	| Email khách hàng, duy nhất
+4	| SDT	| varchar(255)	| Số điện thoại
+5	| DiaChi	| varchar(255)	| Địa chỉ liên lạc
+6	| NgayDangKy	| datetime	| Ngày đăng ký tài khoản
+7	| MaTK	| int(10) unsigned	| Khóa ngoại (taikhoan)
 
-## II. SƠ ĐỒ LỚP (CLASS DIAGRAM - MODELS)
+8. Bảng khuyenmai (Chương trình khuyến mãi)
+STT	| Tên cột	| Kiểu dữ liệu	| Ghi chú
+1	| MaKM	| int(10) unsigned	| Khóa chính, tự tăng
+2	| TenKM	| varchar(255)	| Tên chương trình khuyến mãi
+3	| PhanTramGiam	| decimal(5,2)	| Phần trăm giảm giá
+4	| NgayBatDau	| datetime	| Ngày bắt đầu
+5	| NgayKetThuc	| datetime	| Ngày kết thúc
+6	| DieuKien	| text	| Điều kiện áp dụng
+7	| LoaiKM	| varchar(255)	| Loại khuyến mãi
+8	| MaDM	| int(10) unsigned	| Khóa ngoại (danhmuc)
+9	| DieuKienToiThieu| decimal(15,2)	| Giá trị đơn hàng tối thiểu
+10	| MaGiamGia	| varchar(255)	| Mã giảm giá (code)
 
-Các Model chính trong Laravel và các mối quan hệ (Relationships):
+9. Bảng sanpham (Sản phẩm/Sách)
+STT	| Tên cột	| Kiểu dữ liệu	| Ghi chú
+1	| MaSP	| int(10) unsigned	| Khóa chính, tự tăng
+2	| TenSP	| varchar(255)	| Tên sản phẩm
+3	| DonGia	| decimal(15,2)	| Đơn giá bán
+4	| SoLuong	| int(11)	| Số lượng tồn kho
+5	| MoTa	| text	| Mô tả chi tiết
+6	| HinhAnh	| varchar(255)	| Ảnh đại diện sản phẩm
+7	| MaDM	| int(10) unsigned	| Khóa ngoại (danhmuc)
+8	| MaNXB	| int(10) unsigned	| Khóa ngoại (nhaxuatban)
+9	| NgayCapNhat	| datetime	| Ngày cập nhật thông tin
+10	| SoLuongDaBan	| int(11)	| Tổng số lượng đã bán
 
-1. **Model SanPham**:
-   - `danhmuc()` (BelongsTo), `nhaxuatban()` (BelongsTo), `tacgias()` (BelongsToMany), `hinhanhsanpham()` (HasMany), `chiTiet()` (HasOne).
-2. **Model KhachHang**:
-   - `taiKhoan()` (BelongsTo), `donHangs()` (HasMany), `favorites()` (BelongsToMany).
-3. **Model TaiKhoan**:
-   - `khachHang()` (HasOne).
-4. **Model DonHang**:
-   - `khachHang()` (BelongsTo), `chiTietDonHangs()` (HasMany), `khuyenMai()` (BelongsTo).
-5. **Model GioHang**:
-   - `khachHang()` (BelongsTo), `chiTietGioHangs()` (HasMany).
+10. Bảng sanpham_tacgia (Quan hệ Sản phẩm - Tác giả)
+STT	| Tên cột	| Kiểu dữ liệu	| Ghi chú
+1	| MaSP	| int(10) unsigned	| Khóa ngoại (sanpham)
+2	| MaTacGia	| int(10) unsigned	| Khóa ngoại (tacgia)
+3	| VaiTro	| varchar(255)	| Vai trò của tác giả trong SP
 
----
+11. Bảng hinhanhsanpham (Hình ảnh chi tiết sản phẩm)
+STT	| Tên cột	| Kiểu dữ liệu	| Ghi chú
+1	| MaHinh	| int(10) unsigned	| Khóa chính, tự tăng
+2	| MaSP	| int(10) unsigned	| Khóa ngoại (sanpham)
+3	| DuongDan	| varchar(255)	| Đường dẫn file ảnh
+4	| LaAnhChinh	| tinyint(1)	| Có phải ảnh chính không
 
-## III. TỔNG KẾT MỐI QUAN HỆ CHÍNH
+12. Bảng donhang (Đơn hàng)
+STT	| Tên cột	| Kiểu dữ liệu	| Ghi chú
+1	| MaDH	| int(10) unsigned	| Khóa chính, tự tăng
+2	| NgayDat	| datetime	| Ngày đặt hàng
+3	| TongTien	| decimal(15,2)	| Tổng giá trị đơn hàng
+4	| SoTienDaThanhToan| decimal(15,2)| Số tiền khách đã thanh toán
+5	| TrangThai	| varchar(255)	| Trạng thái (Chờ duyệt, Đang giao,...)
+6	| PhuongThucThanhToan| varchar(255)| VNPAY, COD, ...
+7	| MaKH	| int(10) unsigned	| Khóa ngoại (khachhang)
+8	| DiaChiGiaoHang| varchar(255)	| Địa chỉ nhận hàng
+9	| MaKM	| int(10) unsigned	| Khóa ngoại (khuyenmai)
+10	| SoTienGiam	| decimal(15,2)	| Số tiền được giảm giá
 
-- **Quan hệ 1 - 1**: (8-9) TaiKhoan - KhachHang; (4-5) SanPham - ChiTietSanPham.
-- **Quan hệ 1 - N**: (1-4) DanhMuc - SanPham; (9-11) KhachHang - DonHang; (11-12) DonHang - ChiTietDonHang.
-- **Quan hệ N - N**: (3-4) TacGia - SanPham qua bảng số (7); (9-4) KhachHang - SanPham qua bảng số (10).
+13. Bảng chitietdonhang (Chi tiết đơn hàng)
+STT	| Tên cột	| Kiểu dữ liệu	| Ghi chú
+1	| MaDH	| int(10) unsigned	| Khóa ngoại (donhang)
+2	| MaSP	| int(10) unsigned	| Khóa ngoại (sanpham)
+3	| SoLuong	| int(11)	| Số lượng mua
+4	| DonGia	| decimal(15,2)	| Đơn giá tại thời điểm mua
+5	| ThanhTien	| decimal(15,2)	| Thành tiền
+
+14. Bảng giohang (Giỏ hàng)
+STT	| Tên cột	| Kiểu dữ liệu	| Ghi chú
+1	| MaGH	| int(10) unsigned	| Khóa chính, tự tăng
+2	| MaKH	| int(10) unsigned	| Khóa ngoại (khachhang)
+3	| NgayTao	| datetime	| Ngày tạo giỏ hàng
+
+15. Bảng chitietgiohang (Chi tiết giỏ hàng)
+STT	| Tên cột	| Kiểu dữ liệu	| Ghi chú
+1	| MaGH	| int(10) unsigned	| Khóa ngoại (giohang)
+2	| MaSP	| int(10) unsigned	| Khóa ngoại (sanpham)
+3	| SoLuong	| int(11)	| Số lượng trong giỏ
+4	| DonGiaTamTinh| decimal(15,2)	| Đơn giá tại thời điểm thêm vào giỏ
+
+16. Bảng lichsunhaphang (Lịch sử nhập hàng)
+STT	| Tên cột	| Kiểu dữ liệu	| Ghi chú
+1	| MaNhap	| int(10) unsigned	| Khóa chính, tự tăng
+2	| NgayNhap	| datetime	| Ngày nhập hàng
+3	| MaNCC	| int(10) unsigned	| Khóa ngoại (nhacungcap)
+4	| TongTienNhap	| decimal(15,2)	| Tổng tiền nhập hàng
+
+17. Bảng chitietnhaphang (Chi tiết nhập hàng)
+STT	| Tên cột	| Kiểu dữ liệu	| Ghi chú
+1	| MaNhap	| int(10) unsigned	| Khóa ngoại (lichsunhaphang)
+2	| MaSP	| int(10) unsigned	| Khóa ngoại (sanpham)
+3	| SoLuongNhap	| int(11)	| Số lượng nhập
+4	| DonGiaNhap	| decimal(15,2)	| Đơn giá nhập
+
+18. Bảng thongbao (Thông báo)
+STT	| Tên cột	| Kiểu dữ liệu	| Ghi chú
+1	| MaTB	| int(10) unsigned	| Khóa chính, tự tăng
+2	| MaKH	| int(10) unsigned	| Khóa ngoại (khachhang)
+3	| TieuDe	| varchar(255)	| Tiêu đề thông báo
+4	| NoiDung	| text	| Nội dung thông báo
+5	| NgayGui	| datetime	| Ngày gửi thông báo
+6	| TrangThaiDoc	| tinyint(1)	| Đã đọc hay chưa
+7	| LoaiTB	| varchar(255)	| Phân loại thông báo
+8	| LienKet	| varchar(255)	| Đường dẫn liên kết khi click
+9	| DaDoc	| tinyint(1)	| Trạng thái đọc (trùng lắp trường trên?)
+
+19. Bảng baiviet (Tin tức/Blog)
+STT	| Tên cột	| Kiểu dữ liệu	| Ghi chú
+1	| MaBV	| int(10) unsigned	| Khóa chính, tự tăng
+2	| TieuDe	| varchar(255)	| Tiêu đề bài viết
+3	| Slug	| varchar(255)	| Đường dẫn thân thiện
+4	| TomTat	| text	| Tóm tắt bài viết
+5	| NoiDung	| longtext	| Nội dung chi tiết
+6	| HinhAnh	| varchar(255)	| Ảnh bìa bài viết
+7	| NgayDang	| datetime	| Ngày đăng bài
+8	| TrangThai	| tinyint(1)	| Trạng thái hiển thị (1: Hiện)
+9	| MaTK	| int(10) unsigned	| Khóa ngoại (taikhoan) - Tác giả bài viết
+
+20. Bảng yeuthich (Sản phẩm yêu thích)
+STT	| Tên cột	| Kiểu dữ liệu	| Ghi chú
+1	| MaKH	| int(10) unsigned	| Khóa ngoại (khachhang)
+2	| MaSP	| int(10) unsigned	| Khóa ngoại (sanpham)
+3	| NgayThem	| datetime	| Ngày thêm vào danh sách yêu thích
+
+21. Bảng chi_tiet_san_pham (Thông số kỹ thuật sách)
+STT	| Tên cột	| Kiểu dữ liệu	| Ghi chú
+1	| MaSP	| int(10) unsigned	| Khóa ngoại (sanpham), Khóa chính
+2	| SoTrang	| int(11)	| Số trang của sách
+3	| KichThuoc	| varchar(255)	| Kích thước (DxR)
+4	| LoaiBia	| varchar(255)	| Bìa cứng, bìa mềm...
+5	| TrongLuong	| int(11)	| Trọng lượng (gram)
+6	| NamXuatBan	| int(11)	| Năm xuất bản thực tế
+7	| NoiDungChiTiet| longtext	| Nội dung tóm tắt/giới thiệu sách
+
+22. Bảng chat_messages (Tin nhắn hỗ trợ AI/Admin)
+STT	| Tên cột	| Kiểu dữ liệu	| Ghi chú
+1	| id	| bigint(20) unsigned	| Khóa chính, tự tăng
+2	| MaKH	| int(11)	| Khóa ngoại (khachhang) nếu có
+3	| session_id	| varchar(255)	| ID phiên cho khách vãng lai
+4	| message	| text	| Nội dung tin nhắn
+5	| sender	| enum('user','ai','admin')| Người gửi
+6	| is_read	| tinyint(1)	| Đã đọc hay chưa
+7	| created_at	| timestamp	| Thời gian gửi
+8	| updated_at	| timestamp	| Thời gian cập nhật
+
+23. Bảng users (Tài khoản Laravel chuẩn)
+STT	| Tên cột	| Kiểu dữ liệu	| Ghi chú
+1	| id	| bigint(20) unsigned	| Khóa chính, tự tăng
+2	| name	| varchar(255)	| Tên người dùng
+3	| email	| varchar(255)	| Email người dùng
+4	| email_verified_at| timestamp	| Thời gian xác thực email
+5	| password	| varchar(255)	| Mật khẩu (hash)
+6	| remember_token| varchar(100)	| Token ghi nhớ đăng nhập
+7	| created_at	| timestamp	| Thời gian tạo
+8	| updated_at	| timestamp	| Thời gian cập nhật

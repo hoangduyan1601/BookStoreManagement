@@ -18,7 +18,10 @@ class VNPayController extends Controller
         $order = DonHang::findOrFail($orderId);
         
         $vnp_Url = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
-        $vnp_Returnurl = route('vnpay.return');
+        // Lấy return URL từ env, ưu tiên lấy root domain hiện tại (dù là localhost hay ngrok)
+        $returnUrlPath = env('VNP_RETURN_URL', '/vnpay-return');
+        $vnp_Returnurl = str_starts_with($returnUrlPath, 'http') ? $returnUrlPath : url($returnUrlPath);
+        
         $vnp_TmnCode = "QRCLDBHC"; // config('services.vnpay.tmn_code')
         $vnp_HashSecret = "RF4CVN1HQL9RY8A1HRS3QX1ENYVQK0ZW"; // config('services.vnpay.hash_secret')
 
