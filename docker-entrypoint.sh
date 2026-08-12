@@ -29,9 +29,16 @@ chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 # Create storage symlink
 php artisan storage:link --force || true
 
-# Run database migrations & seeders
-echo "Running database migrations and seeders..."
-php artisan migrate --force --seed || true
+# Run database migrations
+echo "Running database migrations..."
+php artisan migrate --force || true
+
+# Run seeders ONLY ONCE on initial deployment to prevent duplicate data on restarts
+if [ ! -f "/var/www/html/storage/seeded.flag" ]; then
+    echo "First startup detected: seeding database..."
+    php artisan db:seed --force || true
+    touch /var/www/html/storage/seeded.flag || true
+fi
 
 # Optimize Laravel cache
 php artisan config:cache || true
