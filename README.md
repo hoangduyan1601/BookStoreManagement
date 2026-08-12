@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # 📚 Hệ Thống Quản Lý Cửa Hàng Sách (BMS)
 ### Dự án Kết thúc Học phần: Chuyên đề 1 - Lập trình Framework (Laravel)
 
@@ -75,7 +74,4 @@ Dự án được xây dựng dựa trên mô hình quan hệ thực thể (ERD)
 
 ---
 
-© 2026 **Nhóm 2** - Đại học [Tên trường của bạn]. Toàn bộ mã nguồn được phát triển cho mục đích giáo dục và nghiên cứu.
-=======
-# BookStoreManagement
->>>>>>> main
+© 2026 **Nhóm 2** - Đại học. Toàn bộ mã nguồn được phát triển cho mục đích giáo dục và nghiên cứu.

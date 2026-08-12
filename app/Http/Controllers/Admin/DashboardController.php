@@ -32,7 +32,8 @@ class DashboardController extends BaseAdminController
             $thang = $date->format('Y-m');
             $labels[] = $date->format('m/Y');
             
-            $val = DonHang::where(DB::raw("DATE_FORMAT(NgayDat, '%Y-%m')"), $thang)
+            $val = DonHang::whereYear('NgayDat', $date->year)
+                ->whereMonth('NgayDat', $date->month)
                 ->whereIn('TrangThai', ['DaGiao', 'DangGiao'])
                 ->sum('TongTien');
                 
