@@ -15,11 +15,12 @@ class AdminNhaCungCapController extends Controller
 
         if ($search) {
             $query->where('TenNCC', 'LIKE', "%{$search}%")
-                  ->orWhere('SDT', 'LIKE', "%{$search}%")
-                  ->orWhere('Email', 'LIKE', "%{$search}%");
+                ->orWhere('SDT', 'LIKE', "%{$search}%")
+                ->orWhere('Email', 'LIKE', "%{$search}%");
         }
 
         $list = $query->paginate(10)->withQueryString();
+
         return view('admin.nhacungcap.index', compact('list', 'search'));
     }
 
@@ -42,6 +43,7 @@ class AdminNhaCungCapController extends Controller
     public function edit($id)
     {
         $ncc = NhaCungCap::findOrFail($id);
+
         return view('admin.nhacungcap.edit', compact('ncc'));
     }
 
@@ -68,9 +70,10 @@ class AdminNhaCungCapController extends Controller
             }
 
             $ncc->delete();
+
             return redirect()->route('admin.ncc.index')->with('success', 'Xóa nhà cung cấp thành công!');
         } catch (\Exception $e) {
-            return redirect()->route('admin.ncc.index')->with('error', 'Lỗi hệ thống: ' . $e->getMessage());
+            return redirect()->route('admin.ncc.index')->with('error', 'Lỗi hệ thống: '.$e->getMessage());
         }
     }
 }

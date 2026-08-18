@@ -1,77 +1,171 @@
-# 📚 Hệ Thống Quản Lý Cửa Hàng Sách (BMS)
-### Dự án Kết thúc Học phần: Chuyên đề 1 - Lập trình Framework (Laravel)
+# Bookstore Management System
 
----
+A Laravel 11 bookstore application covering catalog management, inventory, customer orders, promotions, notifications, and sandbox payment integrations. It combines a customer-facing Blade storefront with a role-protected administration area.
 
-## 📖 Giới Thiệu Dự Án
-Hệ thống Quản lý Cửa hàng Sách (Bookstore Management System - BMS) là một giải pháp quản trị doanh nghiệp (ERP) thu nhỏ dành cho các đại lý kinh doanh sách. Dự án được xây dựng trên nền tảng **Laravel 11**, tập trung vào tính toàn vẹn của dữ liệu, quy trình nghiệp vụ chặt chẽ và trải nghiệm người dùng tối ưu.
+## Project Status
 
----
+Portfolio project demonstrating Laravel backend development, relational database design, authentication, authorization, transaction-safe order processing, payment integration, and automated testing. The application is intended for learning and demonstration; production payment credentials are not included.
 
-## 👥 Đội Ngũ Thực Hiện (Nhóm 2)
-*   **Hoàng Duy An**: Phụ trách Kiến trúc hệ thống & Backend Core.
-*   **Vũ Đình Hoàn**: Phụ trách Giao diện người dùng (UI/UX) & Logic Nghiệp vụ.
+## Key Features
 
----
+- Product catalog with categories, publishers, authors, search, and product details
+- Session-based registration and authentication with admin/staff authorization
+- Persistent cart, favorites, checkout, promotions, and order tracking
+- Inventory receiving, order administration, revenue reporting, and customer management
+- VNPay sandbox flow and token-authenticated bank payment webhook
+- Transaction-safe inventory updates and idempotent bank webhook processing
+- Customer notifications, articles, and optional Gemini-powered support chat
 
-## 🛠 Nền Tảng Công Nghệ
-Hệ thống tận dụng các công nghệ hiện đại nhất trong hệ sinh thái PHP:
-*   **Core Framework**: Laravel 11.x (PHP 8.2+)
-*   **Database Engine**: MySQL / MariaDB
-*   **Frontend Stack**: Blade Template Engine, Vite Asset Bundling, Axios.
-*   **Security**: CSRF Protection, Password Hashing (Bcrypt), Laravel Sanctum.
-*   **Storage**: Local Driver with Symbolic Links for media management.
+## Tech Stack
 
----
+- Backend: PHP 8.2, Laravel 11, Eloquent ORM
+- Frontend: Blade, JavaScript, CSS, Vite 5, Axios
+- Database: SQLite for quick local setup; MySQL/MariaDB supported
+- Testing: PHPUnit 10 with Laravel feature tests
+- Deployment: Docker multi-stage build with Apache and PHP 8.2
 
-## 🚀 Các Phân Hệ Chức Năng Chính
+## Architecture
 
-### 1. Quản Trị Kho Hàng & Sản Phẩm
-*   **Quản lý Sách**: Hệ thống hóa thông tin theo Tác giả, Nhà xuất bản và Danh mục đa cấp.
-*   **Logistics**: Theo dõi lịch sử nhập hàng chi tiết, quản lý danh sách nhà cung cấp và số lượng tồn kho theo thời gian thực.
-
-### 2. Quản Lý Giao Dịch & Bán Hàng
-*   **🛒 Shopping Flow**: Quy trình từ Giỏ hàng -> Đặt hàng -> Xử lý đơn hàng hoàn chỉnh.
-*   **Quản lý Đơn hàng**: Theo dõi trạng thái đơn hàng và chi tiết các mặt hàng trong từng giao dịch.
-
-### 3. Tài Chính & Tiếp Thị
-*   **Báo cáo Doanh thu**: Tự động tổng hợp chỉ số kinh doanh theo chu kỳ.
-*   **Promotion**: Triển khai các mã khuyến mãi và chiến dịch giảm giá linh hoạt.
-
-### 4. Hệ Thống Người Dùng
-*   **Khách hàng**: Quản lý hồ sơ cá nhân và lịch sử mua hàng.
-*   **Xác thực**: Hệ thống tài khoản bảo mật cao, phân định rõ vai trò quản trị và người dùng cuối.
-
-### 5. Tích Hợp Thanh Toán Online
-*   **VNPay**: Tích hợp cổng thanh toán VNPay với quy trình chuyển hướng tự động và xử lý IPN (Instant Payment Notification) để cập nhật trạng thái đơn hàng thời gian thực.
-*   **Chuyển Khoản Tự Động**: Hỗ trợ quét mã QR VietQR và xử lý Webhook tự động xác nhận đơn hàng khi nhận được tiền.
-
----
-
-## 🔐 Cấu Hình Thanh Toán (VNPay)
-Để sử dụng chức năng thanh toán qua VNPay, bạn cần thêm các thông số sau vào tệp `.env`:
-```env
-VNP_TMN_CODE=your_tmn_code
-VNP_HASH_SECRET=your_hash_secret
-VNP_URL=https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
+```text
+Browser / Payment Provider
+           |
+     Routes + Middleware
+           |
+       Controllers
+           |
+   Services / Eloquent Models
+           |
+     SQLite or MySQL
 ```
 
----
+The project is a Laravel monolith. Controllers coordinate HTTP workflows, Eloquent models represent the domain and relationships, middleware protects administration routes, and `GeminiService` isolates the external AI integration. Checkout and payment flows use database transactions where multiple records must change together.
 
-## 🏗 Kiến Trúc Dữ Liệu
-Dự án được xây dựng dựa trên mô hình quan hệ thực thể (ERD) phức hợp với các Model lõi:
-- **Core Entities**: `SanPham`, `DanhMuc`, `TacGia`, `NhaXuatBan`.
-- **Business Logic**: `DonHang`, `ChiTietDonHang`, `LichSuNhapHang`, `DoanhThu`.
-- **Interaction**: `GioHang`, `KhuyenMai`, `ThongBao`.
+## Main Data Model
 
----
+The core tables are `sanpham` (products), `danhmuc`, `tacgia`, `nhaxuatban`, `khachhang`, `taikhoan`, `giohang`, `donhang`, and their detail/junction tables. Foreign keys protect most order, cart, inventory, and catalog relationships; composite primary keys prevent duplicate line items.
 
-## ⚙️ Thiết Lập Môi Trường
-1.  **Dependencies**: Thực hiện `composer install` và `npm install` để cài đặt các thư viện cần thiết.
-2.  **Environment**: Cấu hình tệp `.env` với các thông số kết nối Database chính xác.
-3.  **Migration & Seeding**: Chạy `php artisan migrate --seed` để thiết lập cấu trúc bảng và dữ liệu mẫu.
-4.  **Application Launch**: Sử dụng `php artisan serve` để khởi động ứng dụng và `npm run dev` cho quá trình biên dịch tài nguyên frontend.
+## Project Structure
 
----
+```text
+app/Http/Controllers/   HTTP and business workflow coordination
+app/Models/             Eloquent models and relationships
+app/Services/           External service integration
+database/migrations/    Versioned database schema
+database/seeders/       Demonstration data
+resources/views/        Blade storefront and admin views
+routes/                 Web and API endpoints
+tests/Feature/          End-to-end HTTP and security tests
+docs/                   Audit and interview notes
+```
 
-© 2026 **Nhóm 2** - Đại học. Toàn bộ mã nguồn được phát triển cho mục đích giáo dục và nghiên cứu.
+## Getting Started
+
+### Prerequisites
+
+- PHP 8.2+ with PDO SQLite (or PDO MySQL)
+- Composer 2
+- Node.js 20+ and npm
+
+### Installation
+
+```bash
+git clone <repository-url>
+cd BookStoreManagement
+composer install
+npm install
+cp .env.example .env
+php artisan key:generate
+```
+
+On Windows PowerShell, use `Copy-Item .env.example .env` instead of `cp`.
+
+### Database Setup
+
+SQLite is the default. Create `database/database.sqlite`, then run:
+
+```bash
+php artisan migrate --seed
+```
+
+For MySQL, set `DB_CONNECTION=mysql`, `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, and `DB_PASSWORD` before migrating.
+
+### Environment Variables
+
+Required core settings are documented in `.env.example`. Optional integrations use:
+
+- `GEMINI_API_KEY` for chatbot responses
+- `VNP_TMN_CODE`, `VNP_HASH_SECRET`, `VNP_URL`, `VNP_RETURN_URL` for VNPay sandbox
+- `PAYMENT_WEBHOOK_TOKEN` for the bank webhook (`Authorization: Bearer` or `Secure-Token`)
+
+Never commit real credentials. The VNPay credential formerly present in Git history must be rotated before enabling payments.
+
+### Run
+
+```bash
+php artisan serve
+npm run dev
+```
+
+Open `http://127.0.0.1:8000`. Seed data creates local demonstration accounts; their credentials are defined in `database/seeders/InitialDataSeeder.php` and must not be used outside a local demo.
+
+## Important Endpoints
+
+| Method | Endpoint | Purpose | Access |
+|---|---|---|---|
+| GET | `/san-pham` | Browse products | Public |
+| POST | `/register`, `/login` | Customer authentication | Public |
+| GET/POST | `/cart`, `/checkout` | Shopping and checkout | Authenticated |
+| GET | `/profile` | Orders and account profile | Authenticated |
+| `/admin/*` | Catalog, orders, inventory, reports | Admin/staff |
+| POST | `/api/payment/webhook` | Bank payment confirmation | Webhook token |
+| GET/POST | `/vnpay-ipn` | VNPay callback | VNPay signature |
+
+Use `php artisan route:list --except-vendor` for the complete route inventory.
+
+## Testing
+
+Tests use an in-memory SQLite database and do not modify the development database.
+
+```bash
+php artisan test
+npm run build
+```
+
+## Docker
+
+```bash
+docker build -t bookstore-management .
+docker run --rm -p 8080:8080 --env-file .env bookstore-management
+```
+
+Set `SEED_DATABASE=true` only for the first disposable demo deployment. Production startup fails when migrations fail instead of silently continuing.
+
+## Security and Reliability
+
+- Password hashing, session regeneration, CSRF protection, and role middleware
+- Customer ownership checks for order and notification resources
+- Environment-backed payment credentials and authenticated callbacks
+- Row-level stock locking during checkout to prevent overselling
+- Unique provider transaction references to make bank webhooks idempotent
+
+## Screenshots
+
+Screenshot slots are available under `docs/screenshots/`. Before publishing, capture these screens using non-sensitive demo data:
+
+- Storefront
+- Product details
+- Cart and checkout
+- Admin dashboard
+- Product management
+- Revenue reporting
+
+## Future Improvements
+
+- Extract checkout and payment state transitions into dedicated services if those workflows continue to grow
+- Add provider-specific webhook signature adapters when connecting a real bank service
+- Add API documentation if the application evolves beyond Blade clients
+- Add screenshots and a hosted demo
+
+## Author
+
+Originally developed by Hoàng Duy An and Vũ Đình Hoàn as a student project. Add the preferred GitHub profile links before publishing.

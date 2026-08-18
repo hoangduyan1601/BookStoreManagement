@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\TacGia;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
 class AdminTacGiaController extends Controller
 {
@@ -16,10 +15,11 @@ class AdminTacGiaController extends Controller
 
         if ($search) {
             $query->where('TenTacGia', 'LIKE', "%{$search}%")
-                  ->orWhere('QuocTich', 'LIKE', "%{$search}%");
+                ->orWhere('QuocTich', 'LIKE', "%{$search}%");
         }
 
         $list = $query->paginate(10)->withQueryString();
+
         return view('admin.tacgia.index', compact('list', 'search'));
     }
 
@@ -39,7 +39,7 @@ class AdminTacGiaController extends Controller
 
         if ($request->hasFile('anh')) {
             $file = $request->file('anh');
-            $filename = time() . '_' . $file->getClientOriginalName();
+            $filename = time().'_'.$file->getClientOriginalName();
             $file->move(public_path('assets/images/tacgia'), $filename);
             $data['AnhDaiDien'] = $filename;
         }
@@ -66,12 +66,12 @@ class AdminTacGiaController extends Controller
 
         if ($request->hasFile('anh')) {
             // Xóa ảnh cũ nếu có
-            if ($tacgia->AnhDaiDien && file_exists(public_path('assets/images/tacgia/' . $tacgia->AnhDaiDien))) {
-                unlink(public_path('assets/images/tacgia/' . $tacgia->AnhDaiDien));
+            if ($tacgia->AnhDaiDien && file_exists(public_path('assets/images/tacgia/'.$tacgia->AnhDaiDien))) {
+                unlink(public_path('assets/images/tacgia/'.$tacgia->AnhDaiDien));
             }
 
             $file = $request->file('anh');
-            $filename = time() . '_' . $file->getClientOriginalName();
+            $filename = time().'_'.$file->getClientOriginalName();
             $file->move(public_path('assets/images/tacgia'), $filename);
             $data['AnhDaiDien'] = $filename;
         }
@@ -85,21 +85,22 @@ class AdminTacGiaController extends Controller
     {
         try {
             $tacgia = TacGia::findOrFail($id);
-            
+
             // Kiểm tra xem tác giả có tác phẩm nào không
             if ($tacgia->sanphams()->exists()) {
                 return redirect()->route('admin.tacgia.index')->with('error', 'Không thể xóa tác giả này vì vẫn còn sản phẩm liên kết!');
             }
-            
+
             // Xóa ảnh
-            if ($tacgia->AnhDaiDien && file_exists(public_path('assets/images/tacgia/' . $tacgia->AnhDaiDien))) {
-                @unlink(public_path('assets/images/tacgia/' . $tacgia->AnhDaiDien));
+            if ($tacgia->AnhDaiDien && file_exists(public_path('assets/images/tacgia/'.$tacgia->AnhDaiDien))) {
+                @unlink(public_path('assets/images/tacgia/'.$tacgia->AnhDaiDien));
             }
 
             $tacgia->delete();
+
             return redirect()->route('admin.tacgia.index')->with('success', 'Xóa tác giả thành công!');
         } catch (\Exception $e) {
-            return redirect()->route('admin.tacgia.index')->with('error', 'Lỗi hệ thống: ' . $e->getMessage());
+            return redirect()->route('admin.tacgia.index')->with('error', 'Lỗi hệ thống: '.$e->getMessage());
         }
     }
 }

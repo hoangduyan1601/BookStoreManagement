@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\KhachHang;
 use App\Models\ThongBao;
 use Illuminate\Http\Request;
 
@@ -12,16 +13,16 @@ class AdminThongBaoController extends Controller
     {
         $search = $request->get('search');
         $type = $request->get('type');
-        
+
         $query = ThongBao::with('khachHang');
 
         if ($search) {
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('TieuDe', 'LIKE', "%{$search}%")
-                  ->orWhere('NoiDung', 'LIKE', "%{$search}%")
-                  ->orWhereHas('khachHang', function($sub) use ($search) {
-                      $sub->where('HoTen', 'LIKE', "%{$search}%");
-                  });
+                    ->orWhere('NoiDung', 'LIKE', "%{$search}%")
+                    ->orWhereHas('khachHang', function ($sub) use ($search) {
+                        $sub->where('HoTen', 'LIKE', "%{$search}%");
+                    });
             });
         }
 
@@ -30,11 +31,11 @@ class AdminThongBaoController extends Controller
         }
 
         $recent = $query->orderBy('NgayGui', 'desc')->paginate(10)->withQueryString();
-        
-        $ds_khach = \App\Models\KhachHang::whereHas('taiKhoan', function($q) {
+
+        $ds_khach = KhachHang::whereHas('taiKhoan', function ($q) {
             $q->where('TrangThai', 1);
         })->get();
-        
+
         return view('admin.thongbao.index', compact('recent', 'ds_khach', 'search', 'type'));
     }
 
@@ -56,12 +57,13 @@ class AdminThongBaoController extends Controller
         $data['TrangThaiDoc'] = false;
 
         if ($guiCho === 'all') {
-            $customers = \App\Models\KhachHang::all();
+            $customers = KhachHang::all();
             foreach ($customers as $kh) {
                 $item = $data;
                 $item['MaKH'] = $kh->MaKH;
                 ThongBao::create($item);
             }
+
             return redirect()->route('admin.thongbao.index')->with('success', 'Đã gửi thông báo cho tất cả khách hàng!');
         } else {
             $data['MaKH'] = $request->input('MaKH');
@@ -69,6 +71,7 @@ class AdminThongBaoController extends Controller
                 return back()->with('error', 'Vui lòng chọn khách hàng!');
             }
             ThongBao::create($data);
+
             return redirect()->route('admin.thongbao.index')->with('success', 'Gửi thông báo thành công!');
         }
     }
@@ -76,6 +79,7 @@ class AdminThongBaoController extends Controller
     public function edit($id)
     {
         $thongBao = ThongBao::findOrFail($id);
+
         return view('admin.thongbao.edit', compact('thongBao'));
     }
 
@@ -100,7 +104,7 @@ class AdminThongBaoController extends Controller
 
             return redirect()->route('admin.thongbao.index')->with('success', 'Xóa thông báo thành công!');
         } catch (\Exception $e) {
-            return redirect()->route('admin.thongbao.index')->with('error', 'Lỗi hệ thống khi xóa thông báo: ' . $e->getMessage());
+            return redirect()->route('admin.thongbao.index')->with('error', 'Lỗi hệ thống khi xóa thông báo: '.$e->getMessage());
         }
     }
 }

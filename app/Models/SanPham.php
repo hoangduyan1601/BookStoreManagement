@@ -7,7 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 class SanPham extends Model
 {
     protected $table = 'sanpham';
+
     protected $primaryKey = 'MaSP';
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -80,6 +82,7 @@ class SanPham extends Model
                 return $this->favorites()->where('khachhang.MaKH', $customer->MaKH)->exists();
             }
         }
+
         return false;
     }
 
@@ -89,7 +92,7 @@ class SanPham extends Model
         $now = now();
 
         // 1. Tìm khuyến mãi theo danh mục cụ thể của sản phẩm (LoaiKM là DanhMuc và khớp MaDM)
-        $kmDanhMuc = \App\Models\KhuyenMai::where('MaDM', $this->MaDM)
+        $kmDanhMuc = KhuyenMai::where('MaDM', $this->MaDM)
             ->where('LoaiKM', 'DanhMuc')
             ->where('NgayBatDau', '<=', $now)
             ->where('NgayKetThuc', '>=', $now)
@@ -97,7 +100,7 @@ class SanPham extends Model
             ->first();
 
         // 2. Tìm khuyến mãi áp dụng cho "Tất cả sản phẩm" (LoaiKM là 'TatCa')
-        $kmTatCa = \App\Models\KhuyenMai::where('LoaiKM', 'TatCa')
+        $kmTatCa = KhuyenMai::where('LoaiKM', 'TatCa')
             ->where('NgayBatDau', '<=', $now)
             ->where('NgayKetThuc', '>=', $now)
             ->orderBy('PhanTramGiam', 'desc')
@@ -114,6 +117,7 @@ class SanPham extends Model
         if ($km) {
             return $this->DonGia * (1 - $km->PhanTramGiam / 100);
         }
+
         return $this->DonGia;
     }
 }

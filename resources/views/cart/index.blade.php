@@ -317,6 +317,22 @@
             });
         };
 
+        const clearCartLink = document.querySelector('a[href="{{ route('cart.clear') }}"]');
+        clearCartLink?.addEventListener('click', async (event) => {
+            if (event.defaultPrevented) return;
+            event.preventDefault();
+
+            const response = await fetch("{{ route('cart.clear') }}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'text/html',
+                },
+            });
+
+            if (response.ok) window.location.reload();
+        });
+
         // Initialize immediately
         initCartPage();
     })();

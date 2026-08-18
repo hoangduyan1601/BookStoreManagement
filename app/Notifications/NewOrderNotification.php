@@ -3,7 +3,6 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
@@ -37,16 +36,16 @@ class NewOrderNotification extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-                    ->subject('🔔 Đơn hàng mới #' . $this->order->MaDH)
-                    ->greeting('Chào Admin,')
-                    ->line('Bạn vừa nhận được một đơn hàng mới từ hệ thống.')
-                    ->line('**Mã đơn hàng:** #' . $this->order->MaDH)
-                    ->line('**Khách hàng:** ' . $this->order->khachHang->HoTen)
-                    ->line('**Tổng tiền:** ' . number_format($this->order->TongTien, 0, ',', '.') . 'đ')
-                    ->line('**Phương thức thanh toán:** ' . $this->order->PhuongThucThanhToan)
-                    ->action('Xem chi tiết đơn hàng', route('admin.donhang.show', $this->order->MaDH))
-                    ->line('Vui lòng kiểm tra và xác nhận đơn hàng sớm nhất có thể.')
-                    ->line('Cảm ơn!');
+            ->subject('🔔 Đơn hàng mới #'.$this->order->MaDH)
+            ->greeting('Chào Admin,')
+            ->line('Bạn vừa nhận được một đơn hàng mới từ hệ thống.')
+            ->line('**Mã đơn hàng:** #'.$this->order->MaDH)
+            ->line('**Khách hàng:** '.$this->order->khachHang->HoTen)
+            ->line('**Tổng tiền:** '.number_format($this->order->TongTien, 0, ',', '.').'đ')
+            ->line('**Phương thức thanh toán:** '.$this->order->PhuongThucThanhToan)
+            ->action('Xem chi tiết đơn hàng', route('admin.donhang.show', $this->order->MaDH))
+            ->line('Vui lòng kiểm tra và xác nhận đơn hàng sớm nhất có thể.')
+            ->line('Cảm ơn!');
     }
 
     /**

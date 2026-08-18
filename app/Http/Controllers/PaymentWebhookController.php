@@ -2,108 +2,128 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\DonHang;
+use App\Models\PaymentTransaction;
 use App\Models\ThongBao;
+use App\Notifications\NewOrderNotification;
+use App\Notifications\OrderStatusNotification;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
-use App\Notifications\NewOrderNotification;
-use App\Notifications\OrderStatusNotification;
 
 class PaymentWebhookController extends Controller
 {
-    /**
-     * Xử lý Webhook từ các dịch vụ như Casso, SePay, PayOS
-     * Endpoint: /api/payment/webhook
-     */
     public function handle(Request $request)
     {
-        // 1. Kiểm tra Token bảo mật (Tùy chỉnh theo dịch vụ sử dụng)
-        // $secureToken = $request->header('Secure-Token');
-        // if ($secureToken !== config('services.payment.webhook_token')) {
-        //     return response()->json(['status' => 'error', 'message' => 'Unauthorized'], 401);
-        // }
-
-        $data = $request->all();
-        Log::info('Payment Webhook Received:', $data);
-
-        // Giả sử dữ liệu từ Casso (Cấu trúc phổ biến)
-        // $data['data'] là mảng các giao dịch mới
-        $transactions = $data['data'] ?? [$data]; 
-
-        $results = [];
-
-        foreach ($transactions as $transaction) {
-            $amount = $transaction['amount'] ?? 0;
-            $description = $transaction['description'] ?? ($transaction['content'] ?? '');
-            
-            // 2. Tìm mã đơn hàng từ nội dung chuyển khoản (Ví dụ: CK 123)
-            if (preg_match('/CK\s*(\d+)/i', $description, $matches)) {
-                $orderId = $matches[1];
-                $order = DonHang::with('khachHang')->find($orderId);
-
-                if ($order) {
-                    // 3. Kiểm tra số tiền (Cho phép sai số nhỏ nếu cần)
-                    if ($amount >= $order->TongTien) {
-                        
-                        if ($order->TrangThai === 'ChoThanhToan' || $order->TrangThai === 'ChoXacNhan') {
-                            DB::beginTransaction();
-                            try {
-                                // 4. Cập nhật trạng thái đơn hàng
-                                $order->update([
-                                    'TrangThai' => 'DaXacNhan',
-                                    'SoTienDaThanhToan' => $amount
-                                ]); // Chuyển sang Đã xác nhận
-
-                                // 5. Tạo thông báo cho khách hàng (Hệ thống)
-                                ThongBao::create([
-                                    'MaKH' => $order->MaKH,
-                                    'TieuDe' => 'Thanh toán thành công!',
-                                    'NoiDung' => "Đơn hàng #{$order->MaDH} đã được thanh toán tự động qua ngân hàng. Chúng tôi đang chuẩn bị giao hàng cho bạn.",
-                                    'NgayGui' => now(),
-                                    'TrangThaiDoc' => false,
-                                    'LoaiTB' => 'DonHang',
-                                    'LienKet' => "/profile"
-                                ]);
-
-                                // 6. Gửi EMAIL thông báo (Lúc này mới gửi cho đơn chuyển khoản)
-                                try {
-                                    // Cho Admin
-                                    Notification::route('mail', config('mail.from.address'))
-                                        ->notify(new NewOrderNotification($order->load('khachHang')));
-                                    
-                                    // Cho Khách hàng
-                                    Notification::route('mail', $order->khachHang->Email)
-                                        ->notify(new OrderStatusNotification($order));
-                                } catch (\Exception $e) {
-                                    Log::error("Email error for Order #{$orderId}: " . $e->getMessage());
-                                }
-
-                                DB::commit();
-                                $results[] = "Order #{$orderId} marked as PAID and Notified.";
-                            } catch (\Exception $e) {
-                                DB::rollBack();
-                                Log::error("Webhook error for Order #{$orderId}: " . $e->getMessage());
-                                $results[] = "Error processing Order #{$orderId}.";
-                            }
-                        } else {
-                            $results[] = "Order #{$orderId} already processed (Status: {$order->TrangThai}).";
-                        }
-                    } else {
-                        $results[] = "Amount mismatch for Order #{$orderId}. Expected {$order->TongTien}, got {$amount}.";
-                    }
-                } else {
-                    $results[] = "Order #{$orderId} not found.";
-                }
-            } else {
-                $results[] = "No Order ID found in description: {$description}";
-            }
+        $configuredToken = config('services.payment.webhook_token');
+        $providedToken = $request->bearerToken() ?: $request->header('Secure-Token');
+        if (! $configuredToken || ! $providedToken || ! hash_equals($configuredToken, $providedToken)) {
+            return response()->json(['status' => 'error', 'message' => 'Unauthorized'], 401);
         }
 
-        return response()->json([
-            'status' => 'success',
-            'processed' => $results
+        $validated = $request->validate([
+            'provider' => 'sometimes|string|max:50',
+            'data' => 'required|array|min:1',
+            'data.*.transaction_id' => 'required|string|max:191',
+            'data.*.amount' => 'required|numeric|min:0',
+            'data.*.description' => 'nullable|string|max:500',
+            'data.*.content' => 'nullable|string|max:500',
         ]);
+
+        $provider = strtolower($validated['provider'] ?? 'bank-webhook');
+        $results = [];
+
+        foreach ($validated['data'] as $transaction) {
+            $results[] = $this->processTransaction($provider, $transaction);
+        }
+
+        Log::info('Payment webhook processed.', [
+            'provider' => $provider,
+            'transaction_count' => count($results),
+        ]);
+
+        return response()->json(['status' => 'success', 'processed' => $results]);
+    }
+
+    private function processTransaction(string $provider, array $transaction): array
+    {
+        $description = $transaction['description'] ?? ($transaction['content'] ?? '');
+        if (! preg_match('/CK\s*(\d+)/i', $description, $matches)) {
+            return ['transaction_id' => $transaction['transaction_id'], 'result' => 'order_reference_missing'];
+        }
+
+        $orderId = (int) $matches[1];
+        $result = DB::transaction(function () use ($provider, $transaction, $orderId): array {
+            $order = DonHang::with('khachHang')->lockForUpdate()->find($orderId);
+            if (! $order) {
+                return ['transaction_id' => $transaction['transaction_id'], 'result' => 'order_not_found'];
+            }
+
+            $existing = PaymentTransaction::where('provider', $provider)
+                ->where('transaction_id', $transaction['transaction_id'])
+                ->first();
+            if ($existing) {
+                return ['transaction_id' => $transaction['transaction_id'], 'result' => 'already_processed'];
+            }
+
+            if ((float) $transaction['amount'] < (float) $order->TongTien) {
+                return ['transaction_id' => $transaction['transaction_id'], 'result' => 'amount_mismatch'];
+            }
+
+            if (! in_array($order->TrangThai, ['ChoThanhToan', 'ChoXacNhan'], true)) {
+                return ['transaction_id' => $transaction['transaction_id'], 'result' => 'order_already_finalized'];
+            }
+
+            PaymentTransaction::create([
+                'provider' => $provider,
+                'transaction_id' => $transaction['transaction_id'],
+                'MaDH' => $order->MaDH,
+                'amount' => $transaction['amount'],
+                'processed_at' => now(),
+            ]);
+
+            $order->update([
+                'TrangThai' => 'DaXacNhan',
+                'SoTienDaThanhToan' => $transaction['amount'],
+            ]);
+
+            ThongBao::create([
+                'MaKH' => $order->MaKH,
+                'TieuDe' => 'Thanh toán thành công!',
+                'NoiDung' => "Đơn hàng #{$order->MaDH} đã được ngân hàng xác nhận thanh toán.",
+                'NgayGui' => now(),
+                'TrangThaiDoc' => false,
+                'LoaiTB' => 'DonHang',
+                'LienKet' => '/profile',
+            ]);
+
+            return ['transaction_id' => $transaction['transaction_id'], 'result' => 'processed', 'order' => $order];
+        }, 3);
+
+        if (($result['result'] ?? null) === 'processed') {
+            $order = $result['order'];
+            unset($result['order']);
+            $this->sendNotifications($order);
+        }
+
+        return $result;
+    }
+
+    private function sendNotifications(DonHang $order): void
+    {
+        try {
+            Notification::route('mail', config('mail.from.address'))
+                ->notify(new NewOrderNotification($order));
+
+            if ($order->khachHang?->Email) {
+                Notification::route('mail', $order->khachHang->Email)
+                    ->notify(new OrderStatusNotification($order));
+            }
+        } catch (\Throwable $exception) {
+            Log::error("Payment notification failed for order #{$order->MaDH}.", [
+                'exception' => $exception::class,
+            ]);
+        }
     }
 }

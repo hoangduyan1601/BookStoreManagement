@@ -15,11 +15,12 @@ class AdminNhaXuatBanController extends Controller
 
         if ($search) {
             $query->where('TenNXB', 'LIKE', "%{$search}%")
-                  ->orWhere('SDT', 'LIKE', "%{$search}%")
-                  ->orWhere('Email', 'LIKE', "%{$search}%");
+                ->orWhere('SDT', 'LIKE', "%{$search}%")
+                ->orWhere('Email', 'LIKE', "%{$search}%");
         }
 
         $list = $query->paginate(10)->withQueryString();
+
         return view('admin.nhaxuatban.index', compact('list', 'search'));
     }
 
@@ -42,6 +43,7 @@ class AdminNhaXuatBanController extends Controller
     public function edit($id)
     {
         $nxb = NhaXuatBan::findOrFail($id);
+
         return view('admin.nhaxuatban.edit', compact('nxb'));
     }
 
@@ -67,9 +69,10 @@ class AdminNhaXuatBanController extends Controller
             }
 
             $nxb->delete();
+
             return redirect()->route('admin.nxb.index')->with('success', 'Xóa nhà xuất bản thành công!');
         } catch (\Exception $e) {
-            return redirect()->route('admin.nxb.index')->with('error', 'Lỗi hệ thống: ' . $e->getMessage());
+            return redirect()->route('admin.nxb.index')->with('error', 'Lỗi hệ thống: '.$e->getMessage());
         }
     }
 }

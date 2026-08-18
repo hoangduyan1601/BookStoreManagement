@@ -7,12 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 class YeuThich extends Model
 {
     protected $table = 'yeuthich';
+
     public $timestamps = false;
-    
+
     protected $fillable = [
         'MaKH',
         'MaSP',
-        'NgayThem'
+        'NgayThem',
     ];
 
     public function khachHang()

@@ -2,11 +2,11 @@
 
 namespace Tests\Feature;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 use App\Models\DonHang;
 use App\Models\KhachHang;
 use App\Models\TaiKhoan;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class PaymentAutomationTest extends TestCase
 {
@@ -15,12 +15,13 @@ class PaymentAutomationTest extends TestCase
     /** @test */
     public function it_can_automatically_confirm_payment_via_webhook()
     {
+        config(['services.payment.webhook_token' => 'test-webhook-token']);
         // 1. Setup: Tạo tài khoản và khách hàng
         $user = TaiKhoan::create([
             'TenDangNhap' => 'testuser',
             'MatKhau' => bcrypt('password'),
             'VaiTro' => 'KhachHang',
-            'TrangThai' => 1
+            'TrangThai' => 1,
         ]);
 
         $customer = KhachHang::create([
@@ -28,7 +29,7 @@ class PaymentAutomationTest extends TestCase
             'HoTen' => 'Test Customer',
             'Email' => 'test@example.com',
             'SDT' => '0123456789',
-            'DiaChi' => 'Test Address'
+            'DiaChi' => 'Test Address',
         ]);
 
         // 2. Tạo đơn hàng chờ xác nhận
@@ -39,7 +40,7 @@ class PaymentAutomationTest extends TestCase
             'PhuongThucThanhToan' => 'ChuyenKhoan',
             'MaKH' => $customer->MaKH,
             'DiaChiGiaoHang' => 'Test Address',
-            'SoTienGiam' => 0
+            'SoTienGiam' => 0,
         ]);
 
         $this->assertEquals('ChoXacNhan', $order->TrangThai);
@@ -48,17 +49,18 @@ class PaymentAutomationTest extends TestCase
         $payload = [
             'data' => [
                 [
+                    'transaction_id' => 'bank-txn-001',
                     'amount' => 500000,
-                    'description' => "Thanh toan don hang CK " . $order->MaDH
-                ]
-            ]
+                    'description' => 'Thanh toan don hang CK '.$order->MaDH,
+                ],
+            ],
         ];
 
-        $response = $this->postJson('/api/payment/webhook', $payload);
+        $response = $this->withToken('test-webhook-token')->postJson('/api/payment/webhook', $payload);
 
         // 4. Kiểm tra phản hồi
         $response->assertStatus(200)
-                 ->assertJsonFragment(['status' => 'success']);
+            ->assertJsonFragment(['status' => 'success']);
 
         // 5. Kiểm tra DB đã cập nhật chưa
         $order->refresh();
@@ -67,7 +69,14 @@ class PaymentAutomationTest extends TestCase
         // 6. Kiểm tra thông báo có được tạo không
         $this->assertDatabaseHas('thongbao', [
             'MaKH' => $customer->MaKH,
-            'TieuDe' => 'Thanh toán thành công!'
+            'TieuDe' => 'Thanh toán thành công!',
         ]);
+
+        $this->withToken('test-webhook-token')->postJson('/api/payment/webhook', $payload)
+            ->assertOk()
+            ->assertJsonPath('processed.0.result', 'already_processed');
+
+        $this->assertDatabaseCount('payment_transactions', 1);
+        $this->assertDatabaseCount('thongbao', 1);
     }
 }

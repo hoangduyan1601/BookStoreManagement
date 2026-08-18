@@ -4,17 +4,16 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\DonHang;
-use App\Models\ChiTietDonHang;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Notification;
 use App\Notifications\OrderStatusNotification;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Notification;
 
 class AdminDonHangController extends Controller
 {
     public function countPending()
     {
-        $count = \App\Models\DonHang::where('TrangThai', 'ChoXacNhan')->count();
+        $count = DonHang::where('TrangThai', 'ChoXacNhan')->count();
+
         return response()->json(['count' => $count]);
     }
 
@@ -35,13 +34,13 @@ class AdminDonHangController extends Controller
         }
 
         if ($search) {
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('MaDH', 'LIKE', "%{$search}%")
-                  ->orWhereHas('khachHang', function($q2) use ($search) {
-                      $q2->where('HoTen', 'LIKE', "%{$search}%")
-                         ->orWhere('Email', 'LIKE', "%{$search}%")
-                         ->orWhere('SDT', 'LIKE', "%{$search}%");
-                  });
+                    ->orWhereHas('khachHang', function ($q2) use ($search) {
+                        $q2->where('HoTen', 'LIKE', "%{$search}%")
+                            ->orWhere('Email', 'LIKE', "%{$search}%")
+                            ->orWhere('SDT', 'LIKE', "%{$search}%");
+                    });
             });
         }
 
@@ -73,6 +72,7 @@ class AdminDonHangController extends Controller
         if ($request->has('export')) {
             // Lấy toàn bộ danh sách theo filter (không paginate)
             $exportOrders = $query->get();
+
             return $this->exportToExcel($exportOrders);
         }
 
@@ -90,20 +90,20 @@ class AdminDonHangController extends Controller
 
     private function exportToExcel($orders)
     {
-        $fileName = 'Danh_Sach_Don_Hang_' . date('d_m_Y_H_i') . '.xls';
+        $fileName = 'Danh_Sach_Don_Hang_'.date('d_m_Y_H_i').'.xls';
 
         $headers = [
-            "Content-type"        => "application/vnd.ms-excel; charset=UTF-8",
-            "Content-Disposition" => "attachment; filename=$fileName",
-            "Pragma"              => "no-cache",
-            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
-            "Expires"             => "0"
+            'Content-type' => 'application/vnd.ms-excel; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=$fileName",
+            'Pragma' => 'no-cache',
+            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires' => '0',
         ];
 
-        $callback = function() use ($orders) {
+        $callback = function () use ($orders) {
             $file = fopen('php://output', 'w');
             fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF)); // BOM cho UTF-8
-            
+
             $html = '
             <style>
                 .title { font-size: 18px; font-weight: bold; text-align: center; }
@@ -112,7 +112,7 @@ class AdminDonHangController extends Controller
             </style>
             <table border="1">
                 <tr><th colspan="10" class="title">DANH SÁCH ĐƠN HÀNG CHI TIẾT</th></tr>
-                <tr><th colspan="10">Ngày xuất: ' . date('d/m/Y H:i') . '</th></tr>
+                <tr><th colspan="10">Ngày xuất: '.date('d/m/Y H:i').'</th></tr>
                 <tr><td colspan="10"></td></tr>
                 <tr class="header">
                     <th>Mã ĐH</th>
@@ -137,21 +137,21 @@ class AdminDonHangController extends Controller
 
             foreach ($orders as $order) {
                 $html .= '<tr>
-                    <td>#' . $order->MaDH . '</td>
-                    <td>' . date('d/m/Y H:i', strtotime($order->NgayDat)) . '</td>
-                    <td>' . ($order->khachHang->HoTen ?? 'Khách vãng lai') . '</td>
-                    <td>' . ($order->khachHang->SDT ?? '-') . '</td>
-                    <td>' . $order->DiaChiGiaoHang . '</td>
-                    <td class="number">' . number_format($order->TongTien) . '</td>
-                    <td class="number">' . number_format($order->SoTienGiam ?? 0) . '</td>
-                    <td class="number">' . number_format($order->SoTienDaThanhToan ?? 0) . '</td>
-                    <td>' . $order->PhuongThucThanhToan . '</td>
-                    <td>' . ($trangThaiLabels[$order->TrangThai] ?? $order->TrangThai) . '</td>
+                    <td>#'.$order->MaDH.'</td>
+                    <td>'.date('d/m/Y H:i', strtotime($order->NgayDat)).'</td>
+                    <td>'.($order->khachHang->HoTen ?? 'Khách vãng lai').'</td>
+                    <td>'.($order->khachHang->SDT ?? '-').'</td>
+                    <td>'.$order->DiaChiGiaoHang.'</td>
+                    <td class="number">'.number_format($order->TongTien).'</td>
+                    <td class="number">'.number_format($order->SoTienGiam ?? 0).'</td>
+                    <td class="number">'.number_format($order->SoTienDaThanhToan ?? 0).'</td>
+                    <td>'.$order->PhuongThucThanhToan.'</td>
+                    <td>'.($trangThaiLabels[$order->TrangThai] ?? $order->TrangThai).'</td>
                 </tr>';
             }
 
             $html .= '</table>';
-            
+
             echo $html;
             fclose($file);
         };
@@ -162,12 +162,14 @@ class AdminDonHangController extends Controller
     public function show($id)
     {
         $order = DonHang::with(['khachHang', 'chiTietDonHangs.sanPham', 'khuyenMai'])->findOrFail($id);
+
         return view('admin.donhang.show', compact('order'));
     }
 
     public function getBillJson($id)
     {
         $order = DonHang::with('khachHang')->findOrFail($id);
+
         return response()->json($order);
     }
 
@@ -182,7 +184,7 @@ class AdminDonHangController extends Controller
             Notification::route('mail', $order->khachHang->Email)
                 ->notify(new OrderStatusNotification($order));
         } catch (\Exception $e) {
-            \Log::error('Lỗi gửi email cập nhật trạng thái đơn hàng: ' . $e->getMessage());
+            \Log::error('Lỗi gửi email cập nhật trạng thái đơn hàng: '.$e->getMessage());
         }
 
         return redirect()->back()->with('success', 'Cập nhật trạng thái đơn hàng thành công!');
@@ -196,7 +198,7 @@ class AdminDonHangController extends Controller
 
             return redirect()->route('admin.donhang.index')->with('success', 'Xóa đơn hàng thành công!');
         } catch (\Exception $e) {
-            return redirect()->route('admin.donhang.index')->with('error', 'Lỗi hệ thống khi xóa đơn hàng: ' . $e->getMessage());
+            return redirect()->route('admin.donhang.index')->with('error', 'Lỗi hệ thống khi xóa đơn hàng: '.$e->getMessage());
         }
     }
 }

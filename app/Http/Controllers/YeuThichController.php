@@ -2,10 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\SanPham;
 use App\Models\KhachHang;
-use App\Models\YeuThich;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -13,7 +11,7 @@ class YeuThichController extends Controller
 {
     public function toggle(Request $request)
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return response()->json(['status' => 'error', 'message' => 'Vui lòng đăng nhập để sử dụng tính năng này.'], 401);
         }
 
@@ -21,7 +19,7 @@ class YeuThichController extends Controller
         $user = Auth::user();
         $customer = KhachHang::where('MaTK', $user->MaTK)->first();
 
-        if (!$customer) {
+        if (! $customer) {
             return response()->json(['status' => 'error', 'message' => 'Không tìm thấy thông tin khách hàng.'], 404);
         }
 
@@ -37,25 +35,27 @@ class YeuThichController extends Controller
                 ->where('MaKH', $customer->MaKH)
                 ->where('MaSP', $maSP)
                 ->delete();
-                
+
             $favCount = DB::table('yeuthich')->where('MaKH', $customer->MaKH)->count();
+
             return response()->json(['status' => 'removed', 'message' => 'Đã xóa khỏi danh sách yêu thích.', 'favCount' => $favCount]);
         } else {
             // Nếu chưa tồn tại thì thêm mới
             DB::table('yeuthich')->insert([
                 'MaKH' => $customer->MaKH,
                 'MaSP' => $maSP,
-                'NgayThem' => now()
+                'NgayThem' => now(),
             ]);
-            
+
             $favCount = DB::table('yeuthich')->where('MaKH', $customer->MaKH)->count();
+
             return response()->json(['status' => 'added', 'message' => 'Đã thêm vào danh sách yêu thích.', 'favCount' => $favCount]);
         }
     }
 
     public function index()
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return redirect()->route('login');
         }
 

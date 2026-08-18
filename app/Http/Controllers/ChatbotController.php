@@ -2,16 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\ChatMessage;
 use App\Models\KhachHang;
+use App\Services\GeminiService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class ChatbotController extends Controller
 {
     protected $gemini;
 
-    public function __construct(\App\Services\GeminiService $gemini)
+    public function __construct(GeminiService $gemini)
     {
         $this->gemini = $gemini;
     }
@@ -19,12 +20,12 @@ class ChatbotController extends Controller
     public function chat(Request $request)
     {
         $message = $request->input('message');
-        
+
         // Đảm bảo session bắt đầu để lấy ID ổn định
-        if (!$request->session()->has('chat_started')) {
+        if (! $request->session()->has('chat_started')) {
             $request->session()->put('chat_started', true);
         }
-        
+
         $sessionId = $request->session()->getId();
         $maKH = null;
 
@@ -39,13 +40,16 @@ class ChatbotController extends Controller
                 'MaKH' => $maKH,
                 'session_id' => $sessionId,
                 'message' => $message,
-                'sender' => 'user'
+                'sender' => 'user',
             ]);
 
             // 1.5 Lấy lịch sử 5 tin nhắn gần nhất
-            $history = ChatMessage::where(function($q) use ($maKH, $sessionId) {
-                if ($maKH) $q->where('MaKH', $maKH);
-                else $q->where('session_id', $sessionId);
+            $history = ChatMessage::where(function ($q) use ($maKH, $sessionId) {
+                if ($maKH) {
+                    $q->where('MaKH', $maKH);
+                } else {
+                    $q->where('session_id', $sessionId);
+                }
             })->orderBy('created_at', 'desc')->limit(5)->get()->reverse()->toArray();
 
             // 2. Lấy phản hồi từ AI thật (Gemini)
@@ -56,14 +60,15 @@ class ChatbotController extends Controller
                 'MaKH' => $maKH,
                 'session_id' => $sessionId,
                 'message' => $aiReply,
-                'sender' => 'ai'
+                'sender' => 'ai',
             ]);
 
             return response()->json([
-                'reply' => $aiReply
+                'reply' => $aiReply,
             ]);
         } catch (\Exception $e) {
-            \Log::error('Chatbot Error: ' . $e->getMessage());
+            \Log::error('Chatbot Error: '.$e->getMessage());
+
             return response()->json(['reply' => 'Hệ thống đang bận, vui lòng thử lại sau.'], 500);
         }
     }
@@ -78,15 +83,23 @@ class ChatbotController extends Controller
             $maKH = $kh ? $kh->MaKH : null;
         }
 
-        $messages = ChatMessage::where(function($q) use ($maKH, $sessionId) {
-            if ($maKH) $q->where('MaKH', $maKH);
-            if ($sessionId) $q->orWhere('session_id', $sessionId);
+        $messages = ChatMessage::where(function ($q) use ($maKH, $sessionId) {
+            if ($maKH) {
+                $q->where('MaKH', $maKH);
+            }
+            if ($sessionId) {
+                $q->orWhere('session_id', $sessionId);
+            }
         })->orderBy('created_at', 'asc')->get();
 
         // Đánh dấu là đã đọc khi lấy lịch sử
-        ChatMessage::where(function($q) use ($maKH, $sessionId) {
-            if ($maKH) $q->where('MaKH', $maKH);
-            if ($sessionId) $q->orWhere('session_id', $sessionId);
+        ChatMessage::where(function ($q) use ($maKH, $sessionId) {
+            if ($maKH) {
+                $q->where('MaKH', $maKH);
+            }
+            if ($sessionId) {
+                $q->orWhere('session_id', $sessionId);
+            }
         })->whereIn('sender', ['ai', 'admin'])->update(['is_read' => true]);
 
         return response()->json($messages);
@@ -101,12 +114,16 @@ class ChatbotController extends Controller
             $maKH = $kh ? $kh->MaKH : null;
         }
 
-        $count = ChatMessage::where(function($q) use ($maKH, $sessionId) {
-            if ($maKH) $q->where('MaKH', $maKH);
-            if ($sessionId) $q->orWhere('session_id', $sessionId);
+        $count = ChatMessage::where(function ($q) use ($maKH, $sessionId) {
+            if ($maKH) {
+                $q->where('MaKH', $maKH);
+            }
+            if ($sessionId) {
+                $q->orWhere('session_id', $sessionId);
+            }
         })->whereIn('sender', ['ai', 'admin'])
-          ->where('is_read', false)
-          ->count();
+            ->where('is_read', false)
+            ->count();
 
         return response()->json(['unread_count' => $count]);
     }
@@ -120,9 +137,13 @@ class ChatbotController extends Controller
             $maKH = $kh ? $kh->MaKH : null;
         }
 
-        ChatMessage::where(function($q) use ($maKH, $sessionId) {
-            if ($maKH) $q->where('MaKH', $maKH);
-            if ($sessionId) $q->orWhere('session_id', $sessionId);
+        ChatMessage::where(function ($q) use ($maKH, $sessionId) {
+            if ($maKH) {
+                $q->where('MaKH', $maKH);
+            }
+            if ($sessionId) {
+                $q->orWhere('session_id', $sessionId);
+            }
         })->whereIn('sender', ['ai', 'admin'])->update(['is_read' => true]);
 
         return response()->json(['success' => true]);
