@@ -3,10 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\BaiViet;
+use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Storage;
 
 class AdminBaiVietController extends Controller
 {
@@ -16,13 +15,14 @@ class AdminBaiVietController extends Controller
         $query = BaiViet::query();
 
         if ($search) {
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('TieuDe', 'LIKE', "%{$search}%")
-                  ->orWhere('NoiDung', 'LIKE', "%{$search}%");
+                    ->orWhere('NoiDung', 'LIKE', "%{$search}%");
             });
         }
 
         $articles = $query->orderBy('NgayDang', 'desc')->paginate(10)->withQueryString();
+
         return view('admin.baiviet.index', compact('articles', 'search'));
     }
 
@@ -40,17 +40,17 @@ class AdminBaiVietController extends Controller
         ]);
 
         $data = $request->all();
-        $data['Slug'] = Str::slug($request->TieuDe) . '-' . time();
+        $data['Slug'] = Str::slug($request->TieuDe).'-'.time();
         $data['MaTK'] = auth()->user()->MaTK;
 
         if ($request->hasFile('HinhAnh')) {
             $dir = public_path('assets/images/articles');
-            if (!file_exists($dir)) {
+            if (! file_exists($dir)) {
                 mkdir($dir, 0777, true);
             }
-            $fileName = time() . '_' . $request->file('HinhAnh')->getClientOriginalName();
+            $fileName = time().'_'.$request->file('HinhAnh')->getClientOriginalName();
             $request->file('HinhAnh')->move($dir, $fileName);
-            $data['HinhAnh'] = 'assets/images/articles/' . $fileName;
+            $data['HinhAnh'] = 'assets/images/articles/'.$fileName;
         }
 
         BaiViet::create($data);
@@ -61,13 +61,14 @@ class AdminBaiVietController extends Controller
     public function edit($id)
     {
         $article = BaiViet::findOrFail($id);
+
         return view('admin.baiviet.edit', compact('article'));
     }
 
     public function update(Request $request, $id)
     {
         $article = BaiViet::findOrFail($id);
-        
+
         $request->validate([
             'TieuDe' => 'required|max:255',
             'NoiDung' => 'required',
@@ -76,7 +77,7 @@ class AdminBaiVietController extends Controller
 
         $data = $request->all();
         if ($article->TieuDe !== $request->TieuDe) {
-            $data['Slug'] = Str::slug($request->TieuDe) . '-' . time();
+            $data['Slug'] = Str::slug($request->TieuDe).'-'.time();
         }
 
         if ($request->hasFile('HinhAnh')) {
@@ -86,9 +87,9 @@ class AdminBaiVietController extends Controller
             }
 
             $dir = public_path('assets/images/articles');
-            $fileName = time() . '_' . $request->file('HinhAnh')->getClientOriginalName();
+            $fileName = time().'_'.$request->file('HinhAnh')->getClientOriginalName();
             $request->file('HinhAnh')->move($dir, $fileName);
-            $data['HinhAnh'] = 'assets/images/articles/' . $fileName;
+            $data['HinhAnh'] = 'assets/images/articles/'.$fileName;
         }
 
         $article->update($data);
@@ -100,16 +101,17 @@ class AdminBaiVietController extends Controller
     {
         try {
             $article = BaiViet::findOrFail($id);
-            
+
             // Xóa ảnh vật lý nếu có
             if ($article->HinhAnh && file_exists(public_path($article->HinhAnh))) {
                 @unlink(public_path($article->HinhAnh));
             }
 
             $article->delete();
+
             return redirect()->route('admin.baiviet.index')->with('success', 'Xóa bài viết thành công!');
         } catch (\Exception $e) {
-            return redirect()->route('admin.baiviet.index')->with('error', 'Lỗi hệ thống khi xóa bài viết: ' . $e->getMessage());
+            return redirect()->route('admin.baiviet.index')->with('error', 'Lỗi hệ thống khi xóa bài viết: '.$e->getMessage());
         }
     }
 }

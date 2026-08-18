@@ -2,21 +2,21 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\SanPham;
-use App\Models\DanhMuc;
 use App\Models\BaiViet;
-use App\Models\KhachHang;
-use App\Models\DonHang;
-use App\Models\ThongBao;
 use App\Models\ChiTietDonHang;
+use App\Models\DanhMuc;
+use App\Models\DonHang;
+use App\Models\KhachHang;
+use App\Models\SanPham;
 use App\Models\TaiKhoan;
+use App\Models\ThongBao;
 use App\Notifications\OrderStatusNotification;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Log;
-use Exception;
+use Illuminate\Support\Facades\Notification;
 
 class HomeController extends Controller
 {
@@ -37,18 +37,18 @@ class HomeController extends Controller
     {
         /** @var TaiKhoan $user */
         $user = Auth::user();
-        
+
         // Lấy khách hàng liên kết với tài khoản này
         $customer = KhachHang::where('MaTK', $user->MaTK)->first();
 
-        if (!$customer) {
+        if (! $customer) {
             // Tự động tạo bản ghi khách hàng nếu thiếu để tránh lỗi điều hướng
             $customer = KhachHang::create([
                 'MaTK' => $user->MaTK,
                 'HoTen' => $user->TenDangNhap ?? 'Người dùng mới',
-                'Email' => 'user' . $user->MaTK . '@example.com',
+                'Email' => 'user'.$user->MaTK.'@example.com',
                 'SDT' => '0000000000',
-                'DiaChi' => 'Chưa cập nhật'
+                'DiaChi' => 'Chưa cập nhật',
             ]);
         }
 
@@ -66,7 +66,7 @@ class HomeController extends Controller
         $unreadCount = ThongBao::where('MaKH', $customer->MaKH)
             ->where('TrangThaiDoc', false)
             ->count();
-            
+
         return view('home.profile', compact('customer', 'ordersInProgress', 'ordersCompleted', 'unreadCount'));
     }
 
@@ -76,7 +76,7 @@ class HomeController extends Controller
         $user = Auth::user();
         $customer = KhachHang::where('MaTK', $user->MaTK)->first();
 
-        if (!$customer) {
+        if (! $customer) {
             return back()->with('error', 'Không tìm thấy thông tin khách hàng.');
         }
 
@@ -97,8 +97,10 @@ class HomeController extends Controller
 
     public function markNotificationRead($id)
     {
-        $tb = ThongBao::findOrFail($id);
+        $customer = KhachHang::where('MaTK', Auth::id())->firstOrFail();
+        $tb = ThongBao::where('MaTB', $id)->where('MaKH', $customer->MaKH)->firstOrFail();
         $tb->update(['TrangThaiDoc' => true]);
+
         return response()->json(['status' => 'success']);
     }
 
@@ -112,21 +114,22 @@ class HomeController extends Controller
                 ->where('TrangThaiDoc', false)
                 ->update(['TrangThaiDoc' => true]);
         }
+
         return response()->json(['status' => 'success']);
     }
 
     public function orderDetail($id)
     {
         $order = DonHang::with(['khachHang', 'chiTietDonHangs.sanPham'])->findOrFail($id);
-        
+
         // Kiểm tra quyền (chỉ chủ đơn hàng hoặc admin mới được xem)
         /** @var TaiKhoan $user */
         $user = Auth::user();
         $khachHang = KhachHang::where('MaTK', $user->MaTK)->first();
-        
+
         $isAdmin = in_array($user->VaiTro, ['Admin', 'quanly', 'QuanLy']);
-        
-        if (!$isAdmin && (!$khachHang || $order->MaKH !== $khachHang->MaKH)) {
+
+        if (! $isAdmin && (! $khachHang || $order->MaKH !== $khachHang->MaKH)) {
             return response()->json(['status' => 'error', 'message' => 'Bạn không có quyền xem đơn hàng này.'], 403);
         }
 
@@ -141,12 +144,12 @@ class HomeController extends Controller
         $khachHang = KhachHang::where('MaTK', $user->MaTK)->first();
 
         // Kiểm tra quyền sở hữu
-        if (!$khachHang || $order->MaKH !== $khachHang->MaKH) {
+        if (! $khachHang || $order->MaKH !== $khachHang->MaKH) {
             return back()->with('error', 'Yêu cầu không hợp lệ.');
         }
 
         // Kiểm tra trạng thái
-        if (!in_array($order->TrangThai, ['ChoThanhToan', 'ChoXacNhan'])) {
+        if (! in_array($order->TrangThai, ['ChoThanhToan', 'ChoXacNhan'])) {
             return back()->with('error', 'Đơn hàng này không thể hủy ở trạng thái hiện tại.');
         }
 
@@ -172,13 +175,14 @@ class HomeController extends Controller
                 Notification::route('mail', config('mail.from.address'))
                     ->notify(new OrderStatusNotification($order->load('khachHang')));
             } catch (Exception $e) {
-                Log::error('Lỗi gửi email thông báo hủy đơn hàng: ' . $e->getMessage());
+                Log::error('Lỗi gửi email thông báo hủy đơn hàng: '.$e->getMessage());
             }
 
-            return back()->with('success', 'Đã hủy đơn hàng #' . $id . ' thành công.');
+            return back()->with('success', 'Đã hủy đơn hàng #'.$id.' thành công.');
         } catch (Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Lỗi khi hủy đơn hàng: ' . $e->getMessage());
+
+            return back()->with('error', 'Lỗi khi hủy đơn hàng: '.$e->getMessage());
         }
     }
 }

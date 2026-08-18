@@ -15,10 +15,11 @@ class AdminDanhMucController extends Controller
 
         if ($search) {
             $query->where('TenDM', 'LIKE', "%{$search}%")
-                  ->orWhere('MoTa', 'LIKE', "%{$search}%");
+                ->orWhere('MoTa', 'LIKE', "%{$search}%");
         }
 
         $list = $query->paginate(10)->withQueryString();
+
         return view('admin.danhmuc.index', compact('list', 'search'));
     }
 
@@ -59,16 +60,17 @@ class AdminDanhMucController extends Controller
     {
         try {
             $danhmuc = DanhMuc::findOrFail($id);
-            
+
             // Kiểm tra xem danh mục có sản phẩm không
             if ($danhmuc->sanphams()->exists()) {
                 return redirect()->route('admin.danhmuc.index')->with('error', 'Không thể xóa danh mục này vì vẫn còn sản phẩm thuộc danh mục!');
             }
 
             $danhmuc->delete();
+
             return redirect()->route('admin.danhmuc.index')->with('success', 'Xóa danh mục thành công!');
         } catch (\Exception $e) {
-            return redirect()->route('admin.danhmuc.index')->with('error', 'Lỗi hệ thống: ' . $e->getMessage());
+            return redirect()->route('admin.danhmuc.index')->with('error', 'Lỗi hệ thống: '.$e->getMessage());
         }
     }
 }

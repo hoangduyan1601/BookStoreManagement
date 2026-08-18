@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\SanPham;
-use App\Models\GioHang;
 use App\Models\ChiTietGioHang;
+use App\Models\GioHang;
 use App\Models\KhachHang;
+use App\Models\SanPham;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -16,21 +16,21 @@ class CartController extends Controller
     {
         $user = Auth::user();
         $khachHang = KhachHang::where('MaTK', $user->MaTK)->first();
-        
-        if (!$khachHang) {
+
+        if (! $khachHang) {
             // Tự động tạo bản ghi khách hàng để có thể vào giỏ hàng
             $khachHang = KhachHang::create([
                 'MaTK' => $user->MaTK,
                 'HoTen' => $user->TenDN ?? 'Người dùng',
-                'SDT'   => '0000000000',
+                'SDT' => '0000000000',
                 'Email' => $user->Email ?? 'user@example.com',
-                'DiaChi'=> 'Chưa cập nhật'
+                'DiaChi' => 'Chưa cập nhật',
             ]);
         }
 
         $maKH = $khachHang->MaKH;
         $gioHang = GioHang::where('MaKH', $maKH)->first();
-        
+
         $cart = [];
         $totalPrice = 0;
 
@@ -39,12 +39,12 @@ class CartController extends Controller
             foreach ($items as $ct) {
                 if ($ct->sanPham) {
                     $cart[$ct->MaSP] = [
-                        'id'    => $ct->MaSP,
-                        'name'  => $ct->sanPham->TenSP,
+                        'id' => $ct->MaSP,
+                        'name' => $ct->sanPham->TenSP,
                         'price' => $ct->sanPham->gia_hien_tai,
                         'original_price' => $ct->sanPham->DonGia,
                         'image' => $ct->sanPham->HinhAnh,
-                        'qty'   => $ct->SoLuong
+                        'qty' => $ct->SoLuong,
                     ];
                     $totalPrice += $ct->sanPham->gia_hien_tai * $ct->SoLuong;
                 }
@@ -60,17 +60,17 @@ class CartController extends Controller
         $qty = $request->input('qty', 1);
 
         $user = Auth::user();
-        if (!$user) {
+        if (! $user) {
             return response()->json(['status' => 'login_required', 'message' => 'Bạn cần đăng nhập để mua hàng!']);
         }
 
         $khachHang = KhachHang::where('MaTK', $user->MaTK)->first();
-        if (!$khachHang) {
+        if (! $khachHang) {
             return response()->json(['status' => 'error', 'message' => 'Không tìm thấy thông tin khách hàng.']);
         }
 
         $product = SanPham::find($id);
-        if (!$product) {
+        if (! $product) {
             return response()->json(['status' => 'error', 'message' => 'Sản phẩm không tồn tại']);
         }
 
@@ -87,7 +87,7 @@ class CartController extends Controller
             if ($newQty > $product->SoLuong) {
                 return response()->json(['status' => 'error', 'message' => 'Kho không đủ hàng!']);
             }
-            
+
             DB::table('chitietgiohang')
                 ->where('MaGH', $gioHang->MaGH)
                 ->where('MaSP', $id)
@@ -96,21 +96,21 @@ class CartController extends Controller
             if ($qty > $product->SoLuong) {
                 return response()->json(['status' => 'error', 'message' => 'Kho không đủ hàng!']);
             }
-            
+
             DB::table('chitietgiohang')->insert([
                 'MaGH' => $gioHang->MaGH,
                 'MaSP' => $id,
                 'SoLuong' => $qty,
-                'DonGiaTamTinh' => $product->DonGia
+                'DonGiaTamTinh' => $product->DonGia,
             ]);
         }
 
         $cartCount = DB::table('chitietgiohang')->where('MaGH', $gioHang->MaGH)->sum('SoLuong');
 
         return response()->json([
-            'status' => 'success', 
-            'message' => 'Đã thêm vào giỏ!', 
-            'cartCount' => (int)$cartCount
+            'status' => 'success',
+            'message' => 'Đã thêm vào giỏ!',
+            'cartCount' => (int) $cartCount,
         ]);
     }
 
@@ -119,10 +119,10 @@ class CartController extends Controller
         $qtyArray = $request->input('qty', []);
         $user = Auth::user();
         $khachHang = KhachHang::where('MaTK', $user->MaTK)->first();
-        
+
         if ($khachHang) {
             $gioHang = GioHang::where('MaKH', $khachHang->MaKH)->first();
-            if ($gioHang && !empty($qtyArray)) {
+            if ($gioHang && ! empty($qtyArray)) {
                 foreach ($qtyArray as $maSP => $soLuong) {
                     $item = ChiTietGioHang::where('MaGH', $gioHang->MaGH)->where('MaSP', $maSP)->first();
                     if ($item) {
@@ -145,7 +145,7 @@ class CartController extends Controller
     {
         $user = Auth::user();
         $khachHang = KhachHang::where('MaTK', $user->MaTK)->first();
-        
+
         if ($khachHang) {
             $gioHang = GioHang::where('MaKH', $khachHang->MaKH)->first();
             if ($gioHang) {
@@ -160,10 +160,10 @@ class CartController extends Controller
     {
         $id = $request->input('id');
         $qty = $request->input('qty');
-        
+
         $user = Auth::user();
         $khachHang = KhachHang::where('MaTK', $user->MaTK)->first();
-        
+
         if ($khachHang) {
             $gioHang = GioHang::where('MaKH', $khachHang->MaKH)->first();
             if ($gioHang) {
@@ -194,13 +194,14 @@ class CartController extends Controller
 
                 return response()->json([
                     'status' => 'success',
-                    'totalPrice' => number_format($totalPrice, 0, ',', '.') . '₫',
-                    'cartCount' => (int)$cartCount,
-                    'itemTotal' => number_format($currentItemTotal, 0, ',', '.') . '₫',
-                    'unitPrice' => $currentItemUnitPrice
+                    'totalPrice' => number_format($totalPrice, 0, ',', '.').'₫',
+                    'cartCount' => (int) $cartCount,
+                    'itemTotal' => number_format($currentItemTotal, 0, ',', '.').'₫',
+                    'unitPrice' => $currentItemUnitPrice,
                 ]);
             }
         }
+
         return response()->json(['status' => 'error']);
     }
 
@@ -209,7 +210,7 @@ class CartController extends Controller
         $id = $request->input('id');
         $user = Auth::user();
         $khachHang = KhachHang::where('MaTK', $user->MaTK)->first();
-        
+
         if ($khachHang) {
             $gioHang = GioHang::where('MaKH', $khachHang->MaKH)->first();
             if ($gioHang) {
@@ -228,12 +229,13 @@ class CartController extends Controller
 
                 return response()->json([
                     'status' => 'success',
-                    'totalPrice' => number_format($totalPrice, 0, ',', '.') . '₫',
-                    'cartCount' => (int)$cartCount,
-                    'isEmpty' => $items->isEmpty()
+                    'totalPrice' => number_format($totalPrice, 0, ',', '.').'₫',
+                    'cartCount' => (int) $cartCount,
+                    'isEmpty' => $items->isEmpty(),
                 ]);
             }
         }
+
         return response()->json(['status' => 'error']);
     }
 
@@ -241,7 +243,7 @@ class CartController extends Controller
     {
         $user = Auth::user();
         $khachHang = KhachHang::where('MaTK', $user->MaTK)->first();
-        
+
         if ($khachHang) {
             $gioHang = GioHang::where('MaKH', $khachHang->MaKH)->first();
             if ($gioHang) {

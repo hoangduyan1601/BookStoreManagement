@@ -19,10 +19,10 @@ class AdminKhachHangController extends Controller
         $query = KhachHang::with('taiKhoan');
 
         if ($search) {
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('HoTen', 'LIKE', "%{$search}%")
-                  ->orWhere('Email', 'LIKE', "%{$search}%")
-                  ->orWhere('SDT', 'LIKE', "%{$search}%");
+                    ->orWhere('Email', 'LIKE', "%{$search}%")
+                    ->orWhere('SDT', 'LIKE', "%{$search}%");
             });
         }
 
@@ -68,10 +68,12 @@ class AdminKhachHangController extends Controller
             ]);
 
             DB::commit();
+
             return redirect()->route('admin.khachhang.index')->with('success', 'Thêm khách hàng thành công!');
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->with('error', 'Lỗi: ' . $e->getMessage());
+
+            return redirect()->back()->with('error', 'Lỗi: '.$e->getMessage());
         }
     }
 
@@ -80,7 +82,7 @@ class AdminKhachHangController extends Controller
         $customer = KhachHang::findOrFail($id);
         $request->validate([
             'HoTen' => 'required',
-            'Email' => 'nullable|email|unique:khachhang,Email,' . $id . ',MaKH',
+            'Email' => 'nullable|email|unique:khachhang,Email,'.$id.',MaKH',
         ]);
 
         $customer->update($request->only(['HoTen', 'Email', 'SDT', 'DiaChi']));
@@ -92,23 +94,24 @@ class AdminKhachHangController extends Controller
     {
         try {
             $customer = KhachHang::findOrFail($id);
-            
+
             // Kiểm tra lịch sử mua hàng
             if ($customer->donHangs()->exists()) {
                 return redirect()->route('admin.khachhang.index')->with('error', 'Không thể xóa khách hàng này vì đã có dữ liệu lịch sử đơn hàng!');
             }
 
-            \Illuminate\Support\Facades\DB::beginTransaction();
+            DB::beginTransaction();
             if ($customer->MaTK) {
                 TaiKhoan::where('MaTK', $customer->MaTK)->delete();
             }
             $customer->delete();
-            \Illuminate\Support\Facades\DB::commit();
+            DB::commit();
 
             return redirect()->route('admin.khachhang.index')->with('success', 'Xóa khách hàng thành công!');
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\DB::rollBack();
-            return redirect()->route('admin.khachhang.index')->with('error', 'Lỗi hệ thống: ' . $e->getMessage());
+            DB::rollBack();
+
+            return redirect()->route('admin.khachhang.index')->with('error', 'Lỗi hệ thống: '.$e->getMessage());
         }
     }
 }

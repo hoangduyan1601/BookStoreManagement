@@ -31,13 +31,13 @@ php artisan storage:link --force || true
 
 # Run database migrations
 echo "Running database migrations..."
-php artisan migrate --force || true
+php artisan migrate --force
 
 # Run seeders ONLY ONCE on initial deployment to prevent duplicate data on restarts
-if [ ! -f "/var/www/html/storage/seeded.flag" ]; then
+if [ "${SEED_DATABASE:-false}" = "true" ] && [ ! -f "/var/www/html/storage/seeded.flag" ]; then
     echo "First startup detected: seeding database..."
-    php artisan db:seed --force || true
-    touch /var/www/html/storage/seeded.flag || true
+    php artisan db:seed --force
+    touch /var/www/html/storage/seeded.flag
 fi
 
 # Optimize Laravel cache

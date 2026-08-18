@@ -13,7 +13,7 @@ class AdminTaiKhoanController extends Controller
     {
         $search = $request->get('search');
         $role = $request->get('role');
-        
+
         $query = TaiKhoan::query();
 
         if ($search) {
@@ -25,6 +25,7 @@ class AdminTaiKhoanController extends Controller
         }
 
         $list = $query->paginate(10)->withQueryString();
+
         return view('admin.taikhoan.index', compact('list', 'search', 'role'));
     }
 
@@ -52,6 +53,7 @@ class AdminTaiKhoanController extends Controller
     public function edit($id)
     {
         $taiKhoan = TaiKhoan::findOrFail($id);
+
         return view('admin.taikhoan.edit', compact('taiKhoan'));
     }
 
@@ -64,7 +66,7 @@ class AdminTaiKhoanController extends Controller
 
         $taiKhoan = TaiKhoan::findOrFail($id);
         $data = $request->except('MatKhau');
-        
+
         if ($request->filled('MatKhau')) {
             $data['MatKhau'] = Hash::make($request->MatKhau);
         }
@@ -86,13 +88,14 @@ class AdminTaiKhoanController extends Controller
 
             return redirect()->route('admin.taikhoan.index')->with('success', 'Xóa tài khoản thành công!');
         } catch (\Exception $e) {
-            return redirect()->route('admin.taikhoan.index')->with('error', 'Lỗi hệ thống khi xóa tài khoản: ' . $e->getMessage());
+            return redirect()->route('admin.taikhoan.index')->with('error', 'Lỗi hệ thống khi xóa tài khoản: '.$e->getMessage());
         }
     }
 
     public function changePassword($id)
     {
         $taiKhoan = TaiKhoan::findOrFail($id);
+
         return view('admin.taikhoan.doi_mk', compact('taiKhoan'));
     }
 

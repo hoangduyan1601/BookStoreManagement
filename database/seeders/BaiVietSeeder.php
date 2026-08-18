@@ -6,15 +6,16 @@ use Illuminate\Database\Seeder;
 use App\Models\BaiViet;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class BaiVietSeeder extends Seeder
 {
     public function run(): void
     {
         // Xóa dữ liệu cũ trước khi chèn mới để tránh trùng lặp slug
-        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        Schema::disableForeignKeyConstraints();
         BaiViet::truncate();
-        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        Schema::enableForeignKeyConstraints();
 
         $articles = [
             [

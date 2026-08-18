@@ -7,7 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 class NhaCungCap extends Model
 {
     protected $table = 'nhacungcap';
+
     protected $primaryKey = 'MaNCC';
+
     public $timestamps = false;
 
     protected $fillable = [

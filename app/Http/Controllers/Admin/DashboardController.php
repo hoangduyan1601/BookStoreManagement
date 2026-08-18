@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers\Admin;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use App\Models\SanPham;
-use App\Models\KhachHang;
 use App\Models\DonHang;
+use App\Models\KhachHang;
+use App\Models\SanPham;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends BaseAdminController
 {
@@ -18,7 +17,7 @@ class DashboardController extends BaseAdminController
         $khachHang = KhachHang::count();
         $tongDon = DonHang::count();
         $donChoXacNhan = DonHang::where('TrangThai', 'ChoXacNhan')->count();
-        
+
         $doanhThuThang = DonHang::whereMonth('NgayDat', now()->month)
             ->whereYear('NgayDat', now()->year)
             ->whereIn('TrangThai', ['DaGiao', 'DangGiao'])
@@ -31,12 +30,12 @@ class DashboardController extends BaseAdminController
             $date = now()->subMonths($i);
             $thang = $date->format('Y-m');
             $labels[] = $date->format('m/Y');
-            
+
             $val = DonHang::whereYear('NgayDat', $date->year)
                 ->whereMonth('NgayDat', $date->month)
                 ->whereIn('TrangThai', ['DaGiao', 'DangGiao'])
                 ->sum('TongTien');
-                
+
             $data[] = $val;
         }
 
@@ -69,20 +68,20 @@ class DashboardController extends BaseAdminController
 
     private function exportReport($data)
     {
-        $fileName = 'Bao_Cao_Tong_Quan_LuxuryStore_' . date('d_m_Y_H_i') . '.xls';
+        $fileName = 'Bao_Cao_Tong_Quan_LuxuryStore_'.date('d_m_Y_H_i').'.xls';
 
         $headers = [
-            "Content-type"        => "application/vnd.ms-excel; charset=UTF-8",
-            "Content-Disposition" => "attachment; filename=$fileName",
-            "Pragma"              => "no-cache",
-            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
-            "Expires"             => "0"
+            'Content-type' => 'application/vnd.ms-excel; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=$fileName",
+            'Pragma' => 'no-cache',
+            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires' => '0',
         ];
 
-        $callback = function() use ($data) {
+        $callback = function () use ($data) {
             $file = fopen('php://output', 'w');
             fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
-            
+
             $html = '
             <style>
                 .title { font-size: 20px; font-weight: bold; text-align: center; color: #1a202c; }
@@ -95,33 +94,33 @@ class DashboardController extends BaseAdminController
             </style>
             <table border="1">
                 <tr><th colspan="4" class="title">BÁO CÁO CHI CHIẾT TỔNG QUAN HỆ THỐNG</th></tr>
-                <tr><th colspan="4" style="text-align: center; color: #718096;">Hệ thống quản trị Luxury Store | Kết xuất lúc: ' . date('d/m/Y H:i') . '</th></tr>
+                <tr><th colspan="4" style="text-align: center; color: #718096;">Hệ thống quản trị Luxury Store | Kết xuất lúc: '.date('d/m/Y H:i').'</th></tr>
                 <tr><td colspan="4"></td></tr>
                 
                 <tr class="section-header"><th colspan="4">1. CHỈ SỐ VẬN HÀNH TỔNG QUÁT</th></tr>
                 <tr>
                     <td colspan="2">Tổng số sản phẩm đang kinh doanh:</td>
-                    <td colspan="2" class="number fw-bold">' . number_format($data['tongSP']) . '</td>
+                    <td colspan="2" class="number fw-bold">'.number_format($data['tongSP']).'</td>
                 </tr>
                 <tr>
                     <td colspan="2">Sản phẩm cần nhập hàng (Hết hàng):</td>
-                    <td colspan="2" class="number text-danger fw-bold">' . number_format($data['hetHang']) . '</td>
+                    <td colspan="2" class="number text-danger fw-bold">'.number_format($data['hetHang']).'</td>
                 </tr>
                 <tr>
                     <td colspan="2">Tổng số tệp khách hàng đăng ký:</td>
-                    <td colspan="2" class="number fw-bold">' . number_format($data['khachHang']) . '</td>
+                    <td colspan="2" class="number fw-bold">'.number_format($data['khachHang']).'</td>
                 </tr>
                 <tr>
                     <td colspan="2">Tổng đơn hàng đã phát sinh:</td>
-                    <td colspan="2" class="number fw-bold">' . number_format($data['tongDon']) . '</td>
+                    <td colspan="2" class="number fw-bold">'.number_format($data['tongDon']).'</td>
                 </tr>
                 <tr>
                     <td colspan="2">Đơn hàng mới chờ phê duyệt:</td>
-                    <td colspan="2" class="number text-primary fw-bold">' . number_format($data['donChoXacNhan']) . '</td>
+                    <td colspan="2" class="number text-primary fw-bold">'.number_format($data['donChoXacNhan']).'</td>
                 </tr>
                 <tr style="background-color: #ebf8ff;">
-                    <td colspan="2" class="fw-bold">Doanh thu tạm tính tháng ' . date('m/Y') . ':</td>
-                    <td colspan="2" class="number text-success fw-bold">' . number_format($data['doanhThuThang']) . ' ₫</td>
+                    <td colspan="2" class="fw-bold">Doanh thu tạm tính tháng '.date('m/Y').':</td>
+                    <td colspan="2" class="number text-success fw-bold">'.number_format($data['doanhThuThang']).' ₫</td>
                 </tr>
                 <tr><td colspan="4"></td></tr>
 
@@ -133,8 +132,8 @@ class DashboardController extends BaseAdminController
 
             foreach ($data['labels'] as $index => $label) {
                 $html .= '<tr>
-                    <td colspan="2">' . $label . '</td>
-                    <td colspan="2" class="number">' . number_format($data['data'][$index]) . ' ₫</td>
+                    <td colspan="2">'.$label.'</td>
+                    <td colspan="2" class="number">'.number_format($data['data'][$index]).' ₫</td>
                 </tr>';
             }
 
@@ -148,9 +147,9 @@ class DashboardController extends BaseAdminController
 
             foreach ($data['topSelling'] as $sp) {
                 $html .= '<tr>
-                    <td>#SP' . $sp->MaSP . '</td>
-                    <td colspan="2">' . $sp->TenSP . '</td>
-                    <td class="number fw-bold">' . number_format($sp->TongDaBan) . '</td>
+                    <td>#SP'.$sp->MaSP.'</td>
+                    <td colspan="2">'.$sp->TenSP.'</td>
+                    <td class="number fw-bold">'.number_format($sp->TongDaBan).'</td>
                 </tr>';
             }
 
@@ -164,16 +163,16 @@ class DashboardController extends BaseAdminController
 
             foreach ($data['topFavorites'] as $sp) {
                 $html .= '<tr>
-                    <td>#SP' . $sp->MaSP . '</td>
-                    <td colspan="2">' . $sp->TenSP . '</td>
-                    <td class="number text-danger fw-bold">' . number_format($sp->favorites_count) . ' <i class="fas fa-heart"></i></td>
+                    <td>#SP'.$sp->MaSP.'</td>
+                    <td colspan="2">'.$sp->TenSP.'</td>
+                    <td class="number text-danger fw-bold">'.number_format($sp->favorites_count).' <i class="fas fa-heart"></i></td>
                 </tr>';
             }
 
             $html .= '</table>
             <br>
             <p style="font-size: 10px; color: #a0aec0;"><i>Ghi chú: Dữ liệu doanh thu được tính dựa trên các đơn hàng ở trạng thái "Đang giao" và "Đã giao".</i></p>';
-            
+
             echo $html;
             fclose($file);
         };
@@ -184,6 +183,7 @@ class DashboardController extends BaseAdminController
     public function profile()
     {
         $user = auth()->user();
+
         return view('admin.profile', compact('user'));
     }
 }

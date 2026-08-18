@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\KhuyenMai;
 use App\Models\DanhMuc;
 use App\Models\KhachHang;
+use App\Models\KhuyenMai;
 use App\Models\ThongBao;
 use Illuminate\Http\Request;
 
@@ -37,9 +37,9 @@ class AdminKhuyenMaiController extends Controller
         }
 
         if ($search) {
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('TenKM', 'LIKE', "%{$search}%")
-                  ->orWhere('MaGiamGia', 'LIKE', "%{$search}%");
+                    ->orWhere('MaGiamGia', 'LIKE', "%{$search}%");
             });
         }
 
@@ -65,6 +65,7 @@ class AdminKhuyenMaiController extends Controller
     public function create()
     {
         $categories = DanhMuc::all();
+
         return view('admin.khuyenmai.create', compact('categories'));
     }
 
@@ -73,11 +74,11 @@ class AdminKhuyenMaiController extends Controller
         $request->validate([
             'TenKM' => 'required',
             'PhanTramGiam' => 'required|numeric',
-            'LoaiKM' => 'required'
+            'LoaiKM' => 'required',
         ]);
 
         $data = $request->all();
-        
+
         // Reset dữ liệu dựa trên loại KM
         if ($data['LoaiKM'] !== 'DanhMuc') {
             $data['MaDM'] = null;
@@ -90,9 +91,9 @@ class AdminKhuyenMaiController extends Controller
 
         // --- GỬI THÔNG BÁO CHO TẤT CẢ KHÁCH HÀNG (TỐI ƯU HÓA BATCH INSERT) ---
         $customers = KhachHang::select('MaKH')->get();
-        $message = "🎉 Ưu đãi mới: " . $km->TenKM . " giảm ngay " . $km->PhanTramGiam . "%! ";
+        $message = '🎉 Ưu đãi mới: '.$km->TenKM.' giảm ngay '.$km->PhanTramGiam.'%! ';
         if ($km->MaGiamGia) {
-            $message .= "Nhập mã: " . $km->MaGiamGia . " khi thanh toán.";
+            $message .= 'Nhập mã: '.$km->MaGiamGia.' khi thanh toán.';
         }
 
         $notifications = [];
@@ -110,7 +111,7 @@ class AdminKhuyenMaiController extends Controller
                 'NgayGui' => $now,
                 'TrangThaiDoc' => false,
                 'LoaiTB' => 'KhuyenMai',
-                'LienKet' => $link
+                'LienKet' => $link,
             ];
         }
 
@@ -126,6 +127,7 @@ class AdminKhuyenMaiController extends Controller
     {
         $km = KhuyenMai::findOrFail($id);
         $categories = DanhMuc::all();
+
         return view('admin.khuyenmai.edit', compact('km', 'categories'));
     }
 
@@ -134,7 +136,7 @@ class AdminKhuyenMaiController extends Controller
         $request->validate([
             'TenKM' => 'required',
             'PhanTramGiam' => 'required|numeric',
-            'LoaiKM' => 'required'
+            'LoaiKM' => 'required',
         ]);
 
         $km = KhuyenMai::findOrFail($id);
@@ -161,7 +163,7 @@ class AdminKhuyenMaiController extends Controller
 
             return redirect()->route('admin.khuyenmai.index')->with('success', 'Xóa khuyến mãi thành công!');
         } catch (\Exception $e) {
-            return redirect()->route('admin.khuyenmai.index')->with('error', 'Lỗi hệ thống khi xóa khuyến mãi: ' . $e->getMessage());
+            return redirect()->route('admin.khuyenmai.index')->with('error', 'Lỗi hệ thống khi xóa khuyến mãi: '.$e->getMessage());
         }
     }
 }

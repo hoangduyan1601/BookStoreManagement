@@ -10,7 +10,9 @@ class TaiKhoan extends Authenticatable
     use Notifiable;
 
     protected $table = 'taikhoan';
+
     protected $primaryKey = 'MaTK';
+
     public $timestamps = false;
 
     protected $fillable = [

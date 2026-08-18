@@ -2,9 +2,16 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
+use App\Models\ChiTietGioHang;
+use App\Models\DanhMuc;
+use App\Models\GioHang;
+use App\Models\KhachHang;
+use App\Models\ThongBao;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -21,30 +28,30 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        \Illuminate\Pagination\Paginator::useBootstrapFive();
+        Paginator::useBootstrapFive();
 
         // Ép HTTPS nếu đang chạy qua ngrok để VNPay IPN hoạt động chuẩn
         if (str_contains(request()->getHost(), 'ngrok-free.app') || str_contains(request()->getHost(), 'ngrok-free.dev')) {
-            \Illuminate\Support\Facades\URL::forceScheme('https');
+            URL::forceScheme('https');
         }
 
         // Chia sẻ danh mục, số lượng thông báo & giỏ hàng cho tất cả các view
         View::composer('*', function ($view) {
-            $categories = \App\Models\DanhMuc::all();
+            $categories = DanhMuc::all();
             $view->with('headerCategories', $categories);
 
             if (Auth::check()) {
                 $user = Auth::user();
-                $khachHang = \App\Models\KhachHang::where('MaTK', $user->MaTK)->first();
+                $khachHang = KhachHang::where('MaTK', $user->MaTK)->first();
                 if ($khachHang) {
-                    $unreadCount = \App\Models\ThongBao::where('MaKH', $khachHang->MaKH)
+                    $unreadCount = ThongBao::where('MaKH', $khachHang->MaKH)
                         ->where('TrangThaiDoc', false)
                         ->count();
-                    
-                    $gioHang = \App\Models\GioHang::where('MaKH', $khachHang->MaKH)->first();
+
+                    $gioHang = GioHang::where('MaKH', $khachHang->MaKH)->first();
                     $cartCount = 0;
                     if ($gioHang) {
-                        $cartCount = \App\Models\ChiTietGioHang::where('MaGH', $gioHang->MaGH)->sum('SoLuong');
+                        $cartCount = ChiTietGioHang::where('MaGH', $gioHang->MaGH)->sum('SoLuong');
                     }
 
                     $view->with('unreadCount', $unreadCount);

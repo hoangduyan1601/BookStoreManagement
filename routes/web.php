@@ -1,29 +1,31 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\HomeController;
-use App\Http\Controllers\SanPhamController;
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\CartController;
-use App\Http\Controllers\CheckoutController;
-use App\Http\Controllers\VNPayController;
-use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\AdminBaiVietController;
+use App\Http\Controllers\Admin\AdminChatController;
 use App\Http\Controllers\Admin\AdminDanhMucController;
-use App\Http\Controllers\Admin\AdminTacGiaController;
-use App\Http\Controllers\Admin\AdminSanPhamController;
+use App\Http\Controllers\Admin\AdminDoanhThuController;
 use App\Http\Controllers\Admin\AdminDonHangController;
 use App\Http\Controllers\Admin\AdminKhachHangController;
-use App\Http\Controllers\Admin\AdminNhaXuatBanController;
-use App\Http\Controllers\Admin\AdminNhaCungCapController;
 use App\Http\Controllers\Admin\AdminKhuyenMaiController;
+use App\Http\Controllers\Admin\AdminNhaCungCapController;
 use App\Http\Controllers\Admin\AdminNhapHangController;
-use App\Http\Controllers\Admin\AdminDoanhThuController;
+use App\Http\Controllers\Admin\AdminNhaXuatBanController;
+use App\Http\Controllers\Admin\AdminSanPhamController;
+use App\Http\Controllers\Admin\AdminTacGiaController;
 use App\Http\Controllers\Admin\AdminTaiKhoanController;
 use App\Http\Controllers\Admin\AdminThongBaoController;
-
-use App\Http\Controllers\YeuThichController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BaiVietController;
-use App\Http\Controllers\Admin\AdminBaiVietController;
+use App\Http\Controllers\CartController;
+use App\Http\Controllers\ChatbotController;
+use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\SanPhamController;
+use App\Http\Controllers\VNPayController;
+use App\Http\Controllers\YeuThichController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
@@ -54,14 +56,14 @@ Route::middleware('auth')->group(function () {
     Route::post('/cart/update', [CartController::class, 'update'])->name('cart.update');
     Route::post('/cart/ajax-update', [CartController::class, 'ajaxUpdate'])->name('cart.ajaxUpdate');
     Route::post('/cart/ajax-remove', [CartController::class, 'ajaxRemove'])->name('cart.ajaxRemove');
-    Route::get('/cart/remove/{id}', [CartController::class, 'remove'])->name('cart.remove');
-    Route::get('/cart/clear', [CartController::class, 'clear'])->name('cart.clear');
+    Route::delete('/cart/items/{id}', [CartController::class, 'remove'])->name('cart.remove');
+    Route::post('/cart/clear', [CartController::class, 'clear'])->name('cart.clear');
 
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
     Route::post('/checkout', [CheckoutController::class, 'process'])->name('checkout.process');
     Route::get('/checkout/success/{id}', [CheckoutController::class, 'success'])->name('checkout.success');
     Route::get('/checkout/check-status/{id}', [CheckoutController::class, 'checkStatus'])->name('checkout.checkStatus');
-    Route::post('/checkout/confirm-bank-transfer/{id}', [CheckoutController::class, 'confirmBankTransfer'])->name('checkout.confirmBankTransfer');
+    Route::post('/checkout/confirm-bank-transfer/{id}', [CheckoutController::class, 'bankTransferStatus'])->name('checkout.confirmBankTransfer');
     Route::post('/checkout/change-method/{id}', [CheckoutController::class, 'changePaymentMethod'])->name('checkout.changeMethod');
     Route::post('/checkout/apply-promotion', [CheckoutController::class, 'applyPromotion'])->name('checkout.applyPromotion');
 
@@ -83,33 +85,33 @@ Route::middleware('auth')->group(function () {
 Route::match(['get', 'post'], '/vnpay-ipn', [VNPayController::class, 'vnpayIPN'])->name('vnpay.ipn');
 
 // Chatbot AI (Cho phép cả khách vãng lai)
-Route::post('/chatbot/chat', [\App\Http\Controllers\ChatbotController::class, 'chat'])->name('chatbot.chat');
-Route::get('/chatbot/history', [\App\Http\Controllers\ChatbotController::class, 'getHistory'])->name('chatbot.history');
-Route::get('/chatbot/unread', [\App\Http\Controllers\ChatbotController::class, 'checkUnread'])->name('chatbot.unread');
-Route::post('/chatbot/mark-read', [\App\Http\Controllers\ChatbotController::class, 'markAsRead'])->name('chatbot.mark-read');
+Route::post('/chatbot/chat', [ChatbotController::class, 'chat'])->name('chatbot.chat');
+Route::get('/chatbot/history', [ChatbotController::class, 'getHistory'])->name('chatbot.history');
+Route::get('/chatbot/unread', [ChatbotController::class, 'checkUnread'])->name('chatbot.unread');
+Route::post('/chatbot/mark-read', [ChatbotController::class, 'markAsRead'])->name('chatbot.mark-read');
 
 // Admin routes
 Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/', [DashboardController::class, 'index']); // Fallback for /admin
-    
+
     // Bài viết
     Route::resource('baiviet', AdminBaiVietController::class);
-    
+
     // Danh Muc
     Route::resource('danhmuc', AdminDanhMucController::class);
-    
+
     // Tac Gia
     Route::resource('tacgia', AdminTacGiaController::class)->parameters([
-        'tacgia' => 'id'
+        'tacgia' => 'id',
     ]);
-    
+
     // San Pham
     Route::resource('sanpham', AdminSanPhamController::class);
     Route::get('sanpham/{id}/gan-tacgia', [AdminSanPhamController::class, 'assignAuthor'])->name('sanpham.assign_author');
     Route::post('sanpham/{id}/gan-tacgia', [AdminSanPhamController::class, 'storeAuthor'])->name('sanpham.store_author');
     Route::delete('sanpham/{sp_id}/xoa-tacgia/{tg_id}', [AdminSanPhamController::class, 'removeAuthor'])->name('sanpham.remove_author');
-    
+
     // Don Hang
     Route::get('donhang/count-pending', [AdminDonHangController::class, 'countPending'])->name('donhang.count_pending');
     Route::get('donhang/{id}/bill-json', [AdminDonHangController::class, 'getBillJson'])->name('donhang.bill_json');
@@ -143,43 +145,20 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(fun
     Route::resource('thongbao', AdminThongBaoController::class);
 
     // Ho tro Truc tuyen (Chat)
-    Route::get('chat', [\App\Http\Controllers\Admin\AdminChatController::class, 'index'])->name('chat.index');
-    Route::get('chat/{identifier}', [\App\Http\Controllers\Admin\AdminChatController::class, 'show'])->name('chat.show');
-    Route::post('chat/reply', [\App\Http\Controllers\Admin\AdminChatController::class, 'reply'])->name('chat.reply');
+    Route::get('chat', [AdminChatController::class, 'index'])->name('chat.index');
+    Route::get('chat/{identifier}', [AdminChatController::class, 'show'])->name('chat.show');
+    Route::post('chat/reply', [AdminChatController::class, 'reply'])->name('chat.reply');
 
     // Profile
     Route::get('/profile', [DashboardController::class, 'profile'])->name('profile');
 
     // Prank Mode Toggle
-    Route::post('/toggle-prank-mode', function(\Illuminate\Http\Request $request) {
+    Route::post('/toggle-prank-mode', function (Request $request) {
         $effect = $request->input('effect', 'none');
         // Lưu vào cache toàn hệ thống
         cache()->forever('prank_mode', $effect);
+
         return response()->json(['status' => 'success', 'prank_mode' => $effect]);
     })->name('toggle_prank_mode');
 
-    // Route tạm thời để fix ảnh sản phẩm
-    Route::get('/fix-images', function() {
-        $products = \App\Models\SanPham::whereNull('HinhAnh')->orWhere('HinhAnh', '')->get();
-        $files = array_diff(scandir(public_path('assets/images/products')), array('.', '..'));
-        $imageFiles = array_values(preg_grep('/\.(jpg|jpeg|png|gif|webp)$/i', $files));
-
-        if (count($imageFiles) == 0) return "Không tìm thấy file ảnh nào trong public/assets/images/products";
-
-        $count = 0;
-        foreach ($products as $index => $sp) {
-            // Lấy ảnh theo vòng lặp từ danh sách file
-            $img = $imageFiles[$index % count($imageFiles)];
-            $sp->HinhAnh = $img;
-            $sp->save();
-            
-            // Đồng thời tạo bản ghi trong HinhAnhSanPham nếu chưa có
-            \App\Models\HinhAnhSanPham::updateOrCreate(
-                ['MaSP' => $sp->MaSP, 'DuongDan' => $img],
-                ['LaAnhChinh' => 1]
-            );
-            $count++;
-        }
-        return "Đã cập nhật ảnh cho $count sản phẩm.";
-    });
 });

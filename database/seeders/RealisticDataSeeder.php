@@ -12,18 +12,19 @@ use App\Models\ChiTietNhapHang;
 use App\Models\NhaCungCap;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class RealisticDataSeeder extends Seeder
 {
     public function run()
     {
         // 1. Xóa dữ liệu cũ liên quan đến giao dịch
-        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        Schema::disableForeignKeyConstraints();
         ChiTietDonHang::truncate();
         DonHang::truncate();
         ChiTietNhapHang::truncate();
         LichSuNhapHang::truncate();
-        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        Schema::enableForeignKeyConstraints();
 
         $sanphams = SanPham::all();
         $khachhangs = KhachHang::all();
